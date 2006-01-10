@@ -100,7 +100,7 @@ public class SetPropertiesTest extends TestCase {
         
         MockObjectTypeDeterminer determiner
         =new MockObjectTypeDeterminer(null,Cat.class,null,allowAdditions);
-        XWorkConverter.getInstance().setObjectTypeDeterminer(determiner);
+        XWorkConverter.getInstance().setKeyElementDeterminer(determiner);
         
         Foo foo = new Foo();
         foo.setMoreCats(new ArrayList());
@@ -152,7 +152,7 @@ public class SetPropertiesTest extends TestCase {
         
         MockObjectTypeDeterminer determiner
         =new MockObjectTypeDeterminer(Long.class,Cat.class,null,allowAdditions);
-        XWorkConverter.getInstance().setObjectTypeDeterminer(determiner);
+        XWorkConverter.getInstance().setKeyElementDeterminer(determiner);
         
         Foo foo = new Foo();
         foo.setAnotherCatMap(new HashMap());
@@ -183,7 +183,7 @@ public class SetPropertiesTest extends TestCase {
     }
     public void doTestAddingAndModifyingCollectionWithObjects(Collection barColl) {
 
-        XWorkConverter.getInstance().setObjectTypeDeterminer(new DefaultObjectTypeDeterminer());
+        XWorkConverter.getInstance().setKeyElementDeterminer(new DefaultObjectTypeDeterminer());
         OgnlValueStack vs = new OgnlValueStack();
         Foo foo = new Foo();
         
@@ -237,7 +237,7 @@ public class SetPropertiesTest extends TestCase {
         
         MockObjectTypeDeterminer determiner
         =new MockObjectTypeDeterminer(Long.class,Bar.class,"id",true);
-        XWorkConverter.getInstance().setObjectTypeDeterminer(determiner);
+        XWorkConverter.getInstance().setKeyElementDeterminer(determiner);
         
         Collection barColl=new HashSet();
         
