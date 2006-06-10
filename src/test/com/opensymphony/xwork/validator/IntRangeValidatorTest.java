@@ -4,7 +4,11 @@
  */
 package com.opensymphony.xwork.validator;
 
-import com.opensymphony.xwork.*;
+import com.opensymphony.xwork.ActionContext;
+import com.opensymphony.xwork.ActionProxy;
+import com.opensymphony.xwork.ActionProxyFactory;
+import com.opensymphony.xwork.ValidationAware;
+import com.opensymphony.xwork.config.ConfigurationManager;
 import com.opensymphony.xwork.config.providers.MockConfigurationProvider;
 import junit.framework.TestCase;
 
@@ -47,8 +51,8 @@ public class IntRangeValidatorTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        XWorkStatic.getConfigurationManager().clearConfigurationProviders();
-        XWorkStatic.getConfigurationManager().addConfigurationProvider(new MockConfigurationProvider());
-        XWorkStatic.getConfigurationManager().getConfiguration().reload();
+        ConfigurationManager.clearConfigurationProviders();
+        ConfigurationManager.addConfigurationProvider(new MockConfigurationProvider());
+        ConfigurationManager.getConfiguration().reload();
     }
 }

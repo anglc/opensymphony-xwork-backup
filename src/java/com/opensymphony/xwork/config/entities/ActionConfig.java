@@ -5,7 +5,6 @@
 package com.opensymphony.xwork.config.entities;
 
 import com.opensymphony.xwork.util.location.Located;
-
 import java.io.Serializable;
 import java.util.*;
 
@@ -28,51 +27,49 @@ import java.util.*;
  */
 public class ActionConfig extends Located implements InterceptorListHolder, Parameterizable, Serializable {
 
-    protected List<ExternalReference> externalRefs;
-    protected List<InterceptorMapping> interceptors;
-    protected Map<String, Object> params;
-    protected Map<String, ResultConfig> results;
-    protected List<ExceptionMappingConfig> exceptionMappings;
+    protected List externalRefs;
+    protected List interceptors;
+    protected Map params;
+    protected Map results;
+    protected List exceptionMappings;
     protected String className;
     protected String methodName;
     protected String packageName;
 
 
     public ActionConfig() {
-        params = new LinkedHashMap<String, Object>();
-        results = new LinkedHashMap<String, ResultConfig>();
-        interceptors = new ArrayList<InterceptorMapping>();
-        externalRefs = new ArrayList<ExternalReference>();
-        exceptionMappings = new ArrayList<ExceptionMappingConfig>();
+        params = new LinkedHashMap();
+        results = new LinkedHashMap();
+        interceptors = new ArrayList();
+        externalRefs = new ArrayList();
+        exceptionMappings = new ArrayList();
     }
 
     //Helper constuctor to maintain backward compatibility with objects that create ActionConfigs
     //TODO this should be removed if these changes are rolled in to xwork CVS
-    public ActionConfig(String methodName, Class clazz, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors) {
+    public ActionConfig(String methodName, Class clazz, Map parameters, Map results, List interceptors) {
         this(methodName, clazz.getName(), parameters, results, interceptors);
     }
 
-    public ActionConfig(String methodName, Class clazz, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors, List<ExceptionMappingConfig> exceptionMappings) {
+    public ActionConfig(String methodName, Class clazz, Map parameters, Map results, List interceptors, List exceptionMappings) {
         this(methodName, clazz.getName(), parameters, results, interceptors, exceptionMappings);
     }
 
-    public ActionConfig(String methodName, String className, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors) {
-        this(methodName, className, parameters, results, interceptors, Collections.EMPTY_LIST, "");
+    public ActionConfig(String methodName, String className, Map parameters, Map results, List interceptors) {
+        this(methodName, className, parameters, results, interceptors, Collections.EMPTY_LIST, new String());
     }
 
-    public ActionConfig(String methodName, String className, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors, List<ExceptionMappingConfig> exceptionMappings) {
-        this(methodName, className, parameters, results, interceptors, Collections.EMPTY_LIST, exceptionMappings, "");
+    public ActionConfig(String methodName, String className, Map parameters, Map results, List interceptors, List exceptionMappings) {
+        this(methodName, className, parameters, results, interceptors, Collections.EMPTY_LIST, exceptionMappings, new String());
     }
 
     //TODO If this is commited to CVS we should put the package arg at the front of the ctor and fix
     //code that uses it
-    public ActionConfig(String methodName, String className, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors, List<ExternalReference> externalRefs, String packageName) {
+    public ActionConfig(String methodName, String className, Map parameters, Map results, List interceptors, List externalRefs, String packageName) {
         this(methodName, className, parameters, results, interceptors, externalRefs, Collections.EMPTY_LIST, packageName);
     }
 
-    public ActionConfig(String methodName, String className, Map<String, Object> parameters, Map<String, ResultConfig> results,
-                        List<InterceptorMapping> interceptors, List<ExternalReference> externalRefs,
-                        List<ExceptionMappingConfig> exceptionMappings, String packageName) {
+    public ActionConfig(String methodName, String className, Map parameters, Map results, List interceptors, List externalRefs, List exceptionMappings, String packageName) {
         this.methodName = methodName;
         this.interceptors = interceptors;
         this.params = parameters;
@@ -83,6 +80,7 @@ public class ActionConfig extends Located implements InterceptorListHolder, Para
         this.packageName = packageName;
     }
 
+
     public void setClassName(String className) {
         this.className = className;
     }
@@ -91,17 +89,17 @@ public class ActionConfig extends Located implements InterceptorListHolder, Para
         return className;
     }
 
-    public List<ExternalReference> getExternalRefs() {
+    public List getExternalRefs() {
         return externalRefs;
     }
 
-    public List<ExceptionMappingConfig> getExceptionMappings() {
+    public List getExceptionMappings() {
         return exceptionMappings;
     }
 
-    public List<InterceptorMapping> getInterceptors() {
+    public List getInterceptors() {
         if (interceptors == null) {
-            interceptors = new ArrayList<InterceptorMapping>();
+            interceptors = new ArrayList();
         }
 
         return interceptors;
@@ -134,25 +132,25 @@ public class ActionConfig extends Located implements InterceptorListHolder, Para
         return packageName;
     }
 
-    public void setParams(Map<String, Object> params) {
+    public void setParams(Map params) {
         this.params = params;
     }
 
-    public Map<String, Object> getParams() {
+    public Map getParams() {
         if (params == null) {
-            params = new LinkedHashMap<String, Object>();
+            params = new LinkedHashMap();
         }
 
         return params;
     }
 
-    public void setResults(Map<String, ResultConfig> results) {
+    public void setResults(Map results) {
         this.results = results;
     }
 
-    public Map<String, ResultConfig> getResults() {
+    public Map getResults() {
         if (results == null) {
-            results = new LinkedHashMap<String, ResultConfig>();
+            results = new LinkedHashMap();
         }
 
         return results;
@@ -162,23 +160,23 @@ public class ActionConfig extends Located implements InterceptorListHolder, Para
         getExternalRefs().add(reference);
     }
 
-    public void addExternalRefs(List<ExternalReference> refs) {
-        getExternalRefs().addAll(refs);
+    public void addExternalRefs(List externalRefs) {
+        getExternalRefs().addAll(externalRefs);
     }
 
     public void addExceptionMapping(ExceptionMappingConfig exceptionMapping) {
         getExceptionMappings().add(exceptionMapping);
     }
 
-    public void addExceptionMappings(List<? extends ExceptionMappingConfig> mappings) {
-        getExceptionMappings().addAll(mappings);
+    public void addExceptionMappings(List exceptionMappings) {
+        getExceptionMappings().addAll(exceptionMappings);
     }
 
     public void addInterceptor(InterceptorMapping interceptor) {
         getInterceptors().add(interceptor);
     }
 
-    public void addInterceptors(List<InterceptorMapping> interceptors) {
+    public void addInterceptors(List interceptors) {
         getInterceptors().addAll(interceptors);
     }
 
@@ -218,8 +216,11 @@ public class ActionConfig extends Located implements InterceptorListHolder, Para
             return false;
         }
 
-        return !((results != null) ? (!results.equals(actionConfig.results)) : (actionConfig.results != null));
+        if ((results != null) ? (!results.equals(actionConfig.results)) : (actionConfig.results != null)) {
+            return false;
+        }
 
+        return true;
     }
 
     public int hashCode() {
@@ -238,7 +239,7 @@ public class ActionConfig extends Located implements InterceptorListHolder, Para
         sb.append(className);
         if (methodName != null) {
             sb.append(".").append(methodName).append("()");
-        }
+        } 
         sb.append(" - ").append(location);
         sb.append("}");
         return sb.toString();

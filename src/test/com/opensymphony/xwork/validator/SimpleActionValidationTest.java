@@ -5,6 +5,7 @@
 package com.opensymphony.xwork.validator;
 
 import com.opensymphony.xwork.*;
+import com.opensymphony.xwork.config.ConfigurationManager;
 import com.opensymphony.xwork.config.providers.MockConfigurationProvider;
 import com.opensymphony.xwork.util.OgnlValueStack;
 import com.opensymphony.xwork.validator.validators.ValidatorSupport;
@@ -213,9 +214,9 @@ public class SimpleActionValidationTest extends TestCase {
         origLocale = Locale.getDefault();
         Locale.setDefault(Locale.US);
 
-        XWorkStatic.getConfigurationManager().destroyConfiguration();
-        XWorkStatic.getConfigurationManager().addConfigurationProvider(new MockConfigurationProvider());
-        XWorkStatic.getConfigurationManager().getConfiguration().reload();
+        ConfigurationManager.destroyConfiguration();
+        ConfigurationManager.addConfigurationProvider(new MockConfigurationProvider());
+        ConfigurationManager.getConfiguration().reload();
     }
 
     protected void tearDown() throws Exception {

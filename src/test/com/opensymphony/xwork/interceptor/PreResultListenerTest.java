@@ -9,6 +9,7 @@ import com.mockobjects.dynamic.Mock;
 import com.opensymphony.xwork.*;
 import com.opensymphony.xwork.config.Configuration;
 import com.opensymphony.xwork.config.ConfigurationException;
+import com.opensymphony.xwork.config.ConfigurationManager;
 import com.opensymphony.xwork.config.ConfigurationProvider;
 import com.opensymphony.xwork.config.entities.ActionConfig;
 import com.opensymphony.xwork.config.entities.PackageConfig;
@@ -53,8 +54,8 @@ public class PreResultListenerTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        XWorkStatic.getConfigurationManager().clearConfigurationProviders();
-        XWorkStatic.getConfigurationManager().addConfigurationProvider(new ConfigurationProvider() {
+        ConfigurationManager.clearConfigurationProviders();
+        ConfigurationManager.addConfigurationProvider(new ConfigurationProvider() {
             public void destroy() {
             }
 
@@ -77,12 +78,12 @@ public class PreResultListenerTest extends TestCase {
                 return false;
             }
         });
-        XWorkStatic.getConfigurationManager().getConfiguration().reload();
+        ConfigurationManager.getConfiguration().reload();
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        XWorkStatic.getConfigurationManager().destroyConfiguration();
+        ConfigurationManager.destroyConfiguration();
     }
 
 

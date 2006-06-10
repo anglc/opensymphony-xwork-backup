@@ -10,7 +10,10 @@
  */
 package com.opensymphony.xwork.config;
 
-import com.opensymphony.xwork.*;
+import com.opensymphony.xwork.ActionContext;
+import com.opensymphony.xwork.ActionProxy;
+import com.opensymphony.xwork.ActionProxyFactory;
+import com.opensymphony.xwork.ExternalReferenceAction;
 import com.opensymphony.xwork.config.entities.PackageConfig;
 import com.opensymphony.xwork.config.providers.XmlConfigurationProvider;
 import junit.framework.TestCase;
@@ -21,7 +24,7 @@ import java.util.HashMap;
 /**
  * Test support for external-ref tag in xwork.xml. This tag allows objects from 'external' sources
  * to be used by an action.
- *
+ * 
  * @author Ross
  */
 public class ExternalReferenceResolverTest extends TestCase {
@@ -30,8 +33,8 @@ public class ExternalReferenceResolverTest extends TestCase {
      * test that resolver has been loaded and given to the package config
      */
     public void testResolverIsInstanciated() throws Exception {
-        RuntimeConfiguration config = XWorkStatic.getConfigurationManager().getConfiguration().getRuntimeConfiguration();
-        PackageConfig packageConfig = XWorkStatic.getConfigurationManager().getConfiguration().getPackageConfig("default");
+        RuntimeConfiguration config = ConfigurationManager.getConfiguration().getRuntimeConfiguration();
+        PackageConfig packageConfig = ConfigurationManager.getConfiguration().getPackageConfig("default");
 
         assertNotNull("There should be a package called 'default'", packageConfig);
 
@@ -119,8 +122,8 @@ public class ExternalReferenceResolverTest extends TestCase {
 
         // ensure we're using the default configuration, not simple config
         XmlConfigurationProvider c = new XmlConfigurationProvider();
-        XWorkStatic.getConfigurationManager().addConfigurationProvider(c);
-        XWorkStatic.getConfigurationManager().getConfiguration().reload();
+        ConfigurationManager.addConfigurationProvider(c);
+        ConfigurationManager.getConfiguration().reload();
     }
 
     protected void tearDown() throws Exception {

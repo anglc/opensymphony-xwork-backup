@@ -4,6 +4,7 @@
 package com.opensymphony.xwork.spring;
 
 import com.opensymphony.xwork.*;
+import com.opensymphony.xwork.config.ConfigurationManager;
 import com.opensymphony.xwork.config.providers.XmlConfigurationProvider;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -26,8 +27,8 @@ public class ActionsFromSpringTest extends XWorkTestCase {
 
         // Set up XWork
         XmlConfigurationProvider c = new XmlConfigurationProvider("com/opensymphony/xwork/spring/actionContext-xwork.xml");
-        XWorkStatic.getConfigurationManager().addConfigurationProvider(c);
-        XWorkStatic.getConfigurationManager().getConfiguration().reload();
+        ConfigurationManager.addConfigurationProvider(c);
+        ConfigurationManager.getConfiguration().reload();
     }
 
     public void testLoadSimpleAction() throws Exception {

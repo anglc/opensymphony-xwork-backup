@@ -4,10 +4,9 @@
  */
 package com.opensymphony.xwork.config.providers;
 
-import com.opensymphony.xwork.XWorkStatic;
 import com.opensymphony.xwork.config.ConfigurationException;
+import com.opensymphony.xwork.config.ConfigurationManager;
 import com.opensymphony.xwork.config.ConfigurationProvider;
-import com.opensymphony.xwork.config.RuntimeConfiguration;
 import com.opensymphony.xwork.config.entities.PackageConfig;
 
 import java.util.List;
@@ -66,7 +65,7 @@ public class XmlConfigurationProviderPackagesTest extends ConfigurationTestBase 
         assertEquals(4, configuration.getPackageConfigs().size());
         PackageConfig defaultPackage = configuration.getPackageConfig("default");
         assertNotNull(defaultPackage);
-        assertEquals("default", defaultPackage.getName());
+        assertEquals("default",defaultPackage.getName());
         PackageConfig abstractPackage = configuration.getPackageConfig("abstractPackage");
         assertNotNull(abstractPackage);
         assertEquals("abstractPackage", abstractPackage.getName());
@@ -84,17 +83,16 @@ public class XmlConfigurationProviderPackagesTest extends ConfigurationTestBase 
         assertTrue(multipleParents.contains(abstractPackage));
         assertTrue(multipleParents.contains(singlePackage));
 
-        XWorkStatic.getConfigurationManager().addConfigurationProvider(provider);
+        ConfigurationManager.addConfigurationProvider(provider);
 
-        RuntimeConfiguration runtimeConfiguration = XWorkStatic.getConfigurationManager().getConfiguration().getRuntimeConfiguration();
-        assertNotNull(runtimeConfiguration.getActionConfig("/multiple", "default"));
-        assertNotNull(runtimeConfiguration.getActionConfig("/multiple", "abstract"));
-        assertNotNull(runtimeConfiguration.getActionConfig("/multiple", "single"));
-        assertNotNull(runtimeConfiguration.getActionConfig("/multiple", "multiple"));
-        assertNotNull(runtimeConfiguration.getActionConfig("/single", "default"));
-        assertNull(runtimeConfiguration.getActionConfig("/single", "abstract"));
-        assertNotNull(runtimeConfiguration.getActionConfig("/single", "single"));
-        assertNull(runtimeConfiguration.getActionConfig("/single", "multiple"));
+        assertNotNull(ConfigurationManager.getConfiguration().getRuntimeConfiguration().getActionConfig("/multiple", "default"));
+        assertNotNull(ConfigurationManager.getConfiguration().getRuntimeConfiguration().getActionConfig("/multiple", "abstract"));
+        assertNotNull(ConfigurationManager.getConfiguration().getRuntimeConfiguration().getActionConfig("/multiple", "single"));
+        assertNotNull(ConfigurationManager.getConfiguration().getRuntimeConfiguration().getActionConfig("/multiple", "multiple"));
+        assertNotNull(ConfigurationManager.getConfiguration().getRuntimeConfiguration().getActionConfig("/single", "default"));
+        assertNull(ConfigurationManager.getConfiguration().getRuntimeConfiguration().getActionConfig("/single", "abstract"));
+        assertNotNull(ConfigurationManager.getConfiguration().getRuntimeConfiguration().getActionConfig("/single", "single"));
+        assertNull(ConfigurationManager.getConfiguration().getRuntimeConfiguration().getActionConfig("/single", "multiple"));
 
     }
 }

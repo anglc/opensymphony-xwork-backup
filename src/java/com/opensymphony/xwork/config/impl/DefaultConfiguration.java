@@ -4,12 +4,10 @@
  */
 package com.opensymphony.xwork.config.impl;
 
-import com.opensymphony.xwork.XWorkStatic;
-import com.opensymphony.xwork.config.Configuration;
-import com.opensymphony.xwork.config.ConfigurationException;
-import com.opensymphony.xwork.config.ConfigurationProvider;
-import com.opensymphony.xwork.config.RuntimeConfiguration;
-import com.opensymphony.xwork.config.entities.*;
+import com.opensymphony.xwork.config.*;
+import com.opensymphony.xwork.config.entities.ActionConfig;
+import com.opensymphony.xwork.config.entities.PackageConfig;
+import com.opensymphony.xwork.config.entities.ResultTypeConfig;
 import com.opensymphony.xwork.config.providers.InterceptorBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,7 +27,7 @@ public class DefaultConfiguration implements Configuration {
 
 
     // Programmatic Action Conifigurations
-    private Map<String, PackageConfig> packageContexts = new LinkedHashMap<String, PackageConfig>();
+    private Map packageContexts = new LinkedHashMap();
     private RuntimeConfiguration runtimeConfiguration;
 
 
@@ -38,7 +36,7 @@ public class DefaultConfiguration implements Configuration {
 
 
     public PackageConfig getPackageConfig(String name) {
-        return packageContexts.get(name);
+        return (PackageConfig) packageContexts.get(name);
     }
 
     public Set getPackageConfigNames() {
@@ -54,9 +52,9 @@ public class DefaultConfiguration implements Configuration {
     }
 
     public void addPackageConfig(String name, PackageConfig packageContext) {
-        PackageConfig check = packageContexts.get(name);
+      PackageConfig check = (PackageConfig) packageContexts.get(name);
         if (check != null) {
-            LOG.error("The package name '" + name + "' is already been used by another package: " + check);
+             LOG.error("The package name '" + name + "' is already been used by another package: " + check);
             // would be better to throw ConfigurationException("name already used");
         }
         packageContexts.put(name, packageContext);
@@ -81,20 +79,23 @@ public class DefaultConfiguration implements Configuration {
     public synchronized void reload() throws ConfigurationException {
         packageContexts.clear();
 
-        for (ConfigurationProvider configurationProvider : XWorkStatic.getConfigurationManager().getConfigurationProviders())
-        {
-            configurationProvider.init(this);
+        for (Iterator iterator = ConfigurationManager.getConfigurationProviders().iterator();
+             iterator.hasNext();) {
+            ConfigurationProvider provider = (ConfigurationProvider) iterator.next();
+            provider.init(this);
         }
 
         rebuildRuntimeConfiguration();
     }
 
     public void removePackageConfig(String name) {
-        PackageConfig toBeRemoved = packageContexts.get(name);
+        PackageConfig toBeRemoved = (PackageConfig) packageContexts.get(name);
 
         if (toBeRemoved != null) {
-            for (PackageConfig packageConfig : packageContexts.values()) {
-                packageConfig.removeParent(toBeRemoved);
+            for (Iterator iterator = packageContexts.values().iterator();
+                 iterator.hasNext();) {
+                PackageConfig packageContext = (PackageConfig) iterator.next();
+                packageContext.removeParent(toBeRemoved);
             }
         }
     }
@@ -104,30 +105,33 @@ public class DefaultConfiguration implements Configuration {
      * programmatic configuration data structures. All of the old runtime configuration will be discarded and rebuilt.
      */
     protected synchronized RuntimeConfiguration buildRuntimeConfiguration() throws ConfigurationException {
-        Map<String, Map<String, ActionConfig>> namespaceActionConfigs = new LinkedHashMap<String, Map<String, ActionConfig>>();
-        Map<String, String> namespaceConfigs = new LinkedHashMap<String, String>();
+        Map namespaceActionConfigs = new LinkedHashMap();
+        Map namespaceConfigs = new LinkedHashMap();
 
-        for (PackageConfig packageConfig : packageContexts.values()) {
+        for (Iterator iterator = packageContexts.values().iterator();
+             iterator.hasNext();) {
+            PackageConfig packageContext = (PackageConfig) iterator.next();
 
-            if (!packageConfig.isAbstract()) {
-                String namespace = packageConfig.getNamespace();
-                Map<String, ActionConfig> configs = namespaceActionConfigs.get(namespace);
+            if (!packageContext.isAbstract()) {
+                String namespace = packageContext.getNamespace();                
+                Map configs = (Map) namespaceActionConfigs.get(namespace);
 
                 if (configs == null) {
-                    configs = new LinkedHashMap<String, ActionConfig>();
+                    configs = new LinkedHashMap();
                 }
 
-                Map actionConfigs = packageConfig.getAllActionConfigs();
+                Map actionConfigs = packageContext.getAllActionConfigs();
 
-                for (Object o : actionConfigs.keySet()) {
-                    String actionName = (String) o;
+                for (Iterator actionIterator = actionConfigs.keySet().iterator();
+                     actionIterator.hasNext();) {
+                    String actionName = (String) actionIterator.next();
                     ActionConfig baseConfig = (ActionConfig) actionConfigs.get(actionName);
-                    configs.put(actionName, buildFullActionConfig(packageConfig, baseConfig));
+                    configs.put(actionName, buildFullActionConfig(packageContext, baseConfig));
                 }
 
                 namespaceActionConfigs.put(namespace, configs);
-                if (packageConfig.getFullDefaultActionRef() != null) {
-                    namespaceConfigs.put(namespace, packageConfig.getFullDefaultActionRef());
+                if (packageContext.getFullDefaultActionRef() != null) {
+                	namespaceConfigs.put(namespace, packageContext.getFullDefaultActionRef());
                 }
             }
         }
@@ -135,14 +139,16 @@ public class DefaultConfiguration implements Configuration {
         return new RuntimeConfigurationImpl(namespaceActionConfigs, namespaceConfigs);
     }
 
-    private void setDefaultResults(Map<String, ResultConfig> results, PackageConfig packageContext) {
+    private void setDefaultResults(Map results, PackageConfig packageContext) {
         String defaultResult = packageContext.getFullDefaultResultType();
 
-        for (Map.Entry<String, ResultConfig> entry : results.entrySet()) {
+        for (Iterator iterator = results.entrySet().iterator();
+             iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
 
             if (entry.getValue() == null) {
-                ResultTypeConfig resultTypeConfig = packageContext.getAllResultTypeConfigs().get(defaultResult);
-                entry.setValue(new ResultConfig(null, resultTypeConfig.getClazz()));
+                ResultTypeConfig resultTypeConfig = (ResultTypeConfig) packageContext.getAllResultTypeConfigs().get(defaultResult);
+                entry.setValue(resultTypeConfig.getClazz());
             }
         }
     }
@@ -154,17 +160,15 @@ public class DefaultConfiguration implements Configuration {
      * @param baseConfig     the ActionConfig which holds only the configuration specific to itself, without the defaults
      *                       and inheritance
      * @return a full ActionConfig for runtime configuration with all of the inherited and default params
-     * @throws com.opensymphony.xwork.config.ConfigurationException
-     *
      */
     private ActionConfig buildFullActionConfig(PackageConfig packageContext, ActionConfig baseConfig) throws ConfigurationException {
-        Map<String, Object> params = new TreeMap<String, Object>(baseConfig.getParams());
-        Map<String, ResultConfig> results = new TreeMap<String, ResultConfig>(packageContext.getAllGlobalResults());
+        Map params = new TreeMap(baseConfig.getParams());
+        Map results = new TreeMap(packageContext.getAllGlobalResults());
         results.putAll(baseConfig.getResults());
 
         setDefaultResults(results, packageContext);
 
-        List<InterceptorMapping> interceptors = new ArrayList<InterceptorMapping>(baseConfig.getInterceptors());
+        List interceptors = new ArrayList(baseConfig.getInterceptors());
 
         if (interceptors.size() <= 0) {
             String defaultInterceptorRefName = packageContext.getFullDefaultInterceptorRef();
@@ -174,25 +178,27 @@ public class DefaultConfiguration implements Configuration {
             }
         }
 
-        List<ExternalReference> externalRefs = baseConfig.getExternalRefs();
+        List externalRefs = baseConfig.getExternalRefs();
 
-        List<ExceptionMappingConfig> exceptionMappings = baseConfig.getExceptionMappings();
+        List exceptionMappings = baseConfig.getExceptionMappings();
         exceptionMappings.addAll(packageContext.getAllExceptionMappingConfigs());
 
-        return new ActionConfig(baseConfig.getMethodName(), baseConfig.getClassName(), params, results, interceptors,
-                externalRefs, exceptionMappings, packageContext.getName());
+        ActionConfig config = new ActionConfig(baseConfig.getMethodName(), baseConfig.getClassName(), params, results, interceptors, externalRefs, exceptionMappings, packageContext.getName());
+
+        return config;
     }
 
 
     private class RuntimeConfigurationImpl implements RuntimeConfiguration {
-        private Map<String, Map<String, ActionConfig>> namespaceActionConfigs;
-        private Map<String, String> namespaceConfigs;
+        private Map namespaceActionConfigs;
+        private Map namespaceConfigs;
 
-        public RuntimeConfigurationImpl(Map<String, Map<String, ActionConfig>> namespaceActionConfigs, Map<String, String> namespaceConfigs) {
+        public RuntimeConfigurationImpl(Map namespaceActionConfigs, Map namespaceConfigs) {
             this.namespaceActionConfigs = namespaceActionConfigs;
             this.namespaceConfigs = namespaceConfigs;
         }
-
+        
+        
 
         /**
          * Gets the configuration information for an action name, or returns null if the
@@ -204,35 +210,35 @@ public class DefaultConfiguration implements Configuration {
          */
         public synchronized ActionConfig getActionConfig(String namespace, String name) {
             ActionConfig config = null;
-            Map<String, ActionConfig> actions = namespaceActionConfigs.get((namespace == null) ? "" : namespace);
+            Map actions = (Map) namespaceActionConfigs.get((namespace == null) ? "" : namespace);
 
             if (actions != null) {
-                config = actions.get(name);
+                config = (ActionConfig) actions.get(name);
                 // fail over to default action
                 if (config == null) {
-                    String defaultActionRef = namespaceConfigs.get((namespace == null) ? "" : namespace);
-                    if (defaultActionRef != null) {
-                        config = actions.get(defaultActionRef);
-                    }
+                	String defaultActionRef = (String) namespaceConfigs.get((namespace == null) ? "" : namespace);
+                	if (defaultActionRef != null) {
+                		config = (ActionConfig) actions.get(defaultActionRef);
+                	}
                 }
             }
 
             // fail over to empty namespace
             if ((config == null) && (namespace != null) && (!namespace.trim().equals(""))) {
-                actions = namespaceActionConfigs.get("");
+                actions = (Map) namespaceActionConfigs.get("");
 
                 if (actions != null) {
-                    config = actions.get(name);
+                    config = (ActionConfig) actions.get(name);
                     // fail over to default action
                     if (config == null) {
-                        String defaultActionRef = namespaceConfigs.get("");
-                        if (defaultActionRef != null) {
-                            config = actions.get(defaultActionRef);
-                        }
+                    	String defaultActionRef = (String) namespaceConfigs.get("");
+                    	if (defaultActionRef != null) {
+                    		config = (ActionConfig) actions.get(defaultActionRef);
+                    	}
                     }
                 }
             }
-
+            
 
             return config;
         }
@@ -249,11 +255,14 @@ public class DefaultConfiguration implements Configuration {
         public String toString() {
             StringBuffer buff = new StringBuffer("RuntimeConfiguration - actions are\n");
 
-            for (String namespace : namespaceActionConfigs.keySet()) {
-                Map<String, ActionConfig> actionConfigs = namespaceActionConfigs.get(namespace);
+            for (Iterator iterator = namespaceActionConfigs.keySet().iterator();
+                 iterator.hasNext();) {
+                String namespace = (String) iterator.next();
+                Map actionConfigs = (Map) namespaceActionConfigs.get(namespace);
 
-                for (String s : actionConfigs.keySet()) {
-                    buff.append(namespace).append("/").append(s).append("\n");
+                for (Iterator iterator2 = actionConfigs.keySet().iterator();
+                     iterator2.hasNext();) {
+                    buff.append(namespace + "/" + iterator2.next() + "\n");
                 }
             }
 

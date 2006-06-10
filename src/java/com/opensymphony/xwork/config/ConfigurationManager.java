@@ -10,14 +10,13 @@ import com.opensymphony.xwork.config.providers.XmlConfigurationProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
- * ConfigurationManager - central for XWork Configuration management, including
+ * ConfigurationManager - central for XWork Configuration management, including 
  * its ConfigurationProvider.
  *
  * @author Jason Carreira
@@ -27,11 +26,20 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ConfigurationManager {
 
     protected static final Log LOG = LogFactory.getLog(ConfigurationManager.class);
-    protected Configuration configuration;
-    protected Lock providerLock = new ReentrantLock();
-    private List<ConfigurationProvider> configurationProviders = new CopyOnWriteArrayList<ConfigurationProvider>();
+    protected static Configuration configurationInstance;
+    private static List configurationProviders = new ArrayList();
 
-    public ConfigurationManager() {
+    static {
+        destroyConfiguration();
+    }
+
+
+    private ConfigurationManager() {
+    }
+
+
+    public static synchronized void setConfiguration(Configuration configuration) {
+        configurationInstance = configuration;
     }
 
     /**
@@ -39,61 +47,44 @@ public class ConfigurationManager {
      *
      * @see com.opensymphony.xwork.config.impl.DefaultConfiguration
      */
-    public synchronized Configuration getConfiguration() {
-        if (configuration == null) {
-            setConfiguration(new DefaultConfiguration());
+    public static synchronized Configuration getConfiguration() {
+        if (configurationInstance == null) {
+            configurationInstance = new DefaultConfiguration();
             try {
-                configuration.reload();
+                configurationInstance.reload();
             } catch (ConfigurationException e) {
-                setConfiguration(null);
+                configurationInstance = null;
                 throw e;
             }
         } else {
             conditionalReload();
         }
 
-        return configuration;
-    }
-
-    public synchronized void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
+        return configurationInstance;
     }
 
     /**
-     * Get the current list of ConfigurationProviders. If no custom ConfigurationProviders have been added, this method
+     * <p/>
+     * get the current list of ConfigurationProviders.
+     * </p>
+     * <p/>
+     * if no custom ConfigurationProviders have been added, this method
      * will return a list containing only the default ConfigurationProvider, XMLConfigurationProvider.  if a custom
      * ConfigurationProvider has been added, then the XmlConfigurationProvider must be added by hand.
      * </p>
-     * <p/>
+     *
      * TODO: the lazy instantiation of XmlConfigurationProvider should be refactored to be elsewhere.  the behavior described above seems unintuitive.
      *
      * @return the list of registered ConfigurationProvider objects
-     * @see ConfigurationProvider
+     * @see com.opensymphony.xwork.config.ConfigurationProvider
      */
-    public List<ConfigurationProvider> getConfigurationProviders() {
-        providerLock.lock();
-        try {
+    public static List getConfigurationProviders() {
+        synchronized (configurationProviders) {
             if (configurationProviders.size() == 0) {
                 configurationProviders.add(new XmlConfigurationProvider());
             }
 
             return configurationProviders;
-        } finally {
-            providerLock.unlock();
-        }
-    }
-
-    /**
-     * Set the list of configuration providers
-     *
-     * @param configurationProviders
-     */
-    public void setConfigurationProviders(List<ConfigurationProvider> configurationProviders) {
-        providerLock.lock();
-        try {
-            this.configurationProviders = new CopyOnWriteArrayList<ConfigurationProvider>(configurationProviders);
-        } finally {
-            providerLock.unlock();
         }
     }
 
@@ -103,39 +94,10 @@ public class ConfigurationManager {
      *
      * @param provider the ConfigurationProvider to register
      */
-    public void addConfigurationProvider(ConfigurationProvider provider) {
-        if (!configurationProviders.contains(provider)) {
-            configurationProviders.add(provider);
-        }
-    }
-
-
-    /**
-     * reloads the Configuration files if the configuration files indicate that they need to be reloaded.
-     * <p/>
-     * <B>NOTE:</b> FileManager could be configured through webwork.properties through
-     * webwork.configuration.xml.reload  property.
-     */
-    public synchronized void conditionalReload() {
-        if (FileManager.isReloadingConfigs()) {
-            boolean reload;
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Checking ConfigurationProviders for reload.");
-            }
-
-            reload = false;
-
-            for (ConfigurationProvider provider : configurationProviders) {
-                if (provider.needsReload()) {
-                    reload = true;
-
-                    break;
-                }
-            }
-
-            if (reload) {
-                configuration.reload();
+    public static void addConfigurationProvider(ConfigurationProvider provider) {
+        synchronized (configurationProviders) {
+            if (!configurationProviders.contains(provider)) {
+                configurationProviders.add(provider);
             }
         }
     }
@@ -146,19 +108,61 @@ public class ConfigurationManager {
      *
      * @see com.opensymphony.xwork.config.ConfigurationProvider#destroy
      */
-    public void clearConfigurationProviders() {
-        for (ConfigurationProvider configurationProvider : configurationProviders) {
-            configurationProvider.destroy();
-        }
+    public static void clearConfigurationProviders() {
+        synchronized (configurationProviders) {
+            for (Iterator iterator = configurationProviders.iterator();
+                 iterator.hasNext();) {
+                ConfigurationProvider provider = (ConfigurationProvider) iterator.next();
+                provider.destroy();
+            }
 
-        configurationProviders.clear();
+            configurationProviders.clear();
+        }
     }
 
-    public synchronized void destroyConfiguration() {
-        clearConfigurationProviders(); // let's destroy the ConfigurationProvider first
-        setConfigurationProviders(new CopyOnWriteArrayList<ConfigurationProvider>());
-        if (configuration != null)
-            configuration.destroy(); // let's destroy it first, before nulling it.
-        configuration = null;
+    public static synchronized void destroyConfiguration() {
+        synchronized (configurationProviders) {
+        	clearConfigurationProviders(); // let's destroy the ConfigurationProvider first
+            configurationProviders = new ArrayList();
+            
+            if (configurationInstance != null)
+            	configurationInstance.destroy(); // let's destroy it first, before nulling it.
+            configurationInstance = null;
+        }
+    }
+
+    /**
+     * reloads the Configuration files if the configuration files indicate that they need to be reloaded.
+     *
+     * <B>NOTE:</b> FileManager could be configured through webwork.properties through
+     * webwork.configuration.xml.reload  property.
+     */
+    private static synchronized void conditionalReload() {
+        if (FileManager.isReloadingConfigs()) {
+            boolean reload;
+
+            synchronized (configurationProviders) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Checking ConfigurationProviders for reload.");
+                }
+
+                reload = false;
+
+                for (Iterator iterator = getConfigurationProviders().iterator();
+                     iterator.hasNext();) {
+                    ConfigurationProvider provider = (ConfigurationProvider) iterator.next();
+
+                    if (provider.needsReload()) {
+                        reload = true;
+
+                        break;
+                    }
+                }
+            }
+
+            if (reload) {
+                configurationInstance.reload();
+            }
+        }
     }
 }

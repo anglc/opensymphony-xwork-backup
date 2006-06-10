@@ -4,7 +4,11 @@
  */
 package com.opensymphony.xwork.util;
 
-import com.opensymphony.xwork.*;
+import com.opensymphony.xwork.XWorkTestCase;
+import com.opensymphony.xwork.ActionContext;
+import com.opensymphony.xwork.ActionProxy;
+import com.opensymphony.xwork.ActionProxyFactory;
+import com.opensymphony.xwork.config.ConfigurationManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -82,7 +86,7 @@ public class MyBeanActionTest extends XWorkTestCase {
         super.setUp();
 
         // ensure we're using the default configuration, not simple config
-        XWorkStatic.getConfigurationManager().clearConfigurationProviders();
-        XWorkStatic.getConfigurationManager().getConfiguration().reload();
+        ConfigurationManager.clearConfigurationProviders();
+        ConfigurationManager.getConfiguration().reload();
     }
 }

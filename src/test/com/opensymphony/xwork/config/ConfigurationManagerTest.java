@@ -4,12 +4,11 @@
  */
 package com.opensymphony.xwork.config;
 
-//import org.easymock.MockControl;
+import org.easymock.MockControl;
 
 import com.mockobjects.dynamic.C;
 import com.mockobjects.dynamic.Mock;
 import com.opensymphony.util.FileManager;
-import com.opensymphony.xwork.XWorkStatic;
 import junit.framework.TestCase;
 
 
@@ -30,7 +29,7 @@ public class ConfigurationManagerTest extends TestCase {
         // now check that it reloads
         configProviderMock.expectAndReturn("needsReload", Boolean.TRUE);
         configProviderMock.expect("init", C.isA(Configuration.class));
-        XWorkStatic.getConfigurationManager().getConfiguration();
+        ConfigurationManager.getConfiguration();
         configProviderMock.verify();
 
         // this will be called in teardown
@@ -41,48 +40,48 @@ public class ConfigurationManagerTest extends TestCase {
         FileManager.setReloadingConfigs(false);
 
         // now check that it doesn't try to reload
-        XWorkStatic.getConfigurationManager().getConfiguration();
+        ConfigurationManager.getConfiguration();
         configProviderMock.verify();
 
         // this will be called in teardown
         configProviderMock.expect("destroy");
     }
 
-//    public void testDestroyConfiguration() throws Exception {
-//    	MockControl control = MockControl.createControl(Configuration.class);
-//    	Configuration configuration = (Configuration) control.getMock();
-//    	ConfigurationManager.setConfiguration(configuration);
-//
-//    	configuration.destroy();		// EasyMock
-//    	configProviderMock.expect("destroy");  // MockObject
-//    	control.replay();
-//    	ConfigurationManager.destroyConfiguration();
-//    	configProviderMock.verify();
-//    	control.verify();
-//    }
-
-    public void testClearConfigurationProviders() throws Exception {
-        configProviderMock.expect("destroy");
-        XWorkStatic.getConfigurationManager().clearConfigurationProviders();
-        configProviderMock.verify();
+    public void testDestroyConfiguration() throws Exception {
+    	MockControl control = MockControl.createControl(Configuration.class);
+    	Configuration configuration = (Configuration) control.getMock();
+    	ConfigurationManager.setConfiguration(configuration);
+    	
+    	configuration.destroy();		// EasyMock
+    	configProviderMock.expect("destroy");  // MockObject
+    	control.replay();
+    	ConfigurationManager.destroyConfiguration();
+    	configProviderMock.verify();
+    	control.verify();
     }
-
+    
+    public void testClearConfigurationProviders() throws Exception {
+    	configProviderMock.expect("destroy");  
+    	ConfigurationManager.clearConfigurationProviders();
+    	configProviderMock.verify();
+    }
+    
     protected void setUp() throws Exception {
         super.setUp();
-        XWorkStatic.getConfigurationManager().destroyConfiguration();
+        ConfigurationManager.destroyConfiguration();
 
         configProviderMock = new Mock(ConfigurationProvider.class);
 
         ConfigurationProvider mockProvider = (ConfigurationProvider) configProviderMock.proxy();
-        XWorkStatic.getConfigurationManager().addConfigurationProvider(mockProvider);
+        ConfigurationManager.addConfigurationProvider(mockProvider);
 
         //the first time it always inits
         configProviderMock.expect("init", C.isA(Configuration.class));
-        XWorkStatic.getConfigurationManager().getConfiguration();
+        ConfigurationManager.getConfiguration();
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        XWorkStatic.getConfigurationManager().destroyConfiguration();
+        ConfigurationManager.destroyConfiguration();
     }
 }

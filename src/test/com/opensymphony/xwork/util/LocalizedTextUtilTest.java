@@ -6,6 +6,7 @@ package com.opensymphony.xwork.util;
 
 import com.mockobjects.dynamic.Mock;
 import com.opensymphony.xwork.*;
+import com.opensymphony.xwork.config.ConfigurationManager;
 import com.opensymphony.xwork.test.ModelDrivenAction2;
 import com.opensymphony.xwork.test.TestBean2;
 import junit.framework.TestCase;
@@ -17,7 +18,7 @@ import java.util.Locale;
 
 /**
  * Unit test for {@link LocalizedTextUtil}.
- *
+ * 
  * @author jcarreira
  */
 public class LocalizedTextUtilTest extends TestCase {
@@ -146,7 +147,7 @@ public class LocalizedTextUtilTest extends TestCase {
         String germanDate = LocalizedTextUtil.findDefaultText("test.format.date", Locale.GERMANY, params);
         assertFalse(usDate.equals(germanDate));
     }
-
+    
     public void testXW377() {
         LocalizedTextUtil.addDefaultResourceBundle("com/opensymphony/xwork/util/LocalizedTextUtilTest");
 
@@ -168,8 +169,8 @@ public class LocalizedTextUtilTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        XWorkStatic.getConfigurationManager().destroyConfiguration();
-        XWorkStatic.getConfigurationManager().getConfiguration().reload();
+        ConfigurationManager.destroyConfiguration();
+        ConfigurationManager.getConfiguration().reload();
 
         OgnlValueStack stack = new OgnlValueStack();
         ActionContext.setContext(new ActionContext(stack.getContext()));
@@ -180,5 +181,5 @@ public class LocalizedTextUtilTest extends TestCase {
         super.tearDown();
         LocalizedTextUtil.clearDefaultResourceBundles();
     }
-
+    
 }

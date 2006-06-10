@@ -5,6 +5,7 @@
 package com.opensymphony.xwork.validator;
 
 import com.opensymphony.xwork.*;
+import com.opensymphony.xwork.config.ConfigurationManager;
 import junit.framework.TestCase;
 
 import java.util.HashMap;
@@ -37,7 +38,7 @@ public class ModelDrivenValidationTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        XWorkStatic.getConfigurationManager().destroyConfiguration();
+        ConfigurationManager.destroyConfiguration();
     }
 
     protected void tearDown() throws Exception {

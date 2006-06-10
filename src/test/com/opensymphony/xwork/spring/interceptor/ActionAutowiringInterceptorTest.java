@@ -3,9 +3,13 @@
  */
 package com.opensymphony.xwork.spring.interceptor;
 
-import com.opensymphony.xwork.*;
+import com.opensymphony.xwork.ActionContext;
+import com.opensymphony.xwork.ActionInvocation;
+import com.opensymphony.xwork.SimpleAction;
+import com.opensymphony.xwork.TestBean;
+import com.opensymphony.xwork.config.ConfigurationManager;
 import com.opensymphony.xwork.config.providers.XmlConfigurationProvider;
-import junit.framework.TestCase;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.StaticWebApplicationContext;
@@ -13,98 +17,100 @@ import org.springframework.web.context.support.StaticWebApplicationContext;
 import java.util.HashMap;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
 /**
  * @author Simon Stewart
  */
 public class ActionAutowiringInterceptorTest extends TestCase {
 
-    public void testShouldAutowireAction() throws Exception {
-        StaticWebApplicationContext context = new StaticWebApplicationContext();
-        context.getBeanFactory().registerSingleton("bean", new TestBean());
-        TestBean bean = (TestBean) context.getBean("bean");
+  public void testShouldAutowireAction() throws Exception {
+    StaticWebApplicationContext context = new StaticWebApplicationContext();
+    context.getBeanFactory().registerSingleton("bean", new TestBean());
+    TestBean bean = (TestBean)context.getBean("bean");
 
-        loadSpringApplicationContextIntoApplication(context);
+    loadSpringApplicationContextIntoApplication(context);
 
-        SimpleAction action = new SimpleAction();
-        ActionInvocation invocation = new TestActionInvocation(action);
+    SimpleAction action = new SimpleAction();
+    ActionInvocation invocation = new TestActionInvocation(action);
 
-        ActionAutowiringInterceptor interceptor = new ActionAutowiringInterceptor();
-        interceptor.setApplicationContext(context);
-        interceptor.init();
+    ActionAutowiringInterceptor interceptor = new ActionAutowiringInterceptor();
+    interceptor.setApplicationContext(context);
+    interceptor.init();
 
-        interceptor.before(invocation);
+    interceptor.before(invocation);
 
-        assertEquals(bean, action.getBean());
-    }
+    assertEquals(bean, action.getBean());
+  }
+  
+  public void testSetAutowireType() throws Exception {
+    XmlConfigurationProvider c = new XmlConfigurationProvider("com/opensymphony/xwork/spring/xwork-autowire.xml");
+    ConfigurationManager.addConfigurationProvider(c);
+    ConfigurationManager.getConfiguration().reload();
+    
+    StaticWebApplicationContext appContext = new StaticWebApplicationContext();
 
-    public void testSetAutowireType() throws Exception {
-        XmlConfigurationProvider c = new XmlConfigurationProvider("com/opensymphony/xwork/spring/xwork-autowire.xml");
-        XWorkStatic.getConfigurationManager().addConfigurationProvider(c);
-        XWorkStatic.getConfigurationManager().getConfiguration().reload();
+    loadSpringApplicationContextIntoApplication(appContext);
 
-        StaticWebApplicationContext appContext = new StaticWebApplicationContext();
+    ActionAutowiringInterceptor interceptor = new ActionAutowiringInterceptor();
+    interceptor.init();
+    
+    SimpleAction action = new SimpleAction();
+    ActionInvocation invocation = new TestActionInvocation(action);
+    
+    interceptor.before(invocation);
 
-        loadSpringApplicationContextIntoApplication(appContext);
+    ApplicationContext loadedContext = interceptor.getApplicationContext();
 
-        ActionAutowiringInterceptor interceptor = new ActionAutowiringInterceptor();
-        interceptor.init();
+    assertEquals(appContext, loadedContext);
+  }
 
-        SimpleAction action = new SimpleAction();
-        ActionInvocation invocation = new TestActionInvocation(action);
+  protected void loadSpringApplicationContextIntoApplication(ApplicationContext appContext) {
+    Map application = new HashMap();
+    application.put(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appContext);
 
-        interceptor.before(invocation);
+    Map context = new HashMap();
+    context.put(ActionContext.APPLICATION, application);
+    ActionContext actionContext = new ActionContext(context);
+    ActionContext.setContext(actionContext);
+  }
 
-        ApplicationContext loadedContext = interceptor.getApplicationContext();
+  public void testLoadsApplicationContextUsingWebApplicationContextUtils() throws Exception {
+    StaticWebApplicationContext appContext = new StaticWebApplicationContext();
 
-        assertEquals(appContext, loadedContext);
-    }
+    loadSpringApplicationContextIntoApplication(appContext);
 
-    protected void loadSpringApplicationContextIntoApplication(ApplicationContext appContext) {
-        Map application = new HashMap();
-        application.put(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appContext);
+    ActionAutowiringInterceptor interceptor = new ActionAutowiringInterceptor();
+    interceptor.init();
+    
+    SimpleAction action = new SimpleAction();
+    ActionInvocation invocation = new TestActionInvocation(action);
+    
+    interceptor.before(invocation);
 
-        Map context = new HashMap();
-        context.put(ActionContext.APPLICATION, application);
-        ActionContext actionContext = new ActionContext(context);
-        ActionContext.setContext(actionContext);
-    }
+    ApplicationContext loadedContext = interceptor.getApplicationContext();
 
-    public void testLoadsApplicationContextUsingWebApplicationContextUtils() throws Exception {
-        StaticWebApplicationContext appContext = new StaticWebApplicationContext();
+    assertEquals(appContext, loadedContext);
+  }
 
-        loadSpringApplicationContextIntoApplication(appContext);
+  public void testIfApplicationContextIsNullThenBeanWillNotBeWiredUp() throws Exception {
+    Map context = new HashMap();
+    context.put(ActionContext.APPLICATION, new HashMap());
+    ActionContext actionContext = new ActionContext(context);
+    ActionContext.setContext(actionContext);
 
-        ActionAutowiringInterceptor interceptor = new ActionAutowiringInterceptor();
-        interceptor.init();
+    ActionAutowiringInterceptor interceptor = new ActionAutowiringInterceptor();
+    interceptor.init();
 
-        SimpleAction action = new SimpleAction();
-        ActionInvocation invocation = new TestActionInvocation(action);
+    SimpleAction action = new SimpleAction();
+    ActionInvocation invocation = new TestActionInvocation(action);
+    TestBean bean = action.getBean();
 
-        interceptor.before(invocation);
+    // If an exception is thrown here, things are going to go wrong in
+    // production
+    interceptor.before(invocation);
 
-        ApplicationContext loadedContext = interceptor.getApplicationContext();
-
-        assertEquals(appContext, loadedContext);
-    }
-
-    public void testIfApplicationContextIsNullThenBeanWillNotBeWiredUp() throws Exception {
-        Map context = new HashMap();
-        context.put(ActionContext.APPLICATION, new HashMap());
-        ActionContext actionContext = new ActionContext(context);
-        ActionContext.setContext(actionContext);
-
-        ActionAutowiringInterceptor interceptor = new ActionAutowiringInterceptor();
-        interceptor.init();
-
-        SimpleAction action = new SimpleAction();
-        ActionInvocation invocation = new TestActionInvocation(action);
-        TestBean bean = action.getBean();
-
-        // If an exception is thrown here, things are going to go wrong in
-        // production
-        interceptor.before(invocation);
-
-        assertEquals(bean, action.getBean());
-    }
-
+    assertEquals(bean, action.getBean());
+  }
+  
 }
