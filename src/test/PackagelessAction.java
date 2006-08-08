@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-import com.opensymphony.xwork2.ActionSupport;
+import com.opensymphony.xwork.ActionSupport;
 
 
 /**
