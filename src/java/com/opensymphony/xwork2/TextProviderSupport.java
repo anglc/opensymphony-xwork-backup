@@ -22,6 +22,7 @@ public class TextProviderSupport implements TextProvider {
     private LocaleProvider localeProvider;
     private ResourceBundle bundle;
 
+
     /**
      * Default constructor
      */

@@ -105,7 +105,6 @@ public class ValidationInterceptor extends MethodFilterInterceptor {
 
     private boolean validateAnnotatedMethodOnly;
 
-
     public boolean isValidateAnnotatedMethodOnly() {
         return validateAnnotatedMethodOnly;
     }
@@ -134,6 +133,7 @@ public class ValidationInterceptor extends MethodFilterInterceptor {
         if (log.isDebugEnabled()) {
             log.debug("Validating "
                     + invocation.getProxy().getNamespace() + "/" + invocation.getProxy().getActionName() + " with method "+ method +".");
+
         }
 
         if (validateAnnotatedMethodOnly) {
@@ -141,6 +141,7 @@ public class ValidationInterceptor extends MethodFilterInterceptor {
         } else {
             ActionValidatorManagerFactory.getInstance().validate(action, context);
         }
+
     }
 
     protected String doIntercept(ActionInvocation invocation) throws Exception {

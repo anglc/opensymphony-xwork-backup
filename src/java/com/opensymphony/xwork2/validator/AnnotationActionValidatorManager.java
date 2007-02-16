@@ -319,9 +319,7 @@ public class AnnotationActionValidatorManager implements ActionValidatorManager 
         }
 
         // look for validators for implemented interfaces
-        Class[] interfaces = clazz.getInterfaces();
-
-        for (Class anInterface1 : interfaces) {
+        for (Class anInterface1 : clazz.getInterfaces()) {
             if (checked.contains(anInterface1.getName())) {
                 continue;
             }

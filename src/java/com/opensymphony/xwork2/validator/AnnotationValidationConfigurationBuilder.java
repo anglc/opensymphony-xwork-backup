@@ -206,6 +206,7 @@ public class AnnotationValidationConfigurationBuilder {
 
                 }
             }
+            
             if (methodName != null) {
                 for (ValidatorConfig vc : result) {
                     vc.getParams().put("methodName", methodName);

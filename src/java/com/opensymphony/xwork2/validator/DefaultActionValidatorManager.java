@@ -36,6 +36,7 @@ public class DefaultActionValidatorManager implements ActionValidatorManager {
 
     private static final Map<String, List<ValidatorConfig>> validatorCache = Collections.synchronizedMap(new HashMap<String, List<ValidatorConfig>>());
     private static final Map<String, List<ValidatorConfig>> validatorFileCache = Collections.synchronizedMap(new HashMap<String, List<ValidatorConfig>>());
+
     private static final Log LOG = LogFactory.getLog(DefaultActionValidatorManager.class);
 
     /**
@@ -81,7 +82,8 @@ public class DefaultActionValidatorManager implements ActionValidatorManager {
                 validator.setValidatorType(cfg.getType());
                 validators.add(validator);
             }
-        }
+        }        
+
         return validators;
     }
 
@@ -135,7 +137,7 @@ public class DefaultActionValidatorManager implements ActionValidatorManager {
         Set<String> shortcircuitedFields = null;
 
         for (final Validator validator : validators) {
-        try {
+            try {
                 validator.setValidatorContext(validatorContext);
 
                 if (LOG.isDebugEnabled()) {
@@ -299,7 +301,7 @@ public class DefaultActionValidatorManager implements ActionValidatorManager {
         if (clazz.isInterface()) {
             for (Class anInterface : clazz.getInterfaces()) {
                 validatorConfigs.addAll(buildValidatorConfigs(anInterface, context, checkFile, checked));
-             }
+            }
         } else {
             if (!clazz.equals(Object.class)) {
                 validatorConfigs.addAll(buildValidatorConfigs(clazz.getSuperclass(), context, checkFile, checked));
@@ -334,6 +336,7 @@ public class DefaultActionValidatorManager implements ActionValidatorManager {
 
     private List<ValidatorConfig> loadFile(String fileName, Class clazz, boolean checkFile) {
         List<ValidatorConfig> retList = Collections.emptyList();
+
         if ((checkFile && FileManager.fileNeedsReloading(fileName)) || !validatorFileCache.containsKey(fileName)) {
             InputStream is = null;
 

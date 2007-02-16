@@ -15,6 +15,7 @@ import java.util.List;
  */
 public interface ActionValidatorManager {
 
+
     /**
      * Returns a list of validators for the given class, context, and method. This is the primary
      * lookup method for validators.
@@ -34,7 +35,7 @@ public interface ActionValidatorManager {
      * @param context the context of the action class - can be <tt>null</tt>.
      * @return a list of all validators for the given class and context.
      */
-     List<Validator> getValidators(Class clazz, String context);
+    List<Validator> getValidators(Class clazz, String context);
 
     /**
      * Validates the given object using action and its context.
