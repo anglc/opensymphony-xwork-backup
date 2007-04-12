@@ -2,8 +2,8 @@
     <name>XWork</name>
     <jiraId>10050</jiraId>
     <jiraName>XW</jiraName>
-    <svn>true</svn>
     <confluenceName>XW</confluenceName>
+    <svn>true</svn>
 
     <forums>
         <usersId>39</usersId>
@@ -66,13 +66,32 @@
             <name>Peter Kelley</name>
             <email>yellekau@yahoo.com</email>
         </person>
-        <person>
-            <name>Don Brown</name>
-            <email>mrdon@twdata.org</email>
-        </person>
     </developers>
 
     <releases>
+        <release>
+            <version>2.0.1</version>
+            <date>02/16/2007</date>
+            <jiraId>21681</jiraId>
+            <downloads>
+                <download>
+                    <url>https://xwork.dev.java.net/files/documents/709/50918/xwork-2.0.1-all.zip</url>
+                    <name>All: Contains all jars, libs, sources and docs</name>
+                </download>
+                <download>
+                    <url>https://xwork.dev.java.net/files/documents/709/50925/xwork-2.0.1-src.zip</url>
+                    <name>Sources: Sources and deps with maven2 pom and basic ant build</name>
+                </download>
+                <download>
+                    <url>https://xwork.dev.java.net/files/documents/709/50920/xwork-2.0.1-java14.zip</url>
+                    <name>Java14: Java 1.4 compliant jars and deps</name>
+                </download>
+                <download>
+                    <url>https://xwork.dev.java.net/files/documents/709/50923/xwork-2.0.1-lib.zip</url>
+                    <name>Lib: Jars and Libs only</name>
+                </download>
+            </downloads>
+        </release>
         <release>
             <version>2.0.0</version>
             <date>01/06/2007</date>
@@ -117,7 +136,7 @@
                     <name>Full</name>
                 </download>
             </downloads>
-        </release>        
+        </release>
         <release>
             <version>1.1.3</version>
             <date>03/23/2006</date>
