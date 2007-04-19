@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
@@ -17,9 +17,7 @@ import java.util.Map;
 
 /**
  * <!-- START SNIPPET: description -->
- * ConversionErrorInterceptor adds conversion errors from the ActionContext to the Action's field errors.
  *
- * <p/>
  * This interceptor adds any error found in the {@link ActionContext}'s conversionErrors map as a field error (provided
  * that the action implements {@link ValidationAware}). In addition, any field that contains a validation error has its
  * original value saved such that any subsequent requests for that value return the original value rather than the value
@@ -67,10 +65,11 @@ import java.util.Map;
  * <!-- END SNIPPET: example -->
  * </pre>
  *
+ * ConversionErrorInterceptor adds conversion errors from the ActionContext to the Action's field errors.
+ *
  * @author Jason Carreira
  */
 public class ConversionErrorInterceptor extends AbstractInterceptor {
-
     public static final String ORIGINAL_PROPERTY_OVERRIDE = "original.property.override";
 
     protected Object getOverrideExpr(ActionInvocation invocation, Object value) {

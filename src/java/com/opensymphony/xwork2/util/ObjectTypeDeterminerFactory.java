@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import com.opensymphony.xwork2.util.ClassLoaderUtil;
 
 /**
  * Factory for getting an instance of {@link ObjectTypeDeterminer}.
- * <p/>
+ * <br/>
  * Will use <code>com.opensymphony.xwork2.util.GenericsObjectTypeDeterminer</code> if running on JDK5 or higher.
  * If not <code>com.opensymphony.xwork2.util.ObjectTypeDeterminer</code> is used.
  *
@@ -35,22 +36,11 @@ public class ObjectTypeDeterminerFactory {
         }
     }
 
-    /**
-     * Sets a new instance of ObjectTypeDeterminer to be used.
-     *
-     * @param instance  instance of ObjectTypeDeterminer
-     */
     public static void setInstance(ObjectTypeDeterminer instance) {
         ObjectTypeDeterminerFactory.instance = instance;
     }
 
-    /**
-     * Gets the instance of ObjectTypeDeterminer to be used.
-     *
-     * @return instance of ObjectTypeDeterminer
-     */
     public static ObjectTypeDeterminer getInstance() {
         return instance;
     }
-
 }

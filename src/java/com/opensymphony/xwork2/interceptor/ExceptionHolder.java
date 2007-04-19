@@ -1,7 +1,8 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
+
 package com.opensymphony.xwork2.interceptor;
 
 import java.io.IOException;
@@ -16,36 +17,20 @@ import java.io.StringWriter;
  *
  * <!-- END SNIPPET: javadoc -->
  *
- * @author Matthew E. Porter (matthew dot porter at metissian dot com)
+ * @author Matthew E. Porter (matthew dot porter at metissian dot com) Date: Sep 21, 2005 Time: 3:09:12 PM
  */
 public class ExceptionHolder {
-
     private Exception exception;
 
-    /**
-     * Holds the given exception
-     *
-     * @param exception  the exception to hold.
-     */
     public ExceptionHolder(Exception exception) {
         this.exception = exception;
     }
 
-    /**
-     * Gets the holded exception
-     *
-     * @return  the holded exception
-     */
     public Exception getException() {
         return this.exception;
     }
 
-    /**
-     * Gets the holded exception stacktrace using {@link Exception#printStackTrace()}.
-     *
-     * @return  stacktrace
-     */
-    public String getExceptionStack() {
+    public String getExceptionStack() throws IOException {
         String exceptionStack = null;
 
         if (getException() != null) {
@@ -57,16 +42,11 @@ public class ExceptionHolder {
                 exceptionStack = sw.toString();
             }
             finally {
-                try {
-                    sw.close();
-                    pw.close();
-                } catch (IOException e) {
-                    // ignore
-                }
+                sw.close();
+                pw.close();
             }
         }
 
         return exceptionStack;
     }
-    
 }

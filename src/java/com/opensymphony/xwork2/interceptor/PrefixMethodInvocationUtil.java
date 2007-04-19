@@ -15,10 +15,10 @@ import com.opensymphony.xwork2.ActionInvocation;
 /**
  * A utility class for invoking prefixed methods in action class.
  * 
- * Interceptors that made use of this class are:
+ * Interceptors that made use of this class are 
  * <ul>
- * 	 <li>DefaultWorkflowInterceptor</li>
- *   <li>PrepareInterceptor</li>
+ * 	 <li>DefaultWorkflowInterceptor </li>
+ *   <li>PrepareInterceptor </li>
  * </ul>
  * 
  * <p/>
@@ -50,14 +50,13 @@ import com.opensymphony.xwork2.ActionInvocation;
  * 
  * @author Philip Luppens
  * @author tm_jee
+ * @version $Date$ $Id$
  */
 public class PrefixMethodInvocationUtil {
 	
 	private static final Log _log = LogFactory.getLog(PrefixMethodInvocationUtil.class);
 
-    private static final String DEFAULT_INVOCATION_METHODNAME = "execute";
-
-    /**
+	/**
 	 * This method will prefix <code>actionInvocation</code>'s <code>ActionProxy</code>'s
 	 * <code>method</code> with <code>prefixes</code> before invoking the prefixed method.
 	 * Order of the <code>prefixes</code> is important, as this method will return once 
@@ -89,10 +88,10 @@ public class PrefixMethodInvocationUtil {
 	 * 
 	 * If none of those two methods exists, nothing will be invoked.
 	 * 
-	 * @param actionInvocation  the action invocation
-	 * @param prefixes  prefixes for method names
-	 * @throws InvocationTargetException is thrown if invocation of a method failed.
-	 * @throws IllegalAccessException  is thrown if invocation of a method failed.
+	 * @param actionInvocation
+	 * @param prefixes
+	 * @throws InvocationTargetException
+	 * @throws IllegalAccessException
 	 */
 	public static void invokePrefixMethod(ActionInvocation actionInvocation, String[] prefixes) throws InvocationTargetException, IllegalAccessException {
 		Object action = actionInvocation.getAction();
@@ -100,8 +99,11 @@ public class PrefixMethodInvocationUtil {
 		String methodName = actionInvocation.getProxy().getMethod();
 		
 		if (methodName == null) {
-			// if null returns (possible according to the docs), use the default execute 
-	        methodName = DEFAULT_INVOCATION_METHODNAME;
+			 // TODO: clean me up
+			 /* if null returns (possible according to the docs), 
+			 * use the default execute - this should be a static somewhere ?
+			 */
+			methodName = "execute";
 		}
 		
 		Method method = getPrefixedMethod(prefixes, methodName, action);
@@ -122,7 +124,7 @@ public class PrefixMethodInvocationUtil {
 	 * @param prefixes the prefixes to prefix the <code>methodName</code>
 	 * @param methodName the method name to be prefixed with <code>prefixes</code>
 	 * @param action the action class of which the prefixed method is to be search for.
-	 * @return a {@link Method} if one is found, else <tt>null</tt>.
+	 * @return a {@link Method} if one is found, else null.
 	 */
 	public static Method getPrefixedMethod(String[] prefixes, String methodName, Object action) {
 		assert(prefixes != null);
@@ -145,15 +147,21 @@ public class PrefixMethodInvocationUtil {
 	
 	/**
 	 * This method capitalized the first character of <code>methodName</code>.
-	 * <br/>
-	 * eg. <code>capitalizeMethodName("someMethod");</code> will return <code>"SomeMethod"</code>.
+	 * <p/>
 	 * 
-	 * @param methodName the method name
-	 * @return capitalized method name
+	 * eg.
+	 * <pre>
+	 *   capitalizeMethodName("someMethod");
+	 * </pre>
+	 * 
+	 * will return "SomeMethod".
+	 * 
+	 * @param methodName
+	 * @return String
 	 */
 	public static String capitalizeMethodName(String methodName) {
 		assert(methodName != null);
-		return methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
+		return methodName = methodName.substring(0, 1).toUpperCase()
+							+ methodName.substring(1);
 	}
-
 }

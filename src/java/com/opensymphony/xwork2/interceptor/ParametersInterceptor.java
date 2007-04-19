@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
@@ -107,6 +107,7 @@ import org.apache.commons.logging.LogFactory;
  * </pre>
  *
  * @author Patrick Lightbody
+ * @author Rene Gielen
  */
 public class ParametersInterceptor extends MethodFilterInterceptor {
 
@@ -134,7 +135,7 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
                 if( s2.charAt(i) == '.') l2++;
             }
             return l1 < l2 ? -1 : ( l2 < l1 ? 1 : s1.compareTo(s2));
-        }
+        };
     };
     
     public String doIntercept(ActionInvocation invocation) throws Exception {
@@ -316,8 +317,8 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
     /**
      * Return a collection from the comma delimited String.
      *
-     * @param commaDelim the comma delimited String.
-     * @return A collection from the comma delimited String. Returns <tt>null</tt> if the string is empty.
+     * @param commaDelim
+     * @return A collection from the comma delimited String.
      */
     private Collection asCollection(String commaDelim) {
         if (commaDelim == null || commaDelim.trim().length() == 0) {
@@ -325,5 +326,4 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
         }
         return TextParseUtil.commaDelimitedStringToSet(commaDelim);
     }
-
 }

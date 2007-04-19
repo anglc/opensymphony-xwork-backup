@@ -71,7 +71,7 @@ public class DefaultActionInvocation implements ActionInvocation {
     }
 
     protected DefaultActionInvocation(final ObjectFactory objectFactory, final UnknownHandler handler, final ActionProxy proxy, final Map extraContext, final boolean pushAction, final ActionEventListener actionEventListener) throws Exception {
-    	UtilTimerStack.profile("create DefaultActionInvocation: ",
+    	UtilTimerStack.profile("create DefaultActionInvocation: ", 
     			new UtilTimerStack.ProfilingBlock<Object>() {
 					public Object doProfiling() throws Exception {
 						DefaultActionInvocation.this.proxy = proxy;

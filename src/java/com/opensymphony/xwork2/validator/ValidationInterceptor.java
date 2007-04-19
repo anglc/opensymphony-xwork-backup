@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.validator;
@@ -98,35 +98,31 @@ import com.opensymphony.xwork2.interceptor.MethodFilterInterceptor;
  * @author <a href='mailto:the_mindstorm[at]evolva[dot]ro'>Alexandru Popescu</a>
  * @see ActionValidatorManager
  * @see com.opensymphony.xwork2.interceptor.DefaultWorkflowInterceptor
+ * 
+ * @version $Date$ $Id$
  */
 public class ValidationInterceptor extends MethodFilterInterceptor {
 
     private boolean validateAnnotatedMethodOnly;
 
-
-    /**
-     * Gets if <code>validate()</code> should always be called or only per annotated method.
-     *
-     * @return <tt>true</tt> to only validate per annotated method, otherwise <tt>false</tt> to always validate.
-     */
     public boolean isValidateAnnotatedMethodOnly() {
         return validateAnnotatedMethodOnly;
     }
 
     /**
      * Determine if <code>validate()</code> should always be called or only per annotated method.
-     * Default to <tt>false</tt>.
+     * Default to "false".
      *
-     * @param validateAnnotatedMethodOnly  <tt>true</tt> to only validate per annotated method, otherwise <tt>false</tt> to always validate.
+     * @param validateAnnotatedMethodOnly
      */
     public void setValidateAnnotatedMethodOnly(boolean validateAnnotatedMethodOnly) {
         this.validateAnnotatedMethodOnly = validateAnnotatedMethodOnly;
     }
 
     /**
-     * Gets the current action and its context and delegates to {@link ActionValidatorManager} proper validate method.
+     * Gets the current action and its context and calls {@link DefaultActionValidatorManager#validate(Object, String)}.
      *
-     * @param invocation  the execution state of the Action.
+     * @param invocation the execution state of the Action.
      * @throws Exception if an error occurs validating the action.
      */
     protected void doBeforeInvocation(ActionInvocation invocation) throws Exception {
@@ -137,6 +133,7 @@ public class ValidationInterceptor extends MethodFilterInterceptor {
         if (log.isDebugEnabled()) {
             log.debug("Validating "
                     + invocation.getProxy().getNamespace() + "/" + invocation.getProxy().getActionName() + " with method "+ method +".");
+
         }
 
         if (validateAnnotatedMethodOnly) {
@@ -144,6 +141,7 @@ public class ValidationInterceptor extends MethodFilterInterceptor {
         } else {
             ActionValidatorManagerFactory.getInstance().validate(action, context);
         }
+
     }
 
     protected String doIntercept(ActionInvocation invocation) throws Exception {
@@ -151,5 +149,4 @@ public class ValidationInterceptor extends MethodFilterInterceptor {
         
         return invocation.invoke();
     }
-
 }

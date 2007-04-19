@@ -32,36 +32,36 @@ import com.opensymphony.xwork2.interceptor.PreResultListener;
  * annotated method in the current class in the case of a {@link Before} annotations and after, if the annotations is
  * {@link After}.</p>
  * <!-- END SNIPPET: javadoc -->
- * <p/>
+ *
  * <pre>
  * <!-- START SNIPPET: javacode -->
  *  public class BaseAnnotatedAction {
  *  	protected String log = "";
- * <p/>
+ *
  *  	&#64;Before
  *  	public String baseBefore() {
  *  		log = log + "baseBefore-";
  *  		return null;
  *  	}
  *  }
- * <p/>
+ *
  *  public class AnnotatedAction extends BaseAnnotatedAction {
  *  	&#64;Before
  *  	public String before() {
  *  		log = log + "before";
  *  		return null;
  *  	}
- * <p/>
+ *
  *  	public String execute() {
  *  		log = log + "-execute";
  *  		return Action.SUCCESS;
  *  	}
- * <p/>
+ *
  *  	&#64;BeforeResult
  *  	public void beforeResult() throws Exception {
  *  		log = log +"-beforeResult";
  *  	}
- * <p/>
+ *
  *  	&#64;After
  *  	public void after() {
  *  		log = log + "-after";
@@ -74,24 +74,23 @@ import com.opensymphony.xwork2.interceptor.PreResultListener;
  * <p>With the interceptor applied and the action executed on <code>AnnotatedAction</code> the log
  * instance variable will contain <code>baseBefore-before-execute-beforeResult-after</code>.</p>
  * <!-- END SNIPPET: example -->
- * <p/>
+ *
  * <p/>Configure a stack in xwork.xml that replaces the PrepareInterceptor with the AnnotationWorkflowInterceptor:
  * <pre>
  * <!-- START SNIPPET: stack -->
  * &lt;interceptor-stack name="annotatedStack"&gt;
- * 	&lt;interceptor-ref name="static-params"/&gt;
- * 	&lt;interceptor-ref name="params"/&gt;
- * 	&lt;interceptor-ref name="conversionError"/&gt;
- * 	&lt;interceptor-ref name="annotationInterceptor"/&gt;
+ *	&lt;interceptor-ref name="static-params"/&gt;
+ *	&lt;interceptor-ref name="params"/&gt;
+ *	&lt;interceptor-ref name="conversionError"/&gt;
+ *	&lt;interceptor-ref name="annotationInterceptor"/&gt;
  * &lt;/interceptor-stack&gt;
  *  <!-- END SNIPPET: stack -->
  * </pre>
- *
+
  * @author Zsolt Szasz, zsolt at lorecraft dot com
  * @author Rainer Hermanns
  */
 public class AnnotationWorkflowInterceptor implements Interceptor, PreResultListener {
-
     /**
      * Discovers annotated methods on the action and calls them according to the workflow
      *
@@ -171,5 +170,4 @@ public class AnnotationWorkflowInterceptor implements Interceptor, PreResultList
             }
         }
     }
-
 }
