@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
@@ -14,7 +14,7 @@ import com.opensymphony.xwork2.Preparable;
 /**
  * <!-- START SNIPPET: description -->
  *
- * This interceptor calls <code>prepare()</code> on actions which implement
+ * This interceptor calls prepare() on actions which implement
  * {@link Preparable}. This interceptor is very useful for any situation where
  * you need to ensure some logic runs before the actual execute method runs.
  * 
@@ -26,7 +26,7 @@ import com.opensymphony.xwork2.Preparable;
  * the id property, and then when the second params interceptor is called the
  * parameter <i>user.name</i> will be set, as desired, on the actual object
  * loaded from the database. See the example for more info.
- * 
+ *
  * <p/>
  * <b>Note:</b> Since XWork 2.0.2, this interceptor extends {@link MethodFilterInterceptor}, therefore being
  * able to deal with excludeMethods / includeMethods parameters. See [Workflow Interceptor]
@@ -69,18 +69,21 @@ import com.opensymphony.xwork2.Preparable;
  * <!-- START SNIPPET: example -->
  * &lt;!-- Calls the params interceptor twice, allowing you to
  *       pre-load data for the second time parameters are set --&gt;
- *  &lt;action name="someAction" class="com.examples.SomeAction"&gt;
- *      &lt;interceptor-ref name="params"/&gt;
- *      &lt;interceptor-ref name="prepare"/&gt;
- *      &lt;interceptor-ref name="basicStack"/&gt;
- *      &lt;result name="success"&gt;good_result.ftl&lt;/result&gt;
+ *  &lt;action name=&quot;someAction&quot; class=&quot;com.examples.SomeAction&quot;&gt;
+ *      &lt;interceptor-ref name=&quot;params&quot;/&gt;
+ *      &lt;interceptor-ref name=&quot;prepare&quot;/&gt;
+ *      &lt;interceptor-ref name=&quot;basicStack&quot;/&gt;
+ *      &lt;result name=&quot;success&quot;&gt;good_result.ftl&lt;/result&gt;
  *  &lt;/action&gt;
  * <!-- END SNIPPET: example -->
  * </pre>
  *
+ * Date: Nov 5, 2003 2:33:11 AM
+ *
  * @author Jason Carreira
  * @author Philip Luppens
  * @author tm_jee
+ * @author Rene Gielen
  * @see com.opensymphony.xwork2.Preparable
  */
 public class PrepareInterceptor extends MethodFilterInterceptor {
@@ -93,15 +96,8 @@ public class PrepareInterceptor extends MethodFilterInterceptor {
 	private final static String ALT_PREPARE_PREFIX = "prepareDo";
 
 	private boolean alwaysInvokePrepare = true;
-
-    /**
-     * Sets if the <code>preapare</code> method should always be executed.
-     * <p/>
-     * Default is <tt>true</tt>.
-     *
-     * @param alwaysInvokePrepare  if <code>prepare</code> should always be executed or not.
-     */
-    public void setAlwaysInvokePrepare(String alwaysInvokePrepare) {
+	
+	public void setAlwaysInvokePrepare(String alwaysInvokePrepare) {
 		this.alwaysInvokePrepare = Boolean.parseBoolean(alwaysInvokePrepare);
 	}
 	
@@ -109,21 +105,19 @@ public class PrepareInterceptor extends MethodFilterInterceptor {
         Object action = invocation.getAction();
 
         if (action instanceof Preparable) {
-            try {
-                PrefixMethodInvocationUtil.invokePrefixMethod(invocation,
-                    new String[] { PREPARE_PREFIX, ALT_PREPARE_PREFIX });
-            }
-            catch(Exception e) {
-                // just in case there's an exception while doing reflection,
-                // we still want prepare() to be able to get called.
-                _log.warn("an exception occured while trying to execute prefixed method", e);
-            }
-            if (alwaysInvokePrepare) {
-                ((Preparable) action).prepare();
-            }
+            	try {
+            		PrefixMethodInvocationUtil.invokePrefixMethod(invocation, 
+            			new String[] { PREPARE_PREFIX, ALT_PREPARE_PREFIX });
+            	}
+            	catch(Exception e) {
+            		// just in case there's an exception while doing reflection, 
+            		// we still want prepare() to be able to get called.
+            		_log.warn("an exception occured while trying to execute prefixed method", e);
+            	}
+            	if (alwaysInvokePrepare) {
+            		((Preparable) action).prepare();
+            	}
         }
-
         return invocation.invoke();
     }
-
 }

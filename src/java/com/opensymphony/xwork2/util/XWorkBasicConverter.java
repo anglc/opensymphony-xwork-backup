@@ -36,24 +36,23 @@ import com.opensymphony.xwork2.XWorkException;
 
 /**
  * <!-- START SNIPPET: javadoc -->
+ * XWork will automatically handle the most common type conversion for you.
  * <p/>
- * XWork will automatically handle the most common type conversion for you. This includes support for converting to
- * and from Strings for each of the following:
- * <p/>
+ * This includes support for converting to and from Strings for each of the following:
  * <ul>
  * <li>String</li>
  * <li>boolean / Boolean</li>
  * <li>char / Character</li>
  * <li>int / Integer, float / Float, long / Long, double / Double</li>
- * <li>dates - uses the SHORT format for the Locale associated with the current request</li>
+ * <li>dates - uses the SHORT or RFC3339 format (<code>yyyy-MM-dd'T'HH:mm:ss</code>) for the Locale associated with the current request</li>
  * <li>arrays - assuming the individual strings can be coverted to the individual items</li>
  * <li>collections - if not object type can be determined, it is assumed to be a String and a new ArrayList is
  * created</li>
  * </ul>
- * <p/> Note that with arrays the type conversion will defer to the type of the array elements and try to convert each
+ * <p/>
+ * <b>Note:</b> that with arrays the type conversion will defer to the type of the array elements and try to convert each
  * item individually. As with any other type conversion, if the conversion can't be performed the standard type
  * conversion error reporting is used to indicate a problem occured while processing the type conversion.
- * <p/>
  * <!-- END SNIPPET: javadoc -->
  *
  * @author <a href="mailto:plightbo@gmail.com">Pat Lightbody</a>
@@ -63,7 +62,7 @@ import com.opensymphony.xwork2.XWorkException;
  */
 public class XWorkBasicConverter extends DefaultTypeConverter {
 
-    private static String MILLISECOND_FORMAT = ".SSS";
+    private static final String MILLISECOND_FORMAT = ".SSS";
 
     public Object convertValue(Map context, Object o, Member member, String s, Object value, Class toType) {
         Object result = null;

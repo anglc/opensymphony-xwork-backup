@@ -71,7 +71,7 @@ public class DefaultActionInvocation implements ActionInvocation {
     }
 
     protected DefaultActionInvocation(final ObjectFactory objectFactory, final UnknownHandler handler, final ActionProxy proxy, final Map extraContext, final boolean pushAction, final ActionEventListener actionEventListener) throws Exception {
-    	UtilTimerStack.profile("create DefaultActionInvocation: ",
+    	UtilTimerStack.profile("create DefaultActionInvocation: ", 
     			new UtilTimerStack.ProfilingBlock<Object>() {
 					public Object doProfiling() throws Exception {
 						DefaultActionInvocation.this.proxy = proxy;
@@ -387,9 +387,7 @@ public class DefaultActionInvocation implements ActionInvocation {
         try {
             UtilTimerStack.push(timerKey);
             
-            boolean methodCalled = false;
-            Object methodResult = null;
-            Method method = null;
+            Method method;
             try {
                 method = getAction().getClass().getMethod(methodName, new Class[0]);
             } catch (NoSuchMethodException e) {
@@ -398,25 +396,12 @@ public class DefaultActionInvocation implements ActionInvocation {
                     String altMethodName = "do" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
                     method = getAction().getClass().getMethod(altMethodName, new Class[0]);
                 } catch (NoSuchMethodException e1) {
-                	// well, give the unknown handler a shot
-                	if (unknownHandler != null) {
-	                	try {
-	                		methodResult = unknownHandler.handleUnknownActionMethod(action, methodName);
-	                		methodCalled = true;
-	                	} catch (NoSuchMethodException e2) {
-	                		// throw the original one
-	                		throw e;
-	                	}
-                	} else {
-	            		throw e;
-	            	}
+                    // throw the original one
+                    throw e;
                 }
             }
-        	
-        	if (!methodCalled) {
-        		methodResult = method.invoke(action, new Object[0]);
-        	}
-        	
+
+            Object methodResult = method.invoke(action, new Object[0]);
             if (methodResult instanceof Result) {
             	this.result = (Result) methodResult;
             	return null;

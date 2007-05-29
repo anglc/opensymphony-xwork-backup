@@ -273,10 +273,10 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
             }
 
             // Print out error messages for all misconfigured inheritence packages
-            if (result.size() > 0) {
+            if (result.size() > 0 ) {
                 for (Element rp : result) {
                     String parent = rp.getAttribute("extends");
-                    if (parent != null) {
+                    if ( parent != null) {
                         List parents = ConfigurationUtil.buildParentsFromString(configuration, parent);
                         if (parents != null && parents.size() <= 0) {
                             LOG.error("Unable to find parent packages " + parent);

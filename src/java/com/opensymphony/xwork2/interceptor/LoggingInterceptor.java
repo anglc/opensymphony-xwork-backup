@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
@@ -11,10 +11,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * <!-- START SNIPPET: description -->
- * This interceptor logs the start and end of the execution an action (in English-only, not internationalized).
- * <br/>
- * <b>Note:</b>: This interceptor will log at <tt>INFO</tt> level.
- * <p/>
+ * This interceptor logs the the start and end of the execution an action (in English-only, not internationalized).
  * <!-- END SNIPPET: description -->
  *
  * <!-- START SNIPPET: parameters -->
