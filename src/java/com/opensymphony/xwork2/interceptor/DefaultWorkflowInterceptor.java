@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
  * </ol>
  *
  * <p/>
- * <b>NOTE:</b> if the action doesn't implement either interface, this interceptor effectively does nothing. This
+ * <b>Note:</b> if the action doesn't implement either interface, this interceptor effectively does nothing. This
  * interceptor is often used with the <b>validation</b> interceptor. However, it does not have to be, especially if you
  * wish to write all your validation rules by hand in the validate() method rather than in XML files.
  *
@@ -47,7 +47,7 @@ import org.apache.commons.logging.LogFactory;
  * names, whereby includeMethods overrides excludedMethods. A single * sign is interpreted as wildcard matching
  * all methods for both parameters.
  * See {@link MethodFilterInterceptor} for more info.
- *
+ * 
  * <p/><b>Update:</b> Added logic to execute a validate{MethodName} and then conditionally
  * followed than a general validate method, depending on the 'alwaysInvokeValidate' 
  * parameter/property which  is by default set to true.
@@ -104,8 +104,8 @@ import org.apache.commons.logging.LogFactory;
  *     &lt;/interceptor-ref name="workflow"&gt;
  *     &lt;result name="success"&gt;good_result.ftl&lt;/result&gt;
  * &lt;/action&gt;
- *
- * &lt;-- In this case, the result named "error" will be used when
+ * 
+ * &lt;-- In this case, the result named "error" will be used when 
  *        an action / field error is found --&gt;
  * &lt;-- The Interceptor will only be applied for myWorkflowMethod method of action
  *        classes, since this is the only included method while any others are excluded --&gt;
@@ -119,7 +119,7 @@ import org.apache.commons.logging.LogFactory;
  *     &lt;/interceptor-ref&gt;
  *     &lt;result name="success"&gt;good_result.ftl&lt;/result&gt;
  * &lt;/action&gt;
- *
+ * 
  * <!-- END SNIPPET: example -->
  * </pre>
  *
@@ -128,6 +128,8 @@ import org.apache.commons.logging.LogFactory;
  * @author <a href='mailto:the_mindstorm[at]evolva[dot]ro'>Alexandru Popescu</a>
  * @author Philip Luppens
  * @author tm_jee
+ *
+ * @version $Date$ $Id$
  */
 public class DefaultWorkflowInterceptor extends MethodFilterInterceptor {
 	
@@ -146,7 +148,7 @@ public class DefaultWorkflowInterceptor extends MethodFilterInterceptor {
 	 * Determine if {@link Validateable}'s <code>validate()</code> should always 
 	 * be invoked. Default to "true".
 	 * 
-	 * @param alwaysInvokeValidate <tt>true</tt> then <code>validate()</code> is always invoked.
+	 * @param alwaysInvokeValidate
 	 */
 	public void setAlwaysInvokeValidate(String alwaysInvokeValidate) {
 		this.alwaysInvokeValidate = Boolean.parseBoolean(alwaysInvokeValidate);
@@ -156,7 +158,7 @@ public class DefaultWorkflowInterceptor extends MethodFilterInterceptor {
 	 * Set the <code>inputResultName</code> (result name to be returned when 
 	 * a action / field error is found registered). Default to {@link Action#INPUT}
 	 * 
-	 * @param inputResultName what result name to use when there was validation error(s).
+	 * @param inputResultName
 	 */
 	public void setInputResultName(String inputResultName) {
 		this.inputResultName = inputResultName;
@@ -218,5 +220,4 @@ public class DefaultWorkflowInterceptor extends MethodFilterInterceptor {
 
         return invocation.invoke();
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2;
@@ -12,13 +12,14 @@ import java.util.Map;
  * in a Collection. Field level error messages are kept in a Map from String field name to a List of field error msgs.
  *
  * @author plightbo 
+ * @version $Revision$
  */
 public interface ValidationAware {
 
     /**
      * Set the Collection of Action-level String error messages.
      *
-     * @param errorMessages Collection of String error messages
+     * @param errorMessages
      */
     void setActionErrors(Collection errorMessages);
 
@@ -33,8 +34,6 @@ public interface ValidationAware {
 
     /**
      * Set the Collection of Action-level String messages (not errors).
-     *
-     * @param messages Collection of String messages (not errors).
      */
     void setActionMessages(Collection messages);
 
@@ -50,7 +49,7 @@ public interface ValidationAware {
     /**
      * Set the field error map of fieldname (String) to Collection of String error messages.
      *
-     * @param errorMap field error map
+     * @param errorMap
      */
     void setFieldErrors(Map errorMap);
 
@@ -66,14 +65,12 @@ public interface ValidationAware {
     /**
      * Add an Action-level error message to this Action.
      *
-     * @param anErrorMessage  the error message
+     * @param anErrorMessage
      */
     void addActionError(String anErrorMessage);
 
     /**
      * Add an Action-level message to this Action.
-     *
-     * @param aMessage  the message
      */
     void addActionMessage(String aMessage);
 
@@ -100,11 +97,9 @@ public interface ValidationAware {
     boolean hasActionMessages();
 
     /**
-     * Checks whether there are any action errors or field errors.
-     * <p/>
-     * <b>Note</b>: that this does not have the same meaning as in WW 1.x.
+     * Note that this does not have the same meaning as in WW 1.x.
      *
-     * @return <code>(hasActionErrors() || hasFieldErrors())</code>
+     * @return (hasActionErrors() || hasFieldErrors())
      */
     boolean hasErrors();
 
@@ -114,5 +109,4 @@ public interface ValidationAware {
      * @return whether there are any field errors
      */
     boolean hasFieldErrors();
-
 }

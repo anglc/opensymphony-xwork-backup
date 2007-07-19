@@ -39,7 +39,6 @@ import ognl.OgnlException;
  */
 public class DefaultObjectTypeDeterminer implements ObjectTypeDeterminer {
     
-
     protected static final Log LOG = LogFactory.getLog(DefaultObjectTypeDeterminer.class);
 
     public static final String KEY_PREFIX = "Key_";
@@ -145,8 +144,8 @@ public class DefaultObjectTypeDeterminer implements ObjectTypeDeterminer {
      *
      * @param parentClass     the Class which contains as a property the Map or Collection we are finding the key for.
      * @param property        the property of the Map or Collection for the given parent class
-     * @param target          the target object
-     * @param keyProperty     the keyProperty value
+     * @param target
+     * @param keyProperty
      * @param isIndexAccessed <tt>true</tt>, if the collection or map is accessed via index, <tt>false</tt> otherwise.
      * @return <tt>true</tt>, if the Collection or Map should be created, <tt>false</tt> otherwise.
      * @see ObjectTypeDeterminer#getKeyProperty(Class, String)

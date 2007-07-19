@@ -52,7 +52,7 @@ public class ConfigurationManager {
                 configuration.reload(getConfigurationProviders());
             } catch (ConfigurationException e) {
                 setConfiguration(null);
-                throw new ConfigurationException("Unable to load configuration.", e);
+                throw e;
             }
         } else {
             conditionalReload();

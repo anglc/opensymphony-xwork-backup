@@ -118,7 +118,7 @@ public class ValidatorFileParser {
         
         InputSource in = new InputSource(is);
         in.setSystemId(resourceName);
-            
+
         Map dtdMappings = new HashMap();
         dtdMappings.put("-//OpenSymphony Group//XWork Validator Config 1.0//EN", "xwork-validator-config-1.0.dtd");
 

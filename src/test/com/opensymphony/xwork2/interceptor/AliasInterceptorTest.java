@@ -43,6 +43,7 @@ public class AliasInterceptorTest extends XWorkTestCase {
         actionOne.setBar(23);
         proxy.execute();
         assertEquals(actionOne.getAliasSource(), actionOne.getAliasDest());
+
     }
 
     public void testInvalidAliasExpression() throws Exception {

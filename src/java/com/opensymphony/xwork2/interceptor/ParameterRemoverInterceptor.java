@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2002-2007 by OpenSymphony
- * All rights reserved.
- */
 package com.opensymphony.xwork2.interceptor;
 
 import java.util.Collections;
@@ -67,6 +63,7 @@ import com.opensymphony.xwork2.util.TextParseUtil;
  *  
  *  
  * @author martin.gilday
+ * @version $Date$ $Id$
  */
 public class ParameterRemoverInterceptor extends AbstractInterceptor {
 

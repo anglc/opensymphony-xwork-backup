@@ -1,7 +1,8 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
+
 package com.opensymphony.xwork2.validator;
 
 import org.apache.commons.logging.Log;
@@ -10,9 +11,10 @@ import com.opensymphony.xwork2.util.ClassLoaderUtil;
 import com.opensymphony.xwork2.XWorkException;
 
 /**
- * Factory that determines what {@link com.opensymphony.xwork2.validator.ActionValidatorManager} to be used.
+ * <code>ActionValidatorManagerFactory</code>
  *
  * @author <a href="mailto:hermanns@aixcept.de">Rainer Hermanns</a>
+ * @version $Id$
  */
 public class ActionValidatorManagerFactory {
 
@@ -33,22 +35,11 @@ public class ActionValidatorManagerFactory {
         }
     }
 
-    /**
-     * Sets the ActionValidationManager to be used
-     *
-     * @param instance  the manager to use
-     */
     public static void setInstance(ActionValidatorManager instance) {
         ActionValidatorManagerFactory.instance = instance;
     }
 
-    /**
-     * Gets the ActionValidatorManager to use
-     *
-     * @return  the ActionValidatorManager to use
-     */
     public static ActionValidatorManager getInstance() {
         return instance;
     }
-
 }

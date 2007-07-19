@@ -63,5 +63,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface After {
-    int priority() default 10; 
+    int priority() default 10;
 }

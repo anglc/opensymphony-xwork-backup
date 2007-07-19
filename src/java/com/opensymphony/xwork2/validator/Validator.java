@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.validator;
@@ -7,7 +7,7 @@ package com.opensymphony.xwork2.validator;
 
 /**
  * <!-- START SNIPPET: validatorFlavours -->
- * <p>The validators supplied by the XWork distribution (and any validators you
+ * <p>The validators supplied by the Xwork distribution (and any validators you 
  * might write yourself) come in two different flavors:</p>
  *
  * <ol>
@@ -274,7 +274,7 @@ package com.opensymphony.xwork2.validator;
  * 
  * <p>
  * A plain Validator (non FieldValidator) that gets short-circuited will
- * completely break out of the validation stack no other validators will be 
+ * completely break out of the validation stack no other validators will be
  * evaluated and plain validator takes precedence over field validator meaning 
  * that they get evaluated in the order they are defined before field validator 
  * gets a chance to be evaludated again according to their order defined.
@@ -327,40 +327,14 @@ package com.opensymphony.xwork2.validator;
  */
 public interface Validator {
 
-    /**
-     * Sets the default message to use for validation failure
-     *
-     * @param message  the default message
-     */
     void setDefaultMessage(String message);
 
-    /**
-     * Gets the default message used for validation failures
-     *
-     * @return the default message
-     */
     String getDefaultMessage();
 
-    /**
-     * Gets the validation failure message for the given object
-     *
-     * @param object  object being validated (eg. a domain model object)
-     * @return  the validation failure message
-     */
     String getMessage(Object object);
 
-    /**
-     * Sets a resource bundle key to be used for lookup of validation failure message
-     *
-     * @param key  the resource bundle key
-     */
     void setMessageKey(String key);
 
-    /**
-     * Gets the resource bundle key used for lookup of validation failure message
-     *
-     * @return  the resource bundle key
-     */
     String getMessageKey();
 
     /**
@@ -370,11 +344,6 @@ public interface Validator {
      */
     void setValidatorContext(ValidatorContext validatorContext);
 
-    /**
-     * Gets the validation context used
-     *
-     * @return the validation context
-     */
     ValidatorContext getValidatorContext();
 
     /**
@@ -393,11 +362,6 @@ public interface Validator {
      */
     void setValidatorType(String type);
 
-    /**
-     * Gets the vaildator type used (see class javadoc).
-     *
-     * @return  the type used
-     */
     String getValidatorType();
-
+    
 }

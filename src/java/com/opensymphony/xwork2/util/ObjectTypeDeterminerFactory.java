@@ -12,7 +12,6 @@ import org.apache.commons.logging.LogFactory;
  * <p/>
  * Will use <code>com.opensymphony.xwork2.util.GenericsObjectTypeDeterminer</code> by default.
  *
- * @see com.opensymphony.xwork2.util.GenericsObjectTypeDeterminer
  * @see com.opensymphony.xwork2.util.ObjectTypeDeterminer
  * @see com.opensymphony.xwork2.util.DefaultObjectTypeDeterminer
  *

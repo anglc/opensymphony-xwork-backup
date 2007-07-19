@@ -334,14 +334,14 @@ public class OgnlValueStackTest extends XWorkTestCase {
 
         try {
             vs.setValue("count", "1", true);
-            fail("Expected an exception for mismatched getter and setter");
+            fail("Unexpected an exception for mismatched getter and setter");
         } catch (XWorkException e) {
             //expected
         }
 
         try {
             vs.setValue("count2", "a", true);
-            fail("Expected an exception for mismatched getter and setter");
+            fail("Unexpected an exception for mismatched getter and setter");
         } catch (XWorkException e) {
             //expected
         }

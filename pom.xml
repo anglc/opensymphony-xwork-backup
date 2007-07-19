@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.opensymphony.xwork</groupId>
+    <groupId>com.opensymphony</groupId>
     <artifactId>xwork</artifactId>
-    <version>2.1-SNAPSHOT</version>
+    <version>2.0.4</version>
     <name>XWork</name>
     <description>
         XWork is an command-pattern framework that is used to power WebWork
@@ -155,65 +155,65 @@
         <url>http://jira.opensymphony.com/browse/XW</url>
     </issueManagement>
     <distributionManagement>
-	    <!--
-		For this to work, you need to:
-		
-		1) Get the private key from someone that trusts you :)
-		2) Add the following to ~/.m2/settings.xml
-		
-		<settings>
-			...
-			<servers>
-		    	<server>
-		      		<id>opensymphony</id>
-		      		<username>maven</username>
-		      		<privateKey>/path/to/private/maven_opensymphony_key</privateKey>
-		    	</server>
-			</servers>
-			...
-		</settings>
-		-->
+        <!--
+          For this to work, you need to:
+
+          1) Get the private key from someone that trusts you :)
+          2) Add the following to ~/.m2/settings.xml
+
+          <settings>
+              ...
+              <servers>
+                  <server>
+                        <id>opensymphony</id>
+                        <username>maven</username>
+                        <privateKey>/path/to/private/maven_opensymphony_key</privateKey>
+                  </server>
+              </servers>
+              ...
+          </settings>
+          -->
         <repository>
             <id>opensymphony</id>
             <name>OpenSymphony Maven Repository</name>
             <url>scp://maven2.opensymphony.com/opt/repository/maven2</url>
         </repository>
     </distributionManagement>
+    
     <mailingLists>
         <mailingList>
-            <name>WebWork users list</name>
-            <post>mailto:users@webwork.dev.java.net</post>
-            <subscribe>https://webwork.dev.java.net/servlets/ProjectMailingListList</subscribe>
-            <archive>https://webwork.dev.java.net/servlets/SummarizeList?listName=users</archive>
-            <otherArchives>
-                <otherArchive>http://forums.opensymphony.com/forum.jspa?forumID=1</otherArchive>
-            </otherArchives>
-        </mailingList>
-        <mailingList>
-            <name>WebWork developers list</name>
-            <post>mailto:dev@webwork.dev.java.net</post>
-            <subscribe>https://webwork.dev.java.net/servlets/ProjectMailingListList</subscribe>
-            <archive>https://webwork.dev.java.net/servlets/SummarizeList?listName=dev</archive>
-            <otherArchives>
-                <otherArchive>http://forums.opensymphony.com/forum.jspa?forumID=32</otherArchive>
-            </otherArchives>
-        </mailingList>
-        <mailingList>
-            <name>XWork cvs commit list</name>
-            <post>mailto:cvs@xwork.dev.java.net</post>
+            <name>XWork users list</name>
+            <post>mailto:users@xwork.dev.java.net</post>
             <subscribe>https://xwork.dev.java.net/servlets/ProjectMailingListList</subscribe>
-            <archive>https://xwork.dev.java.net/servlets/SummarizeList?listName=cvs</archive>
+            <archive>https://xwork.dev.java.net/servlets/SummarizeList?listName=users</archive>
             <otherArchives>
-                <otherArchive>http://forums.opensymphony.com/forum.jspa?forumID=9</otherArchive>
+                <otherArchive>http://forums.opensymphony.com/forum.jspa?forumID=39</otherArchive>
+            </otherArchives>
+        </mailingList>
+        <mailingList>
+            <name>XWork developers list</name>
+            <post>mailto:dev@xwork.dev.java.net</post>
+            <subscribe>https://xwork.dev.java.net/servlets/ProjectMailingListList</subscribe>
+            <archive>https://xwork.dev.java.net/servlets/SummarizeList?listName=dev</archive>
+            <otherArchives>
+                <otherArchive>http://forums.opensymphony.com/forum.jspa?forumID=40</otherArchive>
+            </otherArchives>
+        </mailingList>
+        <mailingList>
+            <name>XWork SVN commit list</name>
+            <post>mailto:xwork-svn@opensymphony.com</post>
+            <subscribe>mailto:xwork-svn-subscribe@opensymphony.com</subscribe>
+            <otherArchives>
+                <otherArchive>http://forums.opensymphony.com/forum.jspa?forumID=41</otherArchive>
             </otherArchives>
         </mailingList>
     </mailingLists>
     <scm>
-        <connection>scm:svn:http://svn.opensymphony.com/svn/xwork/trunk</connection>
+        <connection>scm:svn:http://svn.opensymphony.com/svn/xwork/branches/2.0</connection>
         <developerConnection>
-            scm:svn:https://svn.opensymphony.com/svn/xwork/trunk
+            scm:svn:https://svn.opensymphony.com/svn/xwork/branches/2.0
         </developerConnection>
-        <url>https://svn.opensymphony.com/svn/xwork/trunk</url>
+        <url>https://svn.opensymphony.com/svn/xwork/branches/2.0</url>
     </scm>
     <licenses>
         <license>
@@ -226,6 +226,7 @@
             </comments>
         </license>
     </licenses>
+
     <profiles>
         <profile>
             <!--
@@ -432,14 +433,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clover-plugin</artifactId>
-                <configuration>
-                    <jdk>1.5</jdk>
-                    <licenseLocation>lib/bootstrap/clover.license</licenseLocation>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
@@ -527,43 +520,43 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>2.0.3</version>
+            <version>2.0.5</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
-            <version>2.0.3</version>
+            <version>2.0.5</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
-            <version>2.0.3</version>
+            <version>2.0.5</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>2.0.3</version>
+            <version>2.0.5</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>2.0.3</version>
+            <version>2.0.5</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-mock</artifactId>
-            <version>2.0.3</version>
+            <version>2.0.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
-            <version>2.1</version>
+            <version>2.1_3</version>
             <optional>true</optional>
         </dependency>
         <dependency>
