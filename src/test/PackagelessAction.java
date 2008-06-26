@@ -2,14 +2,14 @@
  * Copyright (c) 2002-2003 by OpenSymphony
  * All rights reserved.
  */
-
-import com.opensymphony.xwork2.ActionSupport;
+import com.opensymphony.xwork.ActionSupport;
 
 
 /**
  * @author Mark Woon
  */
 public class PackagelessAction extends ActionSupport {
+    //~ Constructors ///////////////////////////////////////////////////////////
 
     /**
      * Default constructor.
@@ -17,8 +17,8 @@ public class PackagelessAction extends ActionSupport {
     public PackagelessAction() {
     }
 
+    //~ Methods ////////////////////////////////////////////////////////////////
 
-    @Override
     public String execute() {
         // from action's bundle
         System.out.println(getText("actionProperty"));
