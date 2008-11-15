@@ -5,6 +5,8 @@
 package com.opensymphony.xwork2;
 
 import com.opensymphony.xwork2.validator.annotations.*;
+import com.opensymphony.xwork2.ActionSupport;
+import com.opensymphony.xwork2.AnnotatedTestBean;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,7 +27,7 @@ public class SimpleAnnotationAction extends ActionSupport {
 
     //~ Instance fields ////////////////////////////////////////////////////////
 
-    private ArrayList<String> someList = new ArrayList<String>();
+    private ArrayList someList = new ArrayList();
     private Date date = new Date();
     private Properties settings = new Properties();
     private String blah;
@@ -98,7 +100,9 @@ public class SimpleAnnotationAction extends ActionSupport {
     }
 
     public boolean[] getBools() {
-        return new boolean[] {true, false, false, true};
+        boolean[] b = new boolean[] {true, false, false, true};
+
+        return b;
     }
 
     @DateRangeFieldValidator(min = "12/22/2002", max = "12/25/2002", message = "The date must be between 12-22-2002 and 12-25-2002.")
@@ -152,11 +156,11 @@ public class SimpleAnnotationAction extends ActionSupport {
     }
 
     
-    public void setSomeList(ArrayList<String> someList) {
+    public void setSomeList(ArrayList someList) {
         this.someList = someList;
     }
 
-    public ArrayList<String> getSomeList() {
+    public ArrayList getSomeList() {
         return someList;
     }
 
@@ -176,7 +180,6 @@ public class SimpleAnnotationAction extends ActionSupport {
         return "OK";
     }
 
-    @Override
     @Validations(
             requiredFields =
                     {@RequiredFieldValidator(type = ValidatorType.SIMPLE, fieldName = "customfield", message = "You must enter a value for field.")},

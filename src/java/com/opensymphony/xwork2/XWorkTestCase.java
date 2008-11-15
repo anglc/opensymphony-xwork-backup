@@ -5,15 +5,14 @@
 
 package com.opensymphony.xwork2;
 
+import junit.framework.TestCase;
+
 import com.opensymphony.xwork2.config.Configuration;
-import com.opensymphony.xwork2.config.ConfigurationException;
 import com.opensymphony.xwork2.config.ConfigurationManager;
 import com.opensymphony.xwork2.config.ConfigurationProvider;
-import com.opensymphony.xwork2.inject.*;
-import com.opensymphony.xwork2.test.StubConfigurationProvider;
+import com.opensymphony.xwork2.config.impl.MockConfiguration;
+import com.opensymphony.xwork2.inject.Container;
 import com.opensymphony.xwork2.util.XWorkTestCaseHelper;
-import com.opensymphony.xwork2.util.location.LocatableProperties;
-import junit.framework.TestCase;
 
 
 /**
@@ -33,15 +32,13 @@ public abstract class XWorkTestCase extends TestCase {
         super();
     }
     
-    @Override
     protected void setUp() throws Exception {
         configurationManager = XWorkTestCaseHelper.setUp();
-        configuration = configurationManager.getConfiguration();
+        configuration = new MockConfiguration();
         container = configuration.getContainer();
         actionProxyFactory = container.getInstance(ActionProxyFactory.class);
     }
     
-    @Override
     protected void tearDown() throws Exception {
         XWorkTestCaseHelper.tearDown(configurationManager);
         configurationManager = null;
@@ -56,24 +53,4 @@ public abstract class XWorkTestCase extends TestCase {
         container = configuration.getContainer();
         actionProxyFactory = container.getInstance(ActionProxyFactory.class);
     }
-    
-    protected void loadButAdd(final Class<?> type, final Object impl) {
-        loadButAdd(type, Container.DEFAULT_NAME, impl);
-    }
-    
-    protected void loadButAdd(final Class<?> type, final String name, final Object impl) {
-        loadConfigurationProviders(new StubConfigurationProvider() {
-            @Override
-            public void register(ContainerBuilder builder,
-                    LocatableProperties props) throws ConfigurationException {
-                builder.factory(type, name, new Factory() {
-                    public Object create(Context context) throws Exception {
-                        return impl;
-                    }
-                    
-                }, Scope.SINGLETON);
-            }
-        });
-    }
-    
 }

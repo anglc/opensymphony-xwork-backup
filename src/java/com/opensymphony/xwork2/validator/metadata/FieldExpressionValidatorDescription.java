@@ -36,17 +36,14 @@ public class FieldExpressionValidatorDescription extends AbstractFieldValidatorD
         this.expression = expression;
     }
 
-    @Override
     public void setKey(String key) {
         this.key = key;
     }
 
-    @Override
     public void setMessage(String message) {
         this.message = message;
     }
 
-    @Override
     public void setShortCircuit(boolean shortCircuit) {
         this.shortCircuit = shortCircuit;
     }
@@ -57,7 +54,6 @@ public class FieldExpressionValidatorDescription extends AbstractFieldValidatorD
      *
      * @return the validator XML definition.
      */
-    @Override
     public String asFieldXml() {
         StringWriter sw = new StringWriter();
         PrintWriter writer = null;
@@ -95,7 +91,6 @@ public class FieldExpressionValidatorDescription extends AbstractFieldValidatorD
      *
      * @return the validator XML definition.
      */
-    @Override
     public String asSimpleXml() {
         throw new UnsupportedOperationException(getClass().getName() + " cannot be used for simple validators...");
     }

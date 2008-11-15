@@ -18,11 +18,26 @@ package com.opensymphony.xwork2.inject;
 
 import com.opensymphony.xwork2.inject.util.ReferenceCache;
 
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
+import java.io.Serializable;
 
 /**
  * Default {@link Container} implementation.
@@ -64,7 +79,6 @@ class ContainerImpl implements Container {
    */
   final Map<Class<?>, List<Injector>> injectors =
       new ReferenceCache<Class<?>, List<Injector>>() {
-        @Override
         protected List<Injector> create(Class<?> key) {
           List<Injector> injectors = new ArrayList<Injector>();
           addInjectors(key, injectors);
@@ -280,7 +294,6 @@ class ContainerImpl implements Container {
 
   Map<Class<?>, ConstructorInjector> constructors =
       new ReferenceCache<Class<?>, ConstructorInjector>() {
-        @Override
         @SuppressWarnings("unchecked")
         protected ConstructorInjector<?> create(Class<?> implementation) {
           return new ConstructorInjector(ContainerImpl.this, implementation);
@@ -300,36 +313,20 @@ class ContainerImpl implements Container {
       constructor = findConstructorIn(implementation);
       constructor.setAccessible(true);
 
-      MissingDependencyException exception = null;
-      Inject inject = null;
-      ParameterInjector<?>[] parameters = null;
-        
       try {
-        inject = constructor.getAnnotation(Inject.class);
-        parameters = constructParameterInjector(inject, container, constructor);
+        Inject inject = constructor.getAnnotation(Inject.class);
+        parameterInjectors = inject == null
+            ? null // default constructor.
+            : container.getParametersInjectors(
+                constructor,
+                constructor.getParameterAnnotations(),
+                constructor.getParameterTypes(),
+                inject.value()
+              );
       } catch (MissingDependencyException e) {
-        exception = e;
-      }
-      parameterInjectors = parameters;
-
-      if ( exception != null) {
-        if ( inject != null && inject.required()) {
-          throw new DependencyException(exception);
-        }
+        throw new DependencyException(e);
       }
       injectors = container.injectors.get(implementation);
-    }
-
-    ParameterInjector<?>[] constructParameterInjector(
-    Inject inject, ContainerImpl container, Constructor<T> constructor) throws MissingDependencyException{
-    return constructor.getParameterTypes().length == 0
-      ? null // default constructor.
-      : container.getParametersInjectors(
-        constructor,
-        constructor.getParameterAnnotations(),
-        constructor.getParameterTypes(),
-        inject.value()
-      );
     }
 
     @SuppressWarnings("unchecked")
@@ -528,9 +525,8 @@ class ContainerImpl implements Container {
 
   ThreadLocal<Object[]> localContext =
       new ThreadLocal<Object[]>() {
-        @Override
-        protected Object[] initialValue() {
-          return new Object[1];
+        protected InternalContext[] initialValue() {
+          return new InternalContext[1];
         }
       };
 
@@ -539,18 +535,18 @@ class ContainerImpl implements Container {
    * necessary.
    */
   <T> T callInContext(ContextualCallable<T> callable) {
-    Object[] reference = localContext.get();
+    InternalContext[] reference = (InternalContext[]) localContext.get();
     if (reference[0] == null) {
       reference[0] = new InternalContext(this);
       try {
-        return callable.call((InternalContext)reference[0]);
+        return callable.call(reference[0]);
       } finally {
         // Only remove the context if this call created it.
         reference[0] = null;
       }
     } else {
       // Someone else will clean up this context.
-      return callable.call((InternalContext)reference[0]);
+      return callable.call(reference[0]);
     }
   }
 

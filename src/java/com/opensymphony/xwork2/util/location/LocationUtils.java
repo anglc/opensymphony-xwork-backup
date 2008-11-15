@@ -15,17 +15,20 @@
  */
 package com.opensymphony.xwork2.util.location;
 
-import com.opensymphony.xwork2.util.ClassLoaderUtil;
-import org.w3c.dom.Element;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXParseException;
-
-import javax.xml.transform.SourceLocator;
-import javax.xml.transform.TransformerException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.transform.SourceLocator;
+import javax.xml.transform.TransformerException;
+
+import org.xml.sax.Locator;
+import org.xml.sax.SAXParseException;
+
+import org.w3c.dom.Element;
+
+import com.opensymphony.xwork2.util.ClassLoaderUtil;
 
 /**
  * Location-related utility methods.
@@ -37,7 +40,7 @@ public class LocationUtils {
      */
     public static final String UNKNOWN_STRING = "[unknown location]";
     
-    private static List<WeakReference<LocationFinder>> finders = new ArrayList<WeakReference<LocationFinder>>();
+    private static List finders = new ArrayList();
     
     /**
      * An finder or object locations
@@ -66,7 +69,7 @@ public class LocationUtils {
      * @return the string representation
      */
     public static String toString(Location location) {
-        StringBuilder result = new StringBuilder();
+        StringBuffer result = new StringBuffer();
 
         String description = location.getDescription();
         if (description != null) {
@@ -182,8 +185,8 @@ public class LocationUtils {
         synchronized(LocationFinder.class) {
             // Update a clone of the current finder list to avoid breaking
             // any iteration occuring in another thread.
-            List<WeakReference<LocationFinder>> newFinders = new ArrayList<WeakReference<LocationFinder>>(finders);
-            newFinders.add(new WeakReference<LocationFinder>(finder));
+            List newFinders = new ArrayList(finders);
+            newFinders.add(new WeakReference(finder));
             finders = newFinders;
         }
     }
@@ -250,16 +253,16 @@ public class LocationUtils {
             return LocationAttributes.getLocation((Element)obj);
         }
 
-        List<WeakReference<LocationFinder>> currentFinders = finders; // Keep the current list
+        List currentFinders = finders; // Keep the current list
         int size = currentFinders.size();
         for (int i = 0; i < size; i++) {
-            WeakReference<LocationFinder> ref = currentFinders.get(i);
-            LocationFinder finder = ref.get();
+            WeakReference ref = (WeakReference)currentFinders.get(i);
+            LocationFinder finder = (LocationFinder)ref.get();
             if (finder == null) {
                 // This finder was garbage collected: update finders
                 synchronized(LocationFinder.class) {
                     // Update a clone of the current list to avoid breaking current iterations
-                    List<WeakReference<LocationFinder>> newFinders = new ArrayList<WeakReference<LocationFinder>>(finders);
+                    List newFinders = new ArrayList(finders);
                     newFinders.remove(ref);
                     finders = newFinders;
                 }

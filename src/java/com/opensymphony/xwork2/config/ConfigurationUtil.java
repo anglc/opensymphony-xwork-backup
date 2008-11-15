@@ -5,8 +5,8 @@
 package com.opensymphony.xwork2.config;
 
 import com.opensymphony.xwork2.config.entities.PackageConfig;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,25 +22,25 @@ import java.util.StringTokenizer;
  */
 public class ConfigurationUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ConfigurationUtil.class);
+    private static final Log LOG = LogFactory.getLog(ConfigurationUtil.class);
 
 
     private ConfigurationUtil() {
     }
 
 
-    public static List<PackageConfig> buildParentsFromString(Configuration configuration, String parent) {
-        if ((parent == null) || ("".equals(parent))) {
-            return Collections.emptyList();
+    public static List buildParentsFromString(Configuration configuration, String parent) {
+        if ((parent == null) || (parent.equals(""))) {
+            return Collections.EMPTY_LIST;
         }
 
         StringTokenizer tokenizer = new StringTokenizer(parent, ", ");
-        List<PackageConfig> parents = new ArrayList<PackageConfig>();
+        List parents = new ArrayList();
 
         while (tokenizer.hasMoreTokens()) {
             String parentName = tokenizer.nextToken().trim();
 
-            if (!"".equals(parentName)) {
+            if (!parentName.equals("")) {
                 PackageConfig parentPackageContext = configuration.getPackageConfig(parentName);
 
                 if (parentPackageContext != null) {

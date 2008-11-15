@@ -1,8 +1,37 @@
+/*
+ * Copyright (c) 2002-2006 by OpenSymphony
+ * All rights reserved.
+ */
 package com.opensymphony.xwork2.validator;
+
+import com.opensymphony.xwork2.util.ClassLoaderUtil;
+import com.opensymphony.xwork2.config.ConfigurationException;
+import com.opensymphony.xwork2.ObjectFactory;
+import com.opensymphony.xwork2.XWorkException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.net.URL;
+import java.net.URISyntaxException;
+import java.net.URI;
+import java.net.URLDecoder;
+
 
 /**
  * ValidatorFactory
- *
+ * <p/>
  * <p>
  * <!-- START SNIPPET: javadoc -->
  * Validation rules are handled by validators, which must be registered with
@@ -11,8 +40,8 @@ package com.opensymphony.xwork2.validator;
  * all the validators you intend to use.
  * <!-- END SNIPPET: javadoc -->
  * </p>
- *
- *
+ * <p/>
+ * <p/>
  * <p>
  * <b>INFORMATION</b>
  * <!-- START SNIPPET: information -->
@@ -23,7 +52,7 @@ package com.opensymphony.xwork2.validator;
  * in the xwork jar file. See ValidatorFactory static block for details.
  * <!-- END SNIPPET: information -->
  * </p>
- *
+ * <p/>
  * <p>
  * <b>WARNING</b>
  * <!-- START SNIPPET: warning -->
@@ -33,10 +62,10 @@ package com.opensymphony.xwork2.validator;
  * Once a validators.xml is detected in the classpath, the default one
  * (com/opensymphony/xwork2/validator/validators/default.xml) will not be loaded.
  * It is only loaded when a custom validators.xml cannot be found in the classpath.
- *  Be careful.
+ * Be careful.
  * <!-- END SNIPPET: warning -->
  * </p>
- *
+ * <p/>
  * <p><b>Note:</b>
  * <!-- START SNIPPET: turningOnValidators -->
  * The default validationWorkflowStack already includes this.<br/>
@@ -44,25 +73,25 @@ package com.opensymphony.xwork2.validator;
  * ValidationInterceptor in the interceptor refs of the action (see xwork.xml) like so:
  * <!-- END SNIPPET: turningOnValidators -->
  * </p>
- *
+ * <p/>
  * <pre>
  * <!-- START SNIPPET: exTurnOnValidators -->
  *     &lt;interceptor name="validator" class="com.opensymphony.xwork2.validator.ValidationInterceptor"/&gt;
  * <!-- END SNIPPET: exTurnOnValidators -->
  * </pre>
- *
+ * <p/>
  * <p><b>Field Validators</b>
  * <!-- START SNIPPET: fieldValidators -->
  * Field validators, as the name indicate, act on single fields accessible through an action.
  * A validator, in contrast, is more generic and can do validations in the full action context,
  * involving more than one field (or even no field at all) in validation rule.
  * Most validations can be defined on per field basis. This should be preferred over
- * non-field validation wherever possible, as field validator messages are bound to the
+ * non-field validation whereever possible, as field validator messages are bound to the
  * related field and will be presented next to the corresponding input element in the
  * respecting view.
  * <!-- END SNIPPET: fieldValidators -->
  * </p>
- *
+ * <p/>
  * <p><b>Non Field Validators</b>
  * <!-- START SNIPPET: nonFieldValidators -->
  * Non-field validators only add action level messages. Non-field validators
@@ -71,7 +100,7 @@ package com.opensymphony.xwork2.validator;
  * is ExpressionValidator.
  * <!-- END SNIPPET: nonFieldValidators -->
  * </p>
- *
+ * <p/>
  * <p><b>NOTE:</b>
  * <!-- START SNIPPET: validatorsNote -->
  * Non-field validators takes precedence over field validators
@@ -80,21 +109,21 @@ package com.opensymphony.xwork2.validator;
  * being executed. See validation framework documentation for more info.
  * <!-- END SNIPPET: validatorsNote -->
  * </p>
- *
+ * <p/>
  * <p><b>VALIDATION RULES:</b>
  * <!-- START SNIPPET: validationRules1 -->
  * Validation rules can be specified:
  * <ol>
- *  <li> Per Action class: in a file named ActionName-validation.xml</li>
- *  <li> Per Action alias: in a file named ActionName-alias-validation.xml</li>
- *  <li> Inheritance hierarchy and interfaces implemented by Action class:
- *  XWork searches up the inheritance tree of the action to find default
- *  validations for parent classes of the Action and interfaces implemented</li>
+ * <li> Per Action class: in a file named ActionName-validation.xml</li>
+ * <li> Per Action alias: in a file named ActionName-alias-validation.xml</li>
+ * <li> Inheritance hierarchy and interfaces implemented by Action class:
+ * XWork searches up the inheritance tree of the action to find default
+ * validations for parent classes of the Action and interfaces implemented</li>
  * </ol>
  * Here is an example for SimpleAction-validation.xml:
  * <!-- END SNIPPET: validationRules1 -->
  * <p>
- *
+ * <p/>
  * <pre>
  * <!-- START SNIPPET: exValidationRules1 -->
  * &lt;!DOCTYPE validators PUBLIC "-//OpenSymphony Group//XWork Validator 1.0.2//EN"
@@ -112,7 +141,7 @@ package com.opensymphony.xwork2.validator;
  *   &lt;/field&gt;
  *   &lt;field name="bar2"&gt;
  *       &lt;field-validator type="regex"&gt;
- *           &lt;param name="expression"&gt;[0-9],[0-9]&lt;/param&gt;
+ *           &lt;param name="regex"&gt;[0-9],[0-9]&lt;/param&gt;
  *           &lt;message&gt;The value of bar2 must be in the format "x, y", where x and y are between 0 and 9&lt;/message&gt;
  *      &lt;/field-validator&gt;
  *   &lt;/field&gt;
@@ -137,8 +166,8 @@ package com.opensymphony.xwork2.validator;
  * &lt;/validators&gt;
  * <!-- END SNIPPET: exValidationRules1 -->
  * </pre>
- *
- *
+ * <p/>
+ * <p/>
  * <p>
  * <!-- START SNIPPET: validationRules2 -->
  * Here we can see the configuration of validators for the SimpleAction class.
@@ -149,14 +178,14 @@ package com.opensymphony.xwork2.validator;
  * of the message element.
  * <!-- END SNIPPET: validationRules2 -->
  * </p>
- *
- *
- *
+ * <p/>
+ * <p/>
+ * <p/>
  * <!-- START SNIPPET: validationRules3 -->
  * <p>Each Validator or Field-Validator element must define one message element inside
  * the validator element body. The message element has 1 attributes, key which is not
  * required. The body of the message tag is taken as the default message which should
- * be added to the Action if the validator fails. Key gives a message key to look up
+ * be added to the Action if the validator fails.Key gives a message key to look up
  * in the Action's ResourceBundles using getText() from LocaleAware if the Action
  * implements that interface (as ActionSupport does). This provides for Localized
  * messages based on the Locale of the user making the request (or whatever Locale
@@ -166,74 +195,209 @@ package com.opensymphony.xwork2.validator;
  * sections which are replaced with the evaluated value of the string between the
  * \$\{ and \}. This allows you to parameterize your messages with values from the
  * Validator, the Action, or both.</p>
- *
- *
+ * <p/>
+ * <p/>
  * <p>If the validator fails, the validator is pushed onto the ValueStack and the
  * message - either the default or the locale-specific one if the key attribute is
  * defined (and such a message exists) - is parsed for ${...} sections which are
  * replaced with the evaluated value of the string between the ${ and }. This
  * allows you to parameterize your messages with values from the validator, the
  * Action, or both. </p>
- *
- * <p><b>NOTE:</b> Since validation rules are in an XML file, you must make sure
+ * <p/>
+ * <p><b>NOTE:</b>Since validation rules are in an XML file, you must make sure
  * you escape special characters. For example, notice that in the expression
- * validator rule above we use "&amp;gt;" instead of "&gt;". Consult a resource on XML
+ * validator rule above we use "&gt;" instead of ">". Consult a resource on XML
  * for the full list of characters that must be escaped. The most commonly used
- * characters that must be escaped are: &amp; (use &amp;amp;), &gt; (user &amp;gt;), and &lt; (use &amp;lt;).</p>
- *
+ * characters that must be escaped are: & (use &amp;), > (user &gt;), and < (use &lt;).</p>
+ * <p/>
  * <p>Here is an example of a parameterized message:</p>
  * <p>This will pull the min and max parameters from the IntRangeFieldValidator and
  * the value of bar from the Action.</p>
  * <!-- END SNIPPET: validationRules3 -->
- *
+ * <p/>
  * <pre>
  * <!-- START SNIPPET: exValidationRules3 -->
  *    bar must be between ${min} and ${max}, current value is ${bar}.
  * <!-- END SNIPPET: exValidationRules3 -->
  * </pre>
  *
- * <!-- START SNIPPET: validationRules4 -->
- * <p>Another notable fact is that the provided message value is capable of containing OGNL expressions.
- * Keeping this in mind, it is possible to construct quite sophisticated messages.</p>
- * <p>See the following example to get an impression:</p>
- *
- * <!-- END SNIPPET: validationRules4 -->
- *
- * <pre>
- * <!-- START SNIPPET: exValidationRules4 -->
- *    <message>${getText("validation.failednotice")}! ${getText("reason")}: ${getText("validation.inputrequired")}</message>
- * <!-- END SNIPPET: exValidationRules4 -->
- * </pre>
- *
- * @version $Date$ $Id$
  * @author Jason Carreira
  * @author James House
+ * @version $Date$ $Id$
  */
-public interface ValidatorFactory {
+public class ValidatorFactory {
+
+    private static Map validators = new HashMap();
+    private static Log LOG = LogFactory.getLog(ValidatorFactory.class);
+
+    static {
+        parseValidators();
+    }
+
+
+    private ValidatorFactory() {
+    }
 
     /**
      * Get a Validator that matches the given configuration.
      *
-     * @param cfg  the configurator.
-     * @return  the validator.
+     * @param cfg the configurator.
+     * @return the validator.
+     * @deprecated
      */
-    Validator getValidator(ValidatorConfig cfg);
+    public static Validator getValidator(ValidatorConfig cfg) {
+        return getValidator(cfg, ObjectFactory.getObjectFactory());
+    }
+
+    /**
+     * Get a Validator that matches the given configuration.
+     *
+     * @param cfg the configurator.
+     * @return the validator.
+     */
+    public static Validator getValidator(ValidatorConfig cfg, ObjectFactory objectFactory) {
+
+        String className = lookupRegisteredValidatorType(cfg.getType());
+
+        Validator validator;
+
+        try {
+            // instantiate the validator, and set configured parameters
+            //todo - can this use the ThreadLocal?
+            validator = objectFactory.buildValidator(className, cfg.getParams(), null); // ActionContext.getContext().getContextMap());
+        } catch (Exception e) {
+            final String msg = "There was a problem creating a Validator of type " + className + " : caused by " + e.getMessage();
+            throw new XWorkException(msg, e, cfg);
+        }
+
+        // set other configured properties
+        validator.setMessageKey(cfg.getMessageKey());
+        validator.setDefaultMessage(cfg.getDefaultMessage());
+        if (validator instanceof ShortCircuitableValidator) {
+            ((ShortCircuitableValidator) validator).setShortCircuit(cfg.isShortCircuit());
+        }
+
+        return validator;
+    }
 
     /**
      * Registers the given validator to the existing map of validators.
      * This will <b>add</b> to the existing list.
      *
-     * @param name    name of validator to add.
-     * @param className   the FQ classname of the validator.
+     * @param name      name of validator to add.
+     * @param className the FQ classname of the validator.
      */
-    void registerValidator(String name, String className);
+    public static void registerValidator(String name, String className) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Registering validator of class " + className + " with name " + name);
+        }
+
+        validators.put(name, className);
+    }
 
     /**
      * Lookup to get the FQ classname of the given validator name.
      *
-     * @param name   name of validator to lookup.
-     * @return  the found FQ classname
+     * @param name name of validator to lookup.
+     * @return the found FQ classname
      * @throws IllegalArgumentException is thrown if the name is not found.
      */
-    String lookupRegisteredValidatorType(String name);
+    public static String lookupRegisteredValidatorType(String name) {
+        // lookup the validator class mapped to the type name
+        String className = (String) validators.get(name);
+
+        if (className == null) {
+            throw new IllegalArgumentException("There is no validator class mapped to the name " + name);
+        }
+
+        return className;
+    }
+
+    private static void parseValidators() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Loading validator definitions.");
+        }
+
+        // Get custom validator configurations via the classpath
+        List<File> files = new ArrayList<File>();
+        try {
+            Iterator<URL> urls = ClassLoaderUtil.getResources("", ValidatorFactory.class, false);
+            while (urls.hasNext()) {
+                URL u = urls.next();
+                try {
+                    URI uri = new URI(u.toExternalForm().replaceAll(" ", "%20"));
+                    if ("file".equalsIgnoreCase(uri.getScheme())) {
+                        File f = new File(uri);
+                        FilenameFilter filter = new FilenameFilter() {
+                            public boolean accept(File file, String fileName) {
+                                return fileName.contains("-validators.xml");
+                            }
+                        };
+                        // First check if this is a directory
+                        // If yes, then just do a "list" to get all files in this directory
+                        // and match the filenames with *-validators.xml. If the filename
+                        // matches then add to the list of files to be parsed
+                        if (f.isDirectory()) {
+                            files.addAll(Arrays.asList(f.listFiles(filter)));
+                        } else {
+                            // If this is not a directory, then get hold of the inputstream.
+                            // If its not a ZipInputStream, then create a ZipInputStream out
+                            // of it. The intention is to allow nested jar files to be scanned
+                            // for *-validators.xml.
+                            // Ex: struts-app.jar -> MyApp.jar -> Login-validators.xml should be
+                            // parsed and loaded.
+                            ZipInputStream zipInputStream = null;
+                            try {
+                                InputStream inputStream = u.openStream();
+                                if (inputStream instanceof ZipInputStream) {
+                                    zipInputStream = (ZipInputStream) inputStream;
+                                } else {
+                                    zipInputStream = new ZipInputStream(inputStream);
+                                }
+                                ZipEntry zipEntry = zipInputStream.getNextEntry();
+                                while (zipEntry != null) {
+                                    if (zipEntry.getName().endsWith("-validators.xml")) {
+                                        if (LOG.isTraceEnabled()) {
+                                            LOG.trace("Adding validator " + zipEntry.getName());
+                                        }
+                                        files.add(new File(zipEntry.getName()));
+                                    }
+                                    zipEntry = zipInputStream.getNextEntry();
+                                }
+                            } finally {
+                                //cleanup
+                                if (zipInputStream != null) {
+                                    zipInputStream.close();
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    LOG.error("Unable to load " + u.toString(), ex);
+                }
+            }
+        } catch (IOException e) {
+            throw new ConfigurationException("Unable to load validator files", e);
+        }
+
+        // Parse default validator configurations
+        String resourceName = "com/opensymphony/xwork2/validator/validators/default.xml";
+        retrieveValidatorConfiguration(resourceName);
+
+        // Overwrite and extend defaults with application specific validator configurations
+        resourceName = "validators.xml";
+        retrieveValidatorConfiguration(resourceName);
+
+        // Add custom (plugin) specific validator configurations
+        for (File file : files) {
+            retrieveValidatorConfiguration(file.getName());
+        }
+    }
+
+    private static void retrieveValidatorConfiguration(String resourceName) {
+        InputStream is = ClassLoaderUtil.getResourceAsStream(resourceName, ValidatorFactory.class);
+        if (is != null) {
+            ValidatorFileParser.parseValidatorDefinitions(is, resourceName);
+        }
+    }
 }

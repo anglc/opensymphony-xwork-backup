@@ -26,27 +26,19 @@ public class XmlConfigurationProviderExceptionMappingsTest extends Configuration
         final String filename = "com/opensymphony/xwork2/config/providers/xwork-test-exception-mappings.xml";
         ConfigurationProvider provider = buildConfigurationProvider(filename);
 
-        List<ExceptionMappingConfig> exceptionMappings = new ArrayList<ExceptionMappingConfig>();
-        HashMap<String, String> parameters = new HashMap<String, String>();
-        HashMap<String, ResultConfig> results = new HashMap<String, ResultConfig>();
+        List exceptionMappings = new ArrayList();
+        HashMap parameters = new HashMap();
+        HashMap results = new HashMap();
 
-        exceptionMappings.add(
-                new ExceptionMappingConfig.Builder("spooky-result", "com.opensymphony.xwork2.SpookyException", "spooky-result")
-                    .build());
-        results.put("spooky-result", new ResultConfig.Builder("spooky-result", MockResult.class.getName()).build());
+        exceptionMappings.add(new ExceptionMappingConfig("spooky-result", "com.opensymphony.xwork2.SpookyException", "spooky-result"));
 
-        Map<String, String> resultParams = new HashMap<String, String>();
+        results.put("spooky-result", new ResultConfig("spooky-result", MockResult.class.getName(), new HashMap()));
+
+        Map resultParams = new HashMap();
         resultParams.put("actionName", "bar.vm");
-        results.put("specificLocationResult",
-                new ResultConfig.Builder("specificLocationResult", ActionChainResult.class.getName())
-                    .addParams(resultParams)
-                    .build());
+        results.put("specificLocationResult", new ResultConfig("specificLocationResult", ActionChainResult.class.getName(), resultParams));
 
-        ActionConfig expectedAction = new ActionConfig.Builder("default", "Bar", SimpleAction.class.getName())
-            .addParams(parameters)
-            .addResultConfigs(results)
-            .addExceptionMappings(exceptionMappings)
-            .build();
+        ActionConfig expectedAction = new ActionConfig(null, SimpleAction.class, parameters, results, new ArrayList(), exceptionMappings);
 
         // execute the configuration
         provider.init(configuration);

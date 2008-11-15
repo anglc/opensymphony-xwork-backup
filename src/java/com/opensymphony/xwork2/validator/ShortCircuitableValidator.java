@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.validator;
@@ -17,8 +17,8 @@ public interface ShortCircuitableValidator {
      * Sets whether this field validator should short circuit the validator queue
      * it's in if validation fails.
      *
-     * @param shortcircuit <tt>true</tt> if this field validator should short circuit on
-     *                     failure, <tt>false</tt> otherwise
+     * @param shortcircuit true if this field validator should short circuit on
+     *                     failure, false otherwise
      */
     public void setShortCircuit(boolean shortcircuit);
 
@@ -26,8 +26,8 @@ public interface ShortCircuitableValidator {
      * Gets whether this field validator should short circuit the validator queue
      * it's in if validation fails.
      *
-     * @return <tt>true</tt> if this field validator should short circuit on failure,
-     *         <tt>false</tt> otherwise
+     * @return true if this field validator should short circuit on failure,
+     *         false otherwise
      */
     public boolean isShortCircuit();
 }

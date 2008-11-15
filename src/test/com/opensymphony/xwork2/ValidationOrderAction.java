@@ -27,8 +27,7 @@ public class ValidationOrderAction extends ActionSupport {
 	
 	
 	
-	@Override
-    public String execute() throws Exception {
+	public String execute() throws Exception {
 		return SUCCESS;
 	}
 

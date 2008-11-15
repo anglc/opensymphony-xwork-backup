@@ -1,20 +1,17 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
 
 import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
  * <!-- START SNIPPET: description -->
- * This interceptor logs the start and end of the execution an action (in English-only, not internationalized).
- * <br/>
- * <b>Note:</b>: This interceptor will log at <tt>INFO</tt> level.
- * <p/>
+ * This interceptor logs the the start and end of the execution an action (in English-only, not internationalized).
  * <!-- END SNIPPET: description -->
  *
  * <!-- START SNIPPET: parameters -->
@@ -46,21 +43,20 @@ import com.opensymphony.xwork2.util.logging.LoggerFactory;
  * @author Jason Carreira
  */
 public class LoggingInterceptor extends AbstractInterceptor {
-    private static final Logger LOG = LoggerFactory.getLogger(LoggingInterceptor.class);
+    private static final Log log = LogFactory.getLog(LoggingInterceptor.class);
     private static final String FINISH_MESSAGE = "Finishing execution stack for action ";
     private static final String START_MESSAGE = "Starting execution stack for action ";
 
-    @Override
     public String intercept(ActionInvocation invocation) throws Exception {
-        logMessage(invocation, START_MESSAGE);
-        String result = invocation.invoke();
         logMessage(invocation, FINISH_MESSAGE);
+        String result = invocation.invoke();
+        logMessage(invocation, START_MESSAGE);
         return result;
     }
 
     private void logMessage(ActionInvocation invocation, String baseMessage) {
-        if (LOG.isInfoEnabled()) {
-            StringBuilder message = new StringBuilder(baseMessage);
+        if (log.isInfoEnabled()) {
+            StringBuffer message = new StringBuffer(baseMessage);
             String namespace = invocation.getProxy().getNamespace();
 
             if ((namespace != null) && (namespace.trim().length() > 0)) {
@@ -68,7 +64,7 @@ public class LoggingInterceptor extends AbstractInterceptor {
             }
 
             message.append(invocation.getProxy().getActionName());
-            LOG.info(message.toString());
+            log.info(message.toString());
         }
     }
 

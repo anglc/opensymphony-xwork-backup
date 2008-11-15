@@ -10,9 +10,11 @@ import com.opensymphony.xwork2.config.ConfigurationProvider;
 import com.opensymphony.xwork2.config.entities.InterceptorConfig;
 import com.opensymphony.xwork2.config.entities.PackageConfig;
 import com.opensymphony.xwork2.interceptor.TimerInterceptor;
+import com.opensymphony.xwork2.spring.SpringObjectFactory;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.support.StaticApplicationContext;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -25,8 +27,8 @@ import java.util.Map;
  */
 public class XmlConfigurationProviderInterceptorsSpringTest extends ConfigurationTestBase {
 
-    InterceptorConfig timerInterceptor = new InterceptorConfig.Builder("timer", TimerInterceptor.class.getName()).build();
-    ObjectFactory objectFactory;
+    InterceptorConfig timerInterceptor = new InterceptorConfig("timer", TimerInterceptor.class, new HashMap());
+    ObjectFactory objectFactory = ObjectFactory.getObjectFactory();
     StaticApplicationContext sac;
 
 
@@ -54,16 +56,15 @@ public class XmlConfigurationProviderInterceptorsSpringTest extends Configuratio
         assertEquals("timer-interceptor", seen.getClassName());
     }
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
 
         sac = new StaticApplicationContext();
 
-        //SpringObjectFactory objFactory = new SpringObjectFactory();
-        //objFactory.setApplicationContext(sac);
-        //ObjectFactory.setObjectFactory(objFactory);
+        SpringObjectFactory objFactory = new SpringObjectFactory();
+        objFactory.setApplicationContext(sac);
+        ObjectFactory.setObjectFactory(objFactory);
 
-        objectFactory = container.getInstance(ObjectFactory.class);
+        configurationManager.destroyConfiguration();
     }
 }

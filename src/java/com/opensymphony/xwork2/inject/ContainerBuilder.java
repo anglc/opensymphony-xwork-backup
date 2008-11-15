@@ -17,7 +17,12 @@
 package com.opensymphony.xwork2.inject;
 
 import java.lang.reflect.Member;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -42,7 +47,6 @@ public final class ContainerBuilder {
       new ArrayList<InternalFactory<?>>();
   final List<Class<?>> staticInjections = new ArrayList<Class<?>>();
   boolean created;
-  boolean allowDuplicates = false;
 
   private static final InternalFactory<Container> CONTAINER_FACTORY =
       new InternalFactory<Container>() {
@@ -104,7 +108,7 @@ public final class ContainerBuilder {
    * Ensures a key isn't already mapped.
    */
   private void checkKey(Key<?> key) {
-    if (factories.containsKey(key) && !allowDuplicates) {
+    if (factories.containsKey(key)) {
       throw new DependencyException(
           "Dependency mapping for " + key + " already exists.");
     }
@@ -133,7 +137,6 @@ public final class ContainerBuilder {
         }
       }
 
-      @Override
       public String toString() {
         return new LinkedHashMap<String, Object>() {{
           put("type", type);
@@ -207,7 +210,6 @@ public final class ContainerBuilder {
         return (T) constructor.construct(context, type);
       }
 
-      @Override
       public String toString() {
         return new LinkedHashMap<String, Object>() {{
           put("type", type);
@@ -423,7 +425,6 @@ public final class ContainerBuilder {
         return value;
       }
 
-      @Override
       public String toString() {
         return new LinkedHashMap<String, Object>() {
           {
@@ -506,10 +507,6 @@ public final class ContainerBuilder {
     if (created) {
       throw new IllegalStateException("Container already created.");
     }
-  }
-  
-  public void setAllowDuplicates(boolean val) {
-      allowDuplicates = val;
   }
 
   /**

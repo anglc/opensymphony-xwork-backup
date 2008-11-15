@@ -5,6 +5,8 @@
 
 package com.opensymphony.xwork2.validator.annotations;
 
+import com.opensymphony.xwork2.validator.annotations.CustomValidator;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,7 +14,7 @@ import java.lang.annotation.Target;
 
 /**
  * <!-- START SNIPPET: description -->
- * <p>If you want to use several annotations of the same type, these annotations must be nested within the @Validations() annotation.</p>
+ * <p>If you want to use several annotations of the same type, these annotation must be nested within the @Validations() annotation.</p>
  * <!-- END SNIPPET: description -->
  *
  * <p/> <u>Annotation usage:</u>
@@ -67,6 +69,11 @@ import java.lang.annotation.Target;
  * <td class='confluenceTd'> intRangeFields </td>
  * <td class='confluenceTd'> no </td>
  * <td class='confluenceTd'> Add list of IntRangeFieldValidators </td>
+ * </tr>
+ * <tr>
+ * <td class='confluenceTd'> requiredFields </td>
+ * <td class='confluenceTd'> no </td>
+ * <td class='confluenceTd'> Add list of RequiredFieldValidators </td>
  * </tr>
  * <tr>
  * <td class='confluenceTd'> requiredStrings </td>
@@ -165,8 +172,6 @@ public @interface Validations {
 
     public UrlValidator[] urls() default {};
     
-    public ConditionalVisitorFieldValidator[] conditionalVisitorFields() default {};
-
     public VisitorFieldValidator[] visitorFields() default {};
 
     public RegexFieldValidator[] regexFields() default {};

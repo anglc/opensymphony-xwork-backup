@@ -10,8 +10,8 @@ import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
 import com.opensymphony.xwork2.test.ModelDrivenAction2;
 import com.opensymphony.xwork2.test.TestBean2;
 
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -27,7 +27,7 @@ import java.util.ResourceBundle;
 public class LocalizedTextUtilTest extends XWorkTestCase {
 
 	public void testNpeWhenClassIsPrimitive() throws Exception {
-		ValueStack stack = ActionContext.getContext().getValueStack();
+		ValueStack stack = ValueStackFactory.getFactory().createValueStack();
 		stack.push(new MyObject());
 		String result = LocalizedTextUtil.findText(MyObject.class, "someObj.someI18nKey", Locale.ENGLISH, "default message", null, stack);
 		System.out.println(result);
@@ -113,7 +113,7 @@ public class LocalizedTextUtilTest extends XWorkTestCase {
     public void testAddDefaultResourceBundle2() throws Exception {
         LocalizedTextUtil.addDefaultResourceBundle("com/opensymphony/xwork2/SimpleAction");
 
-        ActionProxy proxy = actionProxyFactory.createActionProxy("/", "packagelessAction", new HashMap<String, Object>(), false, true);
+        ActionProxy proxy = actionProxyFactory.createActionProxy("/", "packagelessAction", Collections.EMPTY_MAP, false, true);
         proxy.execute();
     }
 
@@ -211,7 +211,6 @@ public class LocalizedTextUtilTest extends XWorkTestCase {
         // This tests will try to load bundles from the 3 locales but we only have files for France and Germany.
         // Before this fix loading the bundle for Germany failed since Italy have previously failed and thus the misses cache
         // contained a false entry
-
         // Set default Locale to Locale.US
         Locale defaultLocale = Locale.getDefault();
         Locale.setDefault(Locale.US);
@@ -220,7 +219,7 @@ public class LocalizedTextUtilTest extends XWorkTestCase {
         ResourceBundle rbItaly = LocalizedTextUtil.findResourceBundle("com/opensymphony/xwork2/util/XW404", Locale.ITALY);
         ResourceBundle rbGermany = LocalizedTextUtil.findResourceBundle("com/opensymphony/xwork2/util/XW404", Locale.GERMANY);
 
-        // Reset to previous default Locale 
+        // Reset to previous default Locale
         Locale.setDefault(defaultLocale);
 
         assertNotNull(rbFrance);
@@ -232,15 +231,15 @@ public class LocalizedTextUtilTest extends XWorkTestCase {
         assertEquals("Hallo", rbGermany.getString("hello"));
     }
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
         loadConfigurationProviders(new XmlConfigurationProvider("xwork-sample.xml"));
 
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
+        ActionContext.setContext(new ActionContext(stack.getContext()));
         ActionContext.getContext().setLocale(Locale.US);
     }
 
-    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         LocalizedTextUtil.clearDefaultResourceBundles();

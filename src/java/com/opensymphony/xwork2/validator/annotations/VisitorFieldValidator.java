@@ -5,10 +5,7 @@
 
 package com.opensymphony.xwork2.validator.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * <!-- START SNIPPET: description -->
@@ -63,6 +60,12 @@ import java.lang.annotation.Target;
  * <td class='confluenceTd'>If this validator should be used as shortCircuit.</td>
  * </tr>
  * <tr>
+ * <td class='confluenceTd'>type</td>
+ * <td class='confluenceTd'>yes</td>
+ * <td class='confluenceTd'>ValidatorType.FIELD</td>
+ * <td class='confluenceTd'>Enum value from ValidatorType. Either FIELD or SIMPLE can be used here.</td>
+ * </tr>
+ * <tr>
  * <td class='confluenceTd'> context </td>
  * <td class='confluenceTd'> no </td>
  * <td class='confluenceTd'> action alias </td>
@@ -115,9 +118,8 @@ public @interface VisitorFieldValidator {
 
     /**
      * The default error message for this validator.
-     * NOTE: It is required to set a message, if you are not using the message key for 18n lookup!
      */
-    String message() default "";
+    String message();
 
     /**
      * The message key to lookup for i18n.

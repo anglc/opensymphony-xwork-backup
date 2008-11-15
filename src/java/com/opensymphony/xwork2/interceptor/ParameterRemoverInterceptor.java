@@ -1,18 +1,16 @@
-/*
- * Copyright (c) 2002-2007 by OpenSymphony
- * All rights reserved.
- */
 package com.opensymphony.xwork2.interceptor;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.util.TextParseUtil;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * <!-- START SNIPPET: description -->
@@ -56,7 +54,7 @@ import java.util.Set;
  *   		&lt;param name="paramNames"&gt;aParam,anotherParam&lt;/param&gt;
  *   		&lt;param name="paramValues"&gt;--,-1&lt;/param&gt;
  * 	&lt;/interceptor-ref&gt;
- * 	&lt;interceptor-ref name="defaultStack" /&gt;
+ * 	&lt;interceptor-ref name="default-stack" /&gt;
  * 	...
  * &lt;/action&gt;
  *  
@@ -65,16 +63,17 @@ import java.util.Set;
  *  
  *  
  * @author martin.gilday
+ * @version $Date$ $Id$
  */
 public class ParameterRemoverInterceptor extends AbstractInterceptor {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ParameterRemoverInterceptor.class);
+	private static final Log LOG = LogFactory.getLog(ParameterRemoverInterceptor.class);
 
 	private static final long serialVersionUID = 1;
 
-	private Set<String> paramNames = Collections.emptySet();
+	private Set paramNames = Collections.EMPTY_SET;
 
-	private Set<String> paramValues = Collections.emptySet();
+	private Set paramValues = Collections.EMPTY_SET;
 
 	
 	/**
@@ -88,25 +87,27 @@ public class ParameterRemoverInterceptor extends AbstractInterceptor {
 		if (!(invocation.getAction() instanceof NoParameters)
 				&& (null != this.paramNames)) {
 			ActionContext ac = invocation.getInvocationContext();
-			final Map<String, Object> parameters = ac.getParameters();
+			final Map parameters = ac.getParameters();
 
 			if (parameters != null) {
-                for (String removeName : paramNames) {
-                    // see if the field is in the parameter map
-                    if (parameters.containsKey(removeName)) {
+				for (Iterator i = paramNames.iterator(); i.hasNext(); ) {
+					Object removeName = i.next();
+					
+					// see if the field is in the parameter map
+					if (parameters.containsKey(removeName)) {
 
-                        try {
-                            String[] values = (String[]) parameters
-                                    .get(removeName);
-                            String value = values[0];
-                            if (null != value && this.paramValues.contains(value)) {
-                                parameters.remove(removeName);
-                            }
-                        } catch (Exception e) {
-                            LOG.error("Failed to convert parameter to string", e);
-                        }
-                    }
-                }
+						try {
+							String[] values = (String[]) parameters
+									.get(removeName);
+							String value = values[0];
+							if (null != value && this.paramValues.contains(value)) {
+								parameters.remove(removeName);
+							}
+						} catch (Exception e) {
+							LOG.error("Failed to convert parameter to string", e);
+						}
+					}
+				}
 			}
 		}
 		return invocation.invoke();

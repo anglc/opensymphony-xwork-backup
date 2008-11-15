@@ -4,10 +4,16 @@
  */
 package com.opensymphony.xwork2;
 
-import com.opensymphony.xwork2.util.LocalizedTextUtil;
 import junit.framework.TestCase;
 
-import java.util.*;
+import java.util.Locale;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+
+import com.opensymphony.xwork2.util.LocalizedTextUtil;
+import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.ValueStackFactory;
 
 /**
  * Unit test for {@link DefaultTextProvider}.
@@ -25,7 +31,7 @@ public class DefaultTextProviderTest extends TestCase {
         assertEquals("Hello World", tp.getText("hello", "this is default"));
         assertEquals("this is default", tp.getText("not.in.bundle", "this is default"));
 
-        List<Object> nullList = null;
+        List nullList = null;
         assertEquals("Hello World", tp.getText("hello", nullList));
 
         String[] nullStrings = null;
@@ -42,7 +48,7 @@ public class DefaultTextProviderTest extends TestCase {
     }
 
     public void testGetTextsWithListArgs() throws Exception {
-        List<Object> args = new ArrayList<Object>();
+        List args = new ArrayList();
         args.add("Santa");
         args.add("loud");
         assertEquals("Hello World", tp.getText("hello", "this is default", args)); // no args in bundle
@@ -84,27 +90,31 @@ public class DefaultTextProviderTest extends TestCase {
     }
 
     public void testGetTextsWithListAndStack() throws Exception {
-        List<Object> args = new ArrayList<Object>();
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
+
+        List args = new ArrayList();
         args.add("Santa");
         args.add("loud");
-        assertEquals("Hello World", tp.getText("hello", "this is default", args, null)); // no args in bundle
-        assertEquals("Hello World Santa", tp.getText("hello.0", "this is default", args, null)); // only 1 arg in bundle
-        assertEquals("Hello World. This is Santa speaking loud", tp.getText("hello.1", "this is default", args, null));
+        assertEquals("Hello World", tp.getText("hello", "this is default", args, stack)); // no args in bundle
+        assertEquals("Hello World Santa", tp.getText("hello.0", "this is default", args, stack)); // only 1 arg in bundle
+        assertEquals("Hello World. This is Santa speaking loud", tp.getText("hello.1", "this is default", args, stack));
 
-        assertEquals("this is default", tp.getText("not.in.bundle", "this is default", args, null));
-        assertEquals("this is default Santa", tp.getText("not.in.bundle", "this is default {0}", args, null));
-        assertEquals("this is default Santa speaking loud", tp.getText("not.in.bundle", "this is default {0} speaking {1}", args, null));
+        assertEquals("this is default", tp.getText("not.in.bundle", "this is default", args, stack));
+        assertEquals("this is default Santa", tp.getText("not.in.bundle", "this is default {0}", args, stack));
+        assertEquals("this is default Santa speaking loud", tp.getText("not.in.bundle", "this is default {0} speaking {1}", args, stack));
     }
 
     public void testGetTextsWithArrayAndStack() throws Exception {
-        String[] args = { "Santa", "loud" };
-        assertEquals("Hello World", tp.getText("hello", "this is default", args, null)); // no args in bundle
-        assertEquals("Hello World Santa", tp.getText("hello.0", "this is default", args, null)); // only 1 arg in bundle
-        assertEquals("Hello World. This is Santa speaking loud", tp.getText("hello.1", "this is default", args, null));
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
 
-        assertEquals("this is default", tp.getText("not.in.bundle", "this is default", args, null));
-        assertEquals("this is default Santa", tp.getText("not.in.bundle", "this is default {0}", args, null));
-        assertEquals("this is default Santa speaking loud", tp.getText("not.in.bundle", "this is default {0} speaking {1}", args, null));
+        String[] args = { "Santa", "loud" };
+        assertEquals("Hello World", tp.getText("hello", "this is default", args, stack)); // no args in bundle
+        assertEquals("Hello World Santa", tp.getText("hello.0", "this is default", args, stack)); // only 1 arg in bundle
+        assertEquals("Hello World. This is Santa speaking loud", tp.getText("hello.1", "this is default", args, stack));
+
+        assertEquals("this is default", tp.getText("not.in.bundle", "this is default", args, stack));
+        assertEquals("this is default Santa", tp.getText("not.in.bundle", "this is default {0}", args, stack));
+        assertEquals("this is default Santa speaking loud", tp.getText("not.in.bundle", "this is default {0} speaking {1}", args, stack));
     }
 
     public void testGetBundle() throws Exception {
@@ -114,21 +124,17 @@ public class DefaultTextProviderTest extends TestCase {
         assertEquals(rb, tp.getTexts(TextProviderSupportTest.class.getName()));
     }
 
-    @Override
     protected void setUp() throws Exception {
-        ActionContext ctx = new ActionContext(new HashMap<String, Object>());
-        ActionContext.setContext(ctx);
-        ctx.setLocale(Locale.CANADA);
+        ActionContext.getContext().setLocale(Locale.CANADA);
 
         LocalizedTextUtil.clearDefaultResourceBundles();
         LocalizedTextUtil.addDefaultResourceBundle(DefaultTextProviderTest.class.getName());
 
-        tp = new DefaultTextProvider();
+        tp = DefaultTextProvider.INSTANCE;
     }
 
-    @Override
     protected void tearDown() throws Exception {
-        ActionContext.setContext(null);
+        ActionContext.getContext().setLocale(null);
         tp = null;
     }
 

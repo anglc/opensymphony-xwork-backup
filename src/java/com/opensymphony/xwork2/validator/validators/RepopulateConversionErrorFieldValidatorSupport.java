@@ -4,16 +4,17 @@
  */
 package com.opensymphony.xwork2.validator.validators;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.interceptor.PreResultListener;
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 import com.opensymphony.xwork2.validator.ValidationException;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * 
@@ -122,7 +123,7 @@ import java.util.Map;
  */
 public abstract class RepopulateConversionErrorFieldValidatorSupport extends FieldValidatorSupport {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(RepopulateConversionErrorFieldValidatorSupport.class);
+	private static final Log _log = LogFactory.getLog(RepopulateConversionErrorFieldValidatorSupport.class);
 	
 	private String repopulateFieldAsString = "false";
 	private boolean repopulateFieldAsBoolean = false;
@@ -146,13 +147,13 @@ public abstract class RepopulateConversionErrorFieldValidatorSupport extends Fie
 	public void repopulateField(Object object) throws ValidationException {
 		
 		ActionInvocation invocation = ActionContext.getContext().getActionInvocation();
-		Map<String, Object> conversionErrors = ActionContext.getContext().getConversionErrors();
+		Map conversionErrors = ActionContext.getContext().getConversionErrors();
 		
 		String fieldName = getFieldName();
 		String fullFieldName = getValidatorContext().getFullFieldName(fieldName);
 		Object value = conversionErrors.get(fullFieldName);
 		
-		final Map<Object, Object> fakeParams = new LinkedHashMap<Object, Object>();
+		final Map fakeParams = new LinkedHashMap();
 		boolean doExprOverride = false;
 		
 		if (value instanceof String[]) {
@@ -163,7 +164,7 @@ public abstract class RepopulateConversionErrorFieldValidatorSupport extends Fie
 				fakeParams.put(fullFieldName, "'"+tmpValue[0]+"'");
 			}
 			else {
-				LOG.warn("value is an empty array of String or with first element in it as null ["+value+"], will not repopulate conversion error ");
+				_log.warn("value is an empty array of String or with first element in it as null ["+value+"], will not repopulate conversion error ");
 			}
 		}
 		else if (value instanceof String) {
@@ -173,7 +174,7 @@ public abstract class RepopulateConversionErrorFieldValidatorSupport extends Fie
 		}
 		else {
 			// opps... it should be 
-			LOG.warn("conversion error value is not a String or array of String but instead is ["+value+"], will not repopulate conversion error");
+			_log.warn("conversion error value is not a String or array of String but instead is ["+value+"], will not repopulate conversion error");
 		}
 		
 		if (doExprOverride) {

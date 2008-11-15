@@ -1,28 +1,34 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
 */
 package com.opensymphony.xwork2.interceptor;
 
+import org.easymock.MockControl;
+
 import com.mockobjects.dynamic.Mock;
-import com.opensymphony.xwork2.*;
 import com.opensymphony.xwork2.mock.MockActionInvocation;
 import com.opensymphony.xwork2.mock.MockActionProxy;
+import com.opensymphony.xwork2.ActionInvocation;
+import com.opensymphony.xwork2.ActionProxy;
+import com.opensymphony.xwork2.Preparable;
+import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.SimpleFooAction;
 import junit.framework.TestCase;
-import org.easymock.MockControl;
 
 /**
  * Unit test for PrepareInterceptor.
  *
  * @author Claus Ibsen
  * @author tm_jee
+ * @version $Date$ $Id$
  */
 public class PrepareInterceptorTest extends TestCase {
 
     private Mock mock;
     private PrepareInterceptor interceptor;
 
-    public void testPrepareCalledDefault() throws Exception {
+    public void testPrepareCalled() throws Exception {
         MockActionInvocation mai = new MockActionInvocation();
         MockActionProxy mockActionProxy = new MockActionProxy();
         mockActionProxy.setMethod("execute");
@@ -30,29 +36,6 @@ public class PrepareInterceptorTest extends TestCase {
         mai.setAction(mock.proxy());
         mock.expect("prepare");
 
-        interceptor.intercept(mai);
-    }
-
-    public void testPrepareCalledFalse() throws Exception {
-        MockActionInvocation mai = new MockActionInvocation();
-        MockActionProxy mockActionProxy = new MockActionProxy();
-        mockActionProxy.setMethod("execute");
-        mai.setProxy(mockActionProxy);
-        mai.setAction(mock.proxy());
-
-        interceptor.setAlwaysInvokePrepare("false");
-        interceptor.intercept(mai);
-    }
-
-    public void testPrepareCalledTrue() throws Exception {
-        MockActionInvocation mai = new MockActionInvocation();
-        MockActionProxy mockActionProxy = new MockActionProxy();
-        mockActionProxy.setMethod("execute");
-        mai.setProxy(mockActionProxy);
-        mai.setAction(mock.proxy());
-        mock.expect("prepare");
-
-        interceptor.setAlwaysInvokePrepare("true");
         interceptor.intercept(mai);
     }
 
@@ -140,13 +123,11 @@ public class PrepareInterceptorTest extends TestCase {
     }
     
 
-    @Override
     protected void setUp() throws Exception {
         mock = new Mock(Preparable.class);
         interceptor = new PrepareInterceptor();
     }
 
-    @Override
     protected void tearDown() throws Exception {
         mock.verify();
     }
@@ -155,11 +136,11 @@ public class PrepareInterceptorTest extends TestCase {
     /**
      * Simple interface to test prefix action invocation 
      * eg. prepareSubmit(), prepareSave() etc.
-     *
+     * 
      * @author tm_jee
+     * @version $Date$ $Id$
      */
     public interface ActionInterface extends Action, Preparable {
     	void prepareSubmit();
     }
-
 }

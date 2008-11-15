@@ -4,14 +4,16 @@
  */
 package com.opensymphony.xwork2.validator;
 
+import java.util.Map;
+
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
-import com.opensymphony.xwork2.XWorkTestCase;
 import com.opensymphony.xwork2.mock.MockActionInvocation;
 import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.ValueStackFactory;
 import com.opensymphony.xwork2.validator.validators.RepopulateConversionErrorFieldValidatorSupport;
 
-import java.util.Map;
+import junit.framework.TestCase;
 
 /**
  * Test RepopulateConversionErrorFieldValidatorSupport.
@@ -19,7 +21,7 @@ import java.util.Map;
  * @author tm_jee
  * @version $Date$ $Id$
  */
-public class RepopulateConversionErrorFieldValidatorSupportTest extends XWorkTestCase {
+public class RepopulateConversionErrorFieldValidatorSupportTest extends TestCase {
 
 	
 	InternalRepopulateConversionErrorFieldValidatorSupport validator1;
@@ -66,17 +68,15 @@ public class RepopulateConversionErrorFieldValidatorSupportTest extends XWorkTes
 	}
 	
 	
-	@Override
-    protected void setUp() throws Exception {
-	    super.setUp();
-		ValueStack stack = ActionContext.getContext().getValueStack();
+	protected void setUp() throws Exception {
+		ValueStack stack = ValueStackFactory.getFactory().createValueStack();
 		MockActionInvocation invocation = new MockActionInvocation();
 		invocation.setStack(stack);
 		ActionContext.getContext().setValueStack(stack);
 		ActionContext.getContext().setActionInvocation(invocation);
 		
 		String[] conversionErrorValue = new String[] { "some value" };
-		Map<String, Object> conversionErrors = ActionContext.getContext().getConversionErrors();
+		Map conversionErrors = ActionContext.getContext().getConversionErrors();
 		conversionErrors.put("someFieldName", conversionErrorValue);
 		conversionErrors.put("xxxsomeFieldName", conversionErrorValue);
 		
@@ -90,16 +90,13 @@ public class RepopulateConversionErrorFieldValidatorSupportTest extends XWorkTes
 			new InternalRepopulateConversionErrorFieldValidatorSupport();
 		validator2.setFieldName("someFieldName");
 		validator2.setValidatorContext(new DelegatingValidatorContext(action) {
-			@Override
-            public String getFullFieldName(String fieldName) {
+			public String getFullFieldName(String fieldName) {
 				return "xxx"+fieldName;
 			}
 		});
 	}
 	
-	@Override
-    protected void tearDown() throws Exception {
-	    super.tearDown();
+	protected void tearDown() throws Exception {
 		validator1 = null;
 		action = null;
 	}
@@ -110,8 +107,7 @@ public class RepopulateConversionErrorFieldValidatorSupportTest extends XWorkTes
 	class InternalRepopulateConversionErrorFieldValidatorSupport extends RepopulateConversionErrorFieldValidatorSupport {
 		public boolean doValidateGetsCalled = false;
 		
-		@Override
-        protected void doValidate(Object object) throws ValidationException {
+		protected void doValidate(Object object) throws ValidationException {
 			doValidateGetsCalled = true;
 		}
 	}

@@ -5,8 +5,8 @@
 
 package com.opensymphony.xwork2;
 
-import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
 import com.opensymphony.xwork2.mock.MockResult;
+import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
 
 /**
  * <code>WildCardResultTest</code>
@@ -16,7 +16,6 @@ import com.opensymphony.xwork2.mock.MockResult;
  */
 public class WildCardResultTest extends XWorkTestCase {
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -25,17 +24,14 @@ public class WildCardResultTest extends XWorkTestCase {
     }
 
     public void testWildCardEvaluation() throws Exception {
-        ActionContext.setContext(null);
         ActionProxy proxy = actionProxyFactory.createActionProxy(null, "WildCard", null);
         assertEquals("success", proxy.execute());
         assertEquals(VoidResult.class, proxy.getInvocation().getResult().getClass());
 
-        ActionContext.setContext(null);
         proxy = actionProxyFactory.createActionProxy(null, "WildCardInput", null);
         assertEquals("input", proxy.execute());
         assertEquals(MockResult.class, proxy.getInvocation().getResult().getClass());
 
-        ActionContext.setContext(null);
         proxy = actionProxyFactory.createActionProxy(null, "WildCardError", null);
         assertEquals("error", proxy.execute());
         assertEquals(MockResult.class, proxy.getInvocation().getResult().getClass());

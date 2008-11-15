@@ -6,19 +6,16 @@ package com.opensymphony.xwork2.interceptor;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.ValidationAware;
-import com.opensymphony.xwork2.inject.Inject;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.config.entities.Parameterizable;
 import com.opensymphony.xwork2.util.TextParseUtil;
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.LocalizedTextUtil;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -56,9 +53,8 @@ import java.util.TreeMap;
  * <pre>
  * <!-- START SNIPPET: example -->
  * &lt;action name="someAction" class="com.examples.SomeAction"&gt;
- *     &lt;interceptor-ref name="staticParams"&gt;
+ *     &lt;interceptor-ref name="static-params"&gt;
  *          &lt;param name="parse"&gt;true&lt;/param&gt;
- *          &lt;param name="overwrite"&gt;false&lt;/param&gt;
  *     &lt;/interceptor-ref&gt;
  *     &lt;result name="success"&gt;good_result.ftl&lt;/result&gt;
  * &lt;/action&gt;
@@ -70,37 +66,18 @@ import java.util.TreeMap;
 public class StaticParametersInterceptor extends AbstractInterceptor {
 
     private boolean parse;
-    private boolean overwrite;
-
-    static boolean devMode = false;
-
-    private static final Logger LOG = LoggerFactory.getLogger(StaticParametersInterceptor.class);
-
-    @Inject("devMode")
-    public static void setDevMode(String mode) {
-        devMode = "true".equals(mode);
-    }    
+    
+    private static final Log LOG = LogFactory.getLog(StaticParametersInterceptor.class);
 
     public void setParse(String value) {
         this.parse = Boolean.valueOf(value).booleanValue();
     }
 
-    /**
-     * Overwrites already existing parameters from other sources.
-     * Static parameters are the successor over previously set parameters, if true.
-     *
-     * @param value
-     */
-    public void setOverwrite(String value) {
-        this.overwrite = Boolean.valueOf(value).booleanValue();
-    }
-
-    @Override
     public String intercept(ActionInvocation invocation) throws Exception {
         ActionConfig config = invocation.getProxy().getConfig();
         Object action = invocation.getAction();
 
-        final Map<String, String> parameters = config.getParams();
+        final Map parameters = config.getParams();
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Setting static parameters " + parameters);
@@ -112,80 +89,19 @@ public class StaticParametersInterceptor extends AbstractInterceptor {
         }
 
         if (parameters != null) {
-            ActionContext ac = ActionContext.getContext();
-            final ValueStack stack = ac.getValueStack();
+            final ValueStack stack = ActionContext.getContext().getValueStack();
 
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                stack.setValue(entry.getKey(), entry.getValue());
+            for (Iterator iterator = parameters.entrySet().iterator();
+                 iterator.hasNext();) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                stack.setValue(entry.getKey().toString(), entry.getValue());
                 Object val = entry.getValue();
                 if (parse && val instanceof String) {
-                    val = TextParseUtil.translateVariables(val.toString(), stack);
+                    val = TextParseUtil.translateVariables((String) val, stack);
                 }
-                try {
-                    stack.setValue(entry.getKey(), val);
-                } catch (RuntimeException e) {
-                    if (devMode) {
-                        String developerNotification = LocalizedTextUtil.findText(ParametersInterceptor.class, "devmode.notification", ActionContext.getContext().getLocale(), "Developer Notification:\n{0}", new Object[]{
-                                "Unexpected Exception caught setting '" + entry.getKey() + "' on '" + action.getClass() + ": " + e.getMessage()
-                        });
-                        LOG.error(developerNotification);
-                        if (action instanceof ValidationAware) {
-                            ((ValidationAware) action).addActionMessage(developerNotification);
-                        }
-                    }
-                }
+                stack.setValue(entry.getKey().toString(), val);
             }
-            addParametersToContext(ac, parameters);
         }
         return invocation.invoke();
-    }
-
-
-    /**
-     * @param ac The action context
-     * @return the parameters from the action mapping in the context.  If none found, returns
-     *         an empty map.
-     */
-    protected Map<String, String> retrieveParameters(ActionContext ac) {
-        ActionConfig config = ac.getActionInvocation().getProxy().getConfig();
-        if (config != null) {
-            return config.getParams();
-        } else {
-            return Collections.emptyMap();
-        }
-    }
-
-    /**
-     * Adds the parameters into context's ParameterMap.
-     * As default, static parameters will not overwrite existing paramaters from other sources.
-     * If you want the static parameters as successor over already existing parameters, set overwrite to <tt>true</tt>.
-     *
-     * @param ac        The action context
-     * @param newParams The parameter map to apply
-     */
-    protected void addParametersToContext(ActionContext ac, Map<String, ?> newParams) {
-        Map<String, Object> previousParams = ac.getParameters();
-
-        Map<String, Object> combinedParams;
-        if ( overwrite ) {
-            if (previousParams != null) {
-                combinedParams = new TreeMap<String, Object>(previousParams);
-            } else {
-                combinedParams = new TreeMap<String, Object>();
-            }
-            if ( newParams != null) {
-                combinedParams.putAll(newParams);
-            }
-        } else {
-            if (newParams != null) {
-                combinedParams = new TreeMap<String, Object>(newParams);
-            } else {
-                combinedParams = new TreeMap<String, Object>();
-            }
-            if ( previousParams != null) {
-                combinedParams.putAll(previousParams);
-            }
-        }
-        ac.setParameters(combinedParams);
     }
 }

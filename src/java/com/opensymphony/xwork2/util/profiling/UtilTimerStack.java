@@ -26,8 +26,8 @@
  */
 package com.opensymphony.xwork2.util.profiling;
 
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -195,10 +195,9 @@ import com.opensymphony.xwork2.util.logging.LoggerFactory;
  * Warning:<p/>
  * <!-- START SNIPPET: activationThroughParameterWarning -->
  * 
- * Profiling activation through a parameter requires the following:
- *
+ * Profiling activation through parameter will need the followings:-
  * <ul>
- *  <li>Profiling interceptor in interceptor stack</li>
+ *  <li>Profiling interceptor</li>
  *  <li>dev mode on (struts.devMode=true in struts.properties)
  * </ul>
  * 
@@ -225,7 +224,7 @@ import com.opensymphony.xwork2.util.logging.LoggerFactory;
  * 
  * <!-- START SNIPPET: methodDescription -->
  * 
- * One could extend the profiling feature provided by Struts2 in their web application as well. 
+ * One could extends the profiling feature provided by Struts2 in their web application as well. 
  * 
  * <!-- END SNIPPET: methodDescription -->
  * 
@@ -235,10 +234,10 @@ import com.opensymphony.xwork2.util.logging.LoggerFactory;
  *    String logMessage = "Log message";
  *    UtilTimerStack.push(logMessage);
  *    try {
- *        // do some code
+ *      // do some code
  *    }
  *    finally {
- *        UtilTimerStack.pop(logMessage); // this needs to be the same text as above
+ *      UtilTimerStack.pop(logMessage); //this needs to be the same text as above
  *    }
  *    
  * <!-- END SNIPPET: method1 -->   
@@ -290,7 +289,7 @@ public class UtilTimerStack
      */
     public static final String MIN_TIME = "xwork.profile.mintime";
     
-    private static final Logger LOG = LoggerFactory.getLogger(UtilTimerStack.class);
+    private static final Log log = LogFactory.getLog(UtilTimerStack.class);
 
     /**
      * Create and start a performance profiling with the <code>name</code> given. Deal with 
@@ -354,7 +353,7 @@ public class UtilTimerStack
             {
                 printTimes(currentTimer);
                 current.set(null); //prevent printing multiple times
-                LOG.warn("Unmatched Timer.  Was expecting " + currentTimer.getResource() + ", instead got " + name);
+                log.warn("Unmatched Timer.  Was expecting " + currentTimer.getResource() + ", instead got " + name);
             }
         }
 
@@ -368,7 +367,7 @@ public class UtilTimerStack
      */
     private static void printTimes(ProfilingTimerBean currentTimer)
     {
-        LOG.info(currentTimer.getPrintable(getMinTime()));
+        log.info(currentTimer.getPrintable(getMinTime()));
     }
 
     /**

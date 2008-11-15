@@ -1,22 +1,18 @@
 package com.opensymphony.xwork2.test.annotations;
 
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.XWorkTestCase;
-import com.opensymphony.xwork2.conversion.impl.XWorkConverter;
-import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.reflection.ReflectionContextState;
-
 import java.util.Map;
+
+import com.opensymphony.xwork2.util.*;
+import com.opensymphony.xwork2.XWorkTestCase;
 
 
 public class PersonActionTest extends XWorkTestCase {
-    
 	public void testAddPerson() {
-        ValueStack stack = ActionContext.getContext().getValueStack();
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
 
-        Map<String, Object> stackContext = stack.getContext();
-        stackContext.put(ReflectionContextState.CREATE_NULL_OBJECTS, Boolean.TRUE);
-        stackContext.put(ReflectionContextState.DENY_METHOD_EXECUTION, Boolean.TRUE);
+        Map stackContext = stack.getContext();
+        stackContext.put(InstantiatingNullHandler.CREATE_NULL_OBJECTS, Boolean.TRUE);
+        stackContext.put(XWorkMethodAccessor.DENY_METHOD_EXECUTION, Boolean.TRUE);
         stackContext.put(XWorkConverter.REPORT_CONVERSION_ERRORS, Boolean.TRUE);
 
         PersonAction action = new PersonAction();
@@ -36,10 +32,10 @@ public class PersonActionTest extends XWorkTestCase {
 	}
 	
 	public void testAddAddress() {
-        ValueStack stack = ActionContext.getContext().getValueStack();
-		Map<String, Object> stackContext = stack.getContext();
-		stackContext.put(ReflectionContextState.CREATE_NULL_OBJECTS, Boolean.TRUE);
-		stackContext.put(ReflectionContextState.DENY_METHOD_EXECUTION, Boolean.TRUE);
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
+		Map stackContext = stack.getContext();
+		stackContext.put(InstantiatingNullHandler.CREATE_NULL_OBJECTS, Boolean.TRUE);
+		stackContext.put(XWorkMethodAccessor.DENY_METHOD_EXECUTION, Boolean.TRUE);
 		stackContext.put(XWorkConverter.REPORT_CONVERSION_ERRORS, Boolean.TRUE);
 
 		PersonAction action = new PersonAction();
@@ -61,10 +57,10 @@ public class PersonActionTest extends XWorkTestCase {
 	}
 	
 	public void testAddAddressesNoGenericElementAnnotation() {
-        ValueStack stack = ActionContext.getContext().getValueStack();
-		Map<String, Object> stackContext = stack.getContext();
-		stackContext.put(ReflectionContextState.CREATE_NULL_OBJECTS, Boolean.TRUE);
-		stackContext.put(ReflectionContextState.DENY_METHOD_EXECUTION, Boolean.TRUE);
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
+		Map stackContext = stack.getContext();
+		stackContext.put(InstantiatingNullHandler.CREATE_NULL_OBJECTS, Boolean.TRUE);
+		stackContext.put(XWorkMethodAccessor.DENY_METHOD_EXECUTION, Boolean.TRUE);
 		stackContext.put(XWorkConverter.REPORT_CONVERSION_ERRORS, Boolean.TRUE);
 
 		PersonAction action = new PersonAction();

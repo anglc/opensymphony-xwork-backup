@@ -4,19 +4,22 @@
  */
 package com.opensymphony.xwork2.interceptor;
 
-import com.opensymphony.xwork2.*;
-import com.opensymphony.xwork2.config.entities.InterceptorConfig;
-import com.opensymphony.xwork2.validator.ValidationInterceptor;
+import junit.framework.TestCase;
+
 import org.easymock.MockControl;
 
-import java.util.HashMap;
+import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.ActionInvocation;
+import com.opensymphony.xwork2.ActionProxy;
+import com.opensymphony.xwork2.ActionSupport;
+import com.opensymphony.xwork2.interceptor.DefaultWorkflowInterceptor;
 
 /**
  * 
  * @author tm_jee
  * @version $Date$ $Id$
  */
-public class DefaultWorkflowInterceptor2Test extends XWorkTestCase {
+public class DefaultWorkflowInterceptor2Test extends TestCase {
 	
 	public void testDefaultResultNameIsReturnedWithBadValidation() throws Exception {
 		ValidationFailedAction action = new ValidationFailedAction();
@@ -95,16 +98,12 @@ public class DefaultWorkflowInterceptor2Test extends XWorkTestCase {
 		actionInvocationControl.expectAndDefaultReturn(null, actionProxy);
 		actionInvocation.getAction();
 		actionInvocationControl.expectAndDefaultReturn(null, action);
-		actionProxy.getActionName();
-		actionProxyControl.expectAndDefaultReturn(null, "action");
 		
 		actionInvocationControl.replay();
 		actionProxyControl.replay();
 		
-		ValidationInterceptor validationInterceptor = create();
 		DefaultWorkflowInterceptor interceptor = new DefaultWorkflowInterceptor();
 		try {
-		        validationInterceptor.intercept(actionInvocation);
 			interceptor.intercept(actionInvocation);
 			fail();
 		}
@@ -135,16 +134,12 @@ public class DefaultWorkflowInterceptor2Test extends XWorkTestCase {
 		actionInvocationControl.expectAndDefaultReturn(null, actionProxy);
 		actionInvocation.getAction();
 		actionInvocationControl.expectAndDefaultReturn(null, action);
-		actionProxy.getActionName();
-                actionProxyControl.expectAndDefaultReturn(null, "action");
 		
 		actionInvocationControl.replay();
 		actionProxyControl.replay();
 		
-		ValidationInterceptor validationInterceptor = create();
 		DefaultWorkflowInterceptor interceptor = new DefaultWorkflowInterceptor();
 		try {
-		        validationInterceptor.intercept(actionInvocation);
 			interceptor.intercept(actionInvocation);
 			fail();
 		}
@@ -156,12 +151,6 @@ public class DefaultWorkflowInterceptor2Test extends XWorkTestCase {
 		actionInvocationControl.verify();
 		actionProxyControl.verify();
 	}
-	
-	protected ValidationInterceptor create() {
-        ObjectFactory objectFactory = container.getInstance(ObjectFactory.class);
-        return (ValidationInterceptor) objectFactory.buildInterceptor(
-                new InterceptorConfig.Builder("model", ValidationInterceptor.class.getName()).build(), new HashMap());
-    }
 	
 	
 	public class ValidationFailedAction extends ActionSupport {

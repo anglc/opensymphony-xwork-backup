@@ -4,9 +4,7 @@
  */
 package com.opensymphony.xwork2.util;
 
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionProxy;
-import com.opensymphony.xwork2.XWorkTestCase;
+import com.opensymphony.xwork2.*;
 import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
 
 import java.util.HashMap;
@@ -20,11 +18,11 @@ import java.util.Map;
 public class MyBeanActionTest extends XWorkTestCase {
 
     public void testIndexedList() {
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap params = new HashMap();
         params.put("beanList(1234567890).name", "This is the bla bean");
         params.put("beanList(1234567891).name", "This is the 2nd bla bean");
 
-        HashMap<String, Object> extraContext = new HashMap<String, Object>();
+        HashMap extraContext = new HashMap();
         extraContext.put(ActionContext.PARAMETERS, params);
 
         try {
@@ -45,14 +43,14 @@ public class MyBeanActionTest extends XWorkTestCase {
     }
 
     public void testIndexedMap() {
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap params = new HashMap();
         params.put("beanMap[1234567890].id", "1234567890");
         params.put("beanMap[1234567891].id", "1234567891");
 
         params.put("beanMap[1234567890].name", "This is the bla bean");
         params.put("beanMap[1234567891].name", "This is the 2nd bla bean");
 
-        HashMap<String, Object> extraContext = new HashMap<String, Object>();
+        HashMap extraContext = new HashMap();
         extraContext.put(ActionContext.PARAMETERS, params);
 
         try {
@@ -81,7 +79,6 @@ public class MyBeanActionTest extends XWorkTestCase {
         }
     }
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
 

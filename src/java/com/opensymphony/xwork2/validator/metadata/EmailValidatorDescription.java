@@ -33,7 +33,6 @@ public class EmailValidatorDescription extends AbstractFieldValidatorDescription
       *
       * @return the field validator XML definition.
       */
-     @Override
      public String asFieldXml() {
          StringWriter sw = new StringWriter();
          PrintWriter writer = null;
@@ -70,7 +69,6 @@ public class EmailValidatorDescription extends AbstractFieldValidatorDescription
       *
       * @return the validator XML definition.
       */
-     @Override
      public String asSimpleXml() {
          StringWriter sw = new StringWriter();
          PrintWriter writer = null;

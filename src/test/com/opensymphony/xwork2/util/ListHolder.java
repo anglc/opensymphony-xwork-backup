@@ -1,37 +1,36 @@
 package com.opensymphony.xwork2.util;
 
-import java.util.Date;
 import java.util.List;
 
 /**
  * User: patrick Date: Dec 20, 2005 Time: 11:15:29 AM
  */
 public class ListHolder {
-    List<Long> longs;
-    List<String> strings;
-    List<Date> dates;
+    List longs;
+    List strings;
+    List dates;
 
-    public List<Long> getLongs() {
+    public List getLongs() {
         return longs;
     }
 
-    public void setLongs(List<Long> longs) {
+    public void setLongs(List longs) {
         this.longs = longs;
     }
 
-    public List<String> getStrings() {
+    public List getStrings() {
         return strings;
     }
 
-    public void setStrings(List<String> strings) {
+    public void setStrings(List strings) {
         this.strings = strings;
     }
 
-    public List<Date> getDates() {
+    public List getDates() {
         return dates;
     }
 
-    public void setDates(List<Date> dates) {
+    public void setDates(List dates) {
         this.dates = dates;
     }
 }

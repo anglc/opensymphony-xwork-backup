@@ -4,20 +4,12 @@
  */
 package com.opensymphony.xwork2.config;
 
-import com.mockobjects.dynamic.C;
-import com.mockobjects.dynamic.Mock;
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionProxy;
-import com.opensymphony.xwork2.SimpleAction;
-import com.opensymphony.xwork2.XWorkTestCase;
+import com.opensymphony.xwork2.*;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.config.entities.InterceptorMapping;
 import com.opensymphony.xwork2.config.providers.MockConfigurationProvider;
 import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
-import com.opensymphony.xwork2.inject.ContainerBuilder;
 import com.opensymphony.xwork2.mock.MockInterceptor;
-import com.opensymphony.xwork2.test.StubConfigurationProvider;
-import com.opensymphony.xwork2.util.location.LocatableProperties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,10 +43,10 @@ public class ConfigurationTest extends XWorkTestCase {
     }
 
     public void testDefaultNamespace() {
-        HashMap<String, String> params = new HashMap<String, String>();
+        HashMap params = new HashMap();
         params.put("blah", "this is blah");
 
-        HashMap<String, Object> extraContext = new HashMap<String, Object>();
+        HashMap extraContext = new HashMap();
         extraContext.put(ActionContext.PARAMETERS, params);
 
         try {
@@ -87,23 +79,9 @@ public class ConfigurationTest extends XWorkTestCase {
                 "com.opensymphony.xwork2.SimpleAction".equals(config.getClassName()));
         assertTrue("Wrong method name", "input".equals(config.getMethodName()));
         
-        Map<String, String> p = config.getParams();
+        Map<String, Object> p = config.getParams();
         assertTrue("Wrong parameter, "+p.get("foo"), "Simple".equals(p.get("foo")));
         assertTrue("Wrong parameter, "+p.get("bar"), "input".equals(p.get("bar")));
-    }
-
-    public void testWildcardNamespace() {
-        RuntimeConfiguration configuration = configurationManager.getConfiguration().getRuntimeConfiguration();
-
-        ActionConfig config = configuration.getActionConfig("/animals/dog", "commandTest");
-
-        assertNotNull(config);
-        assertTrue("Wrong class name, "+config.getClassName(),
-                "com.opensymphony.xwork2.SimpleAction".equals(config.getClassName()));
-
-        Map<String, String> p = config.getParams();
-        assertTrue("Wrong parameter, "+p.get("0"), "/animals/dog".equals(p.get("0")));
-        assertTrue("Wrong parameter, "+p.get("1"), "dog".equals(p.get("1")));
     }
 
     public void testGlobalResults() {
@@ -194,69 +172,6 @@ public class ConfigurationTest extends XWorkTestCase {
         // check that it has configuration from MockConfigurationProvider
         assertNotNull(configuration.getActionConfig("", MockConfigurationProvider.FOO_ACTION_NAME));
     }
-    
-    public void testMultipleContainerProviders() throws Exception {
-        System.out.println("-----");
-        Mock mockContainerProvider = new Mock(ContainerProvider.class);
-        mockContainerProvider.expect("init", C.ANY_ARGS);
-        mockContainerProvider.expect("register", C.ANY_ARGS);
-        mockContainerProvider.matchAndReturn("equals", C.ANY_ARGS, false);
-        mockContainerProvider.matchAndReturn("toString", "foo");
-        mockContainerProvider.matchAndReturn("destroy", null);
-        mockContainerProvider.expectAndReturn("needsReload", true);
-        configurationManager.addContainerProvider((ContainerProvider) mockContainerProvider.proxy());
-
-        Configuration config = null;
-        try {
-            config = configurationManager.getConfiguration();
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
-            fail();
-        }
-        
-
-        RuntimeConfiguration configuration = config.getRuntimeConfiguration();
-
-        // check that it has configuration from xml
-        assertNotNull(configuration.getActionConfig("/foo/bar", "Bar"));
-
-        System.out.println("-----");
-        mockContainerProvider.verify();
-    }
-    
-    public void testInitForPackageProviders() {
-        
-        loadConfigurationProviders(new StubConfigurationProvider() {
-            @Override
-            public void register(ContainerBuilder builder,
-                    LocatableProperties props) throws ConfigurationException {
-                builder.factory(PackageProvider.class, "foo", MyPackageProvider.class);
-            }
-        });
-        
-        assertEquals(configuration, MyPackageProvider.getConfiguration());
-    }
-    
-    public void testInitOnceForConfigurationProviders() {
-        
-        loadConfigurationProviders(new StubConfigurationProvider() {
-            boolean called = false;
-            @Override
-            public void init(Configuration config) {
-                if (called) {
-                    fail("Called twice");
-                }
-                called = true;
-            }
-            
-            @Override
-            public void loadPackages() {
-                if (!called) {
-                    fail("Never called");
-                }
-            }
-        });
-    }
 
     public void testMultipleInheritance() {
         try {
@@ -286,26 +201,10 @@ public class ConfigurationTest extends XWorkTestCase {
     }
     
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
 
         // ensure we're using the default configuration, not simple config
         loadConfigurationProviders(new XmlConfigurationProvider("xwork-sample.xml"));
-    }
-    
-    public static class MyPackageProvider implements PackageProvider {
-        static Configuration config;
-        public void loadPackages() throws ConfigurationException {}
-        public boolean needsReload() { return config != null; }
-        
-        public static Configuration getConfiguration() {
-            return config;
-        }
-        public void init(Configuration configuration)
-                throws ConfigurationException {
-            config = configuration;
-        }
-        
     }
 }

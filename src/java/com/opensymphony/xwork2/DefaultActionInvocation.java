@@ -8,17 +8,17 @@ import com.opensymphony.xwork2.config.ConfigurationException;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.config.entities.InterceptorMapping;
 import com.opensymphony.xwork2.config.entities.ResultConfig;
-import com.opensymphony.xwork2.inject.Container;
-import com.opensymphony.xwork2.inject.Inject;
 import com.opensymphony.xwork2.interceptor.PreResultListener;
 import com.opensymphony.xwork2.util.ValueStack;
 import com.opensymphony.xwork2.util.ValueStackFactory;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 import com.opensymphony.xwork2.util.profiling.UtilTimerStack;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,64 +30,62 @@ import java.util.Map;
  *
  * @author Rainer Hermanns
  * @author tmjee
+ * 
  * @version $Date$ $Id$
+ * 
  * @see com.opensymphony.xwork2.DefaultActionProxy
  */
 public class DefaultActionInvocation implements ActionInvocation {
-
-    private static final long serialVersionUID = -585293628862447329L;
+    
+	private static final long serialVersionUID = -585293628862447329L;
 
     //static {
     //    if (ObjectFactory.getContinuationPackage() != null) {
     //        continuationHandler = new ContinuationHandler();
     //    }
     //}
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultActionInvocation.class);
+    private static final Log LOG = LogFactory.getLog(DefaultActionInvocation.class);
 
     protected Object action;
     protected ActionProxy proxy;
-    protected List<PreResultListener> preResultListeners;
-    protected Map<String, Object> extraContext;
+    protected List preResultListeners;
+    protected Map extraContext;
     protected ActionContext invocationContext;
-    protected Iterator<InterceptorMapping> interceptors;
+    protected Iterator interceptors;
     protected ValueStack stack;
     protected Result result;
-    protected Result explicitResult;
     protected String resultCode;
     protected boolean executed = false;
     protected boolean pushAction = true;
     protected ObjectFactory objectFactory;
     protected ActionEventListener actionEventListener;
-    protected ValueStackFactory valueStackFactory;
-    protected Container container;
+
     protected UnknownHandler unknownHandler;
 
-    public DefaultActionInvocation(final Map<String, Object> extraContext, final boolean pushAction) {
-        DefaultActionInvocation.this.extraContext = extraContext;
-        DefaultActionInvocation.this.pushAction = pushAction;
+    protected DefaultActionInvocation(ObjectFactory objectFactory, UnknownHandler handler, ActionProxy proxy, Map extraContext) throws Exception {
+        this(objectFactory, handler, proxy, extraContext, true, null);
     }
 
-    @Inject
-    public void setValueStackFactory(ValueStackFactory fac) {
-        this.valueStackFactory = fac;
+    protected DefaultActionInvocation(final ObjectFactory objectFactory, final UnknownHandler handler, final ActionProxy proxy, final Map extraContext, final boolean pushAction) throws Exception {
+        this(objectFactory, handler, proxy, extraContext, pushAction, null);
     }
 
-    @Inject
-    public void setObjectFactory(ObjectFactory fac) {
-        this.objectFactory = fac;
+    protected DefaultActionInvocation(final ObjectFactory objectFactory, final UnknownHandler handler, final ActionProxy proxy, final Map extraContext, final boolean pushAction, final ActionEventListener actionEventListener) throws Exception {
+    	UtilTimerStack.profile("create DefaultActionInvocation: ", 
+    			new UtilTimerStack.ProfilingBlock<Object>() {
+					public Object doProfiling() throws Exception {
+						DefaultActionInvocation.this.proxy = proxy;
+                        DefaultActionInvocation.this.objectFactory = objectFactory;
+				        DefaultActionInvocation.this.extraContext = extraContext;
+				        DefaultActionInvocation.this.pushAction = pushAction;
+                        DefaultActionInvocation.this.unknownHandler = handler;
+                        DefaultActionInvocation.this.actionEventListener = actionEventListener;
+                        init();
+						return null;
+					}
+    			});
     }
-
-    @Inject
-    public void setContainer(Container cont) {
-        this.container = cont;
-    }
-
-    @Inject(required = false)
-    public void setUnknownHandler(UnknownHandler hand) {
-        this.unknownHandler = hand;
-    }
-
-    @Inject(required = false)
+    
     public void setActionEventListener(ActionEventListener listener) {
         this.actionEventListener = listener;
     }
@@ -165,7 +163,7 @@ public class DefaultActionInvocation implements ActionInvocation {
      */
     public void addPreResultListener(PreResultListener listener) {
         if (preResultListeners == null) {
-            preResultListeners = new ArrayList<PreResultListener>(1);
+            preResultListeners = new ArrayList(1);
         }
 
         preResultListeners.add(listener);
@@ -173,32 +171,29 @@ public class DefaultActionInvocation implements ActionInvocation {
 
     public Result createResult() throws Exception {
 
-        if (explicitResult != null) {
-            Result ret = explicitResult;
-            explicitResult = null;
-            
-            return ret;
-        }
+    	if (result != null) {
+    		return result;
+    	}
         ActionConfig config = proxy.getConfig();
-        Map<String, ResultConfig> results = config.getResults();
+        Map results = config.getResults();
 
         ResultConfig resultConfig = null;
 
         synchronized (config) {
             try {
-                resultConfig = results.get(resultCode);
+                resultConfig = (ResultConfig) results.get(resultCode);
             } catch (NullPointerException e) {
-                // swallow
             }
             if (resultConfig == null) {
                 // If no result is found for the given resultCode, try to get a wildcard '*' match.
-                resultConfig = results.get("*");
+                resultConfig = (ResultConfig) results.get("*");
             }
         }
 
         if (resultConfig != null) {
             try {
-                return objectFactory.buildResult(resultConfig, invocationContext.getContextMap());
+                Result result = objectFactory.buildResult(resultConfig, invocationContext.getContextMap());
+                return result;
             } catch (Exception e) {
                 LOG.error("There was an exception while instantiating the result of type " + resultConfig.getClassName(), e);
                 throw new XWorkException(e, resultConfig);
@@ -213,68 +208,68 @@ public class DefaultActionInvocation implements ActionInvocation {
      * @throws ConfigurationException If no result can be found with the returned code
      */
     public String invoke() throws Exception {
-        String profileKey = "invoke: ";
-        try {
-            UtilTimerStack.push(profileKey);
+    	String profileKey = "invoke: ";
+    	try {
+    		UtilTimerStack.push(profileKey);
+    		
+    		if (executed) {
+    			throw new IllegalStateException("Action has already executed");
+    		}
 
-            if (executed) {
-                throw new IllegalStateException("Action has already executed");
-            }
+    		if (interceptors.hasNext()) {
+    			final InterceptorMapping interceptor = (InterceptorMapping) interceptors.next();
+    			UtilTimerStack.profile("interceptor: "+interceptor.getName(), 
+    					new UtilTimerStack.ProfilingBlock<String>() {
+							public String doProfiling() throws Exception {
+				    			resultCode = interceptor.getInterceptor().intercept(DefaultActionInvocation.this);
+				    			return null;
+							}
+    			});
+    		} else {
+    			resultCode = invokeActionOnly();
+    		}
 
-            if (interceptors.hasNext()) {
-                final InterceptorMapping interceptor = (InterceptorMapping) interceptors.next();
-                String interceptorMsg = "interceptor: " + interceptor.getName();
-                UtilTimerStack.push(interceptorMsg);
-                try {
-                    resultCode = interceptor.getInterceptor().intercept(DefaultActionInvocation.this);
-                }
-                finally {
-                    UtilTimerStack.pop(interceptorMsg);
-                }
-            } else {
-                resultCode = invokeActionOnly();
-            }
+    		// this is needed because the result will be executed, then control will return to the Interceptor, which will
+    		// return above and flow through again
+    		if (!executed) {
+    			if (preResultListeners != null) {
+    				for (Iterator iterator = preResultListeners.iterator();
+    					iterator.hasNext();) {
+    					PreResultListener listener = (PreResultListener) iterator.next();
+    					
+    					String _profileKey="preResultListener: ";
+    					try {
+    						UtilTimerStack.push(_profileKey);
+    						listener.beforeResult(this, resultCode);
+    					}
+    					finally {
+    						UtilTimerStack.pop(_profileKey);
+    					}
+    				}
+    			}
 
-            // this is needed because the result will be executed, then control will return to the Interceptor, which will
-            // return above and flow through again
-            if (!executed) {
-                if (preResultListeners != null) {
-                    for (Object preResultListener : preResultListeners) {
-                        PreResultListener listener = (PreResultListener) preResultListener;
+    			// now execute the result, if we're supposed to
+    			if (proxy.getExecuteResult()) {
+    				executeResult();
+    			}
 
-                        String _profileKey = "preResultListener: ";
-                        try {
-                            UtilTimerStack.push(_profileKey);
-                            listener.beforeResult(this, resultCode);
-                        }
-                        finally {
-                            UtilTimerStack.pop(_profileKey);
-                        }
-                    }
-                }
+    			executed = true;
+    		}
 
-                // now execute the result, if we're supposed to
-                if (proxy.getExecuteResult()) {
-                    executeResult();
-                }
-
-                executed = true;
-            }
-
-            return resultCode;
-        }
-        finally {
-            UtilTimerStack.pop(profileKey);
-        }
+    		return resultCode;
+    	}
+    	finally {
+    		UtilTimerStack.pop(profileKey);
+    	}
     }
 
     public String invokeActionOnly() throws Exception {
-        return invokeAction(getAction(), proxy.getConfig());
+    	return invokeAction(getAction(), proxy.getConfig());
     }
 
-    protected void createAction(Map<String, Object> contextMap) {
+    protected void createAction(Map contextMap) {
         // load action
-        String timerKey = "actionCreate: " + proxy.getActionName();
+        String timerKey = "actionCreate: "+proxy.getActionName();
         try {
             UtilTimerStack.push(timerKey);
             action = objectFactory.buildAction(proxy.getActionName(), proxy.getNamespace(), proxy.getConfig(), contextMap);
@@ -306,8 +301,8 @@ public class DefaultActionInvocation implements ActionInvocation {
         }
     }
 
-    protected Map<String, Object> createContextMap() {
-        Map<String, Object> contextMap;
+    protected Map createContextMap() {
+        Map contextMap;
 
         if ((extraContext != null) && (extraContext.containsKey(ActionContext.VALUE_STACK))) {
             // In case the ValueStack was passed in
@@ -321,7 +316,7 @@ public class DefaultActionInvocation implements ActionInvocation {
         } else {
             // create the value stack
             // this also adds the ValueStack to its context
-            stack = valueStackFactory.createValueStack();
+            stack = ValueStackFactory.getFactory().createValueStack();
 
             // create the action context
             contextMap = stack.getContext();
@@ -334,30 +329,29 @@ public class DefaultActionInvocation implements ActionInvocation {
 
         //put this DefaultActionInvocation into the context map
         contextMap.put(ActionContext.ACTION_INVOCATION, this);
-        contextMap.put(ActionContext.CONTAINER, container);
 
         return contextMap;
     }
 
     /**
      * Uses getResult to get the final Result and executes it
-     *
+     * 
      * @throws ConfigurationException If not result can be found with the returned code
      */
     private void executeResult() throws Exception {
         result = createResult();
 
-        String timerKey = "executeResult: " + getResultCode();
+        String timerKey = "executeResult: "+getResultCode();
         try {
             UtilTimerStack.push(timerKey);
             if (result != null) {
                 result.execute(this);
             } else if (resultCode != null && !Action.NONE.equals(resultCode)) {
-                throw new ConfigurationException("No result defined for action " + getAction().getClass().getName()
+                throw new ConfigurationException("No result defined for action " + getAction().getClass().getName() 
                         + " and result " + getResultCode(), proxy.getConfig());
             } else {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("No result returned for action " + getAction().getClass().getName() + " at " + proxy.getConfig().getLocation());
+                    LOG.debug("No result returned for action "+getAction().getClass().getName()+" at "+proxy.getConfig().getLocation());
                 }
             }
         } finally {
@@ -365,30 +359,20 @@ public class DefaultActionInvocation implements ActionInvocation {
         }
     }
 
-    public void init(ActionProxy proxy) {
-        this.proxy = proxy;
-        Map<String, Object> contextMap = createContextMap();
-
-        // Setting this so that other classes, like object factories, can use the ActionProxy and other
-        // contextual information to operate
-        ActionContext actionContext = ActionContext.getContext();
-
-        if (actionContext != null) {
-            actionContext.setActionInvocation(this);
-        }
+    private void init() throws Exception {
+        Map contextMap = createContextMap();
 
         createAction(contextMap);
 
         if (pushAction) {
             stack.push(action);
-            contextMap.put("action", action);
         }
 
         invocationContext = new ActionContext(contextMap);
         invocationContext.setName(proxy.getActionName());
 
         // get a new List so we don't get problems with the iterator if someone changes the list
-        List<InterceptorMapping> interceptorList = new ArrayList<InterceptorMapping>(proxy.getConfig().getInterceptors());
+        List interceptorList = new ArrayList(proxy.getConfig().getInterceptors());
         interceptors = interceptorList.iterator();
     }
 
@@ -399,13 +383,11 @@ public class DefaultActionInvocation implements ActionInvocation {
             LOG.debug("Executing action method = " + actionConfig.getMethodName());
         }
 
-        String timerKey = "invokeAction: " + proxy.getActionName();
+        String timerKey = "invokeAction: "+proxy.getActionName();
         try {
             UtilTimerStack.push(timerKey);
-
-            boolean methodCalled = false;
-            Object methodResult = null;
-            Method method = null;
+            
+            Method method;
             try {
                 method = getAction().getClass().getMethod(methodName, new Class[0]);
             } catch (NoSuchMethodException e) {
@@ -414,33 +396,17 @@ public class DefaultActionInvocation implements ActionInvocation {
                     String altMethodName = "do" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
                     method = getAction().getClass().getMethod(altMethodName, new Class[0]);
                 } catch (NoSuchMethodException e1) {
-                    // well, give the unknown handler a shot
-                    if (unknownHandler != null) {
-                        try {
-                            methodResult = unknownHandler.handleUnknownActionMethod(action, methodName);
-                            methodCalled = true;
-                        } catch (NoSuchMethodException e2) {
-                            // throw the original one
-                            throw e;
-                        }
-                    } else {
-                        throw e;
-                    }
+                    // throw the original one
+                    throw e;
                 }
             }
 
-            if (!methodCalled) {
-                methodResult = method.invoke(action, new Object[0]);
-            }
-
+            Object methodResult = method.invoke(action, new Object[0]);
             if (methodResult instanceof Result) {
-                this.explicitResult = (Result) methodResult;
-
-                // Wire the result automatically
-                container.inject(explicitResult);
-                return null;
+            	this.result = (Result) methodResult;
+            	return null;
             } else {
-                return (String) methodResult;
+            	return (String) methodResult;
             }
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("The " + methodName + "() is not defined in action " + getAction().getClass() + "");
@@ -455,7 +421,7 @@ public class DefaultActionInvocation implements ActionInvocation {
                 }
             }
             if (t instanceof Exception) {
-                throw (Exception) t;
+                throw(Exception) t;
             } else {
                 throw e;
             }
@@ -463,6 +429,7 @@ public class DefaultActionInvocation implements ActionInvocation {
             UtilTimerStack.pop(timerKey);
         }
     }
-
-
+    
+    
+    
 }

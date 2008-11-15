@@ -4,8 +4,8 @@
  */
 package com.opensymphony.xwork2.validator.metadata;
 
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * <code>AbstractFieldValidatorDescription</code>
@@ -18,7 +18,7 @@ public abstract class AbstractFieldValidatorDescription implements ValidatorDesc
     /**
      * Jakarta commons-logging reference.
      */
-    protected static Logger log = null;
+    protected static Log log = null;
 
     public String fieldName;
     public String key;
@@ -28,7 +28,7 @@ public abstract class AbstractFieldValidatorDescription implements ValidatorDesc
 
 
     public AbstractFieldValidatorDescription() {
-        log = LoggerFactory.getLogger(this.getClass());
+        log = LogFactory.getLog(this.getClass());
     }
 
     /**
@@ -38,7 +38,7 @@ public abstract class AbstractFieldValidatorDescription implements ValidatorDesc
      */
     public AbstractFieldValidatorDescription(String fieldName) {
         this.fieldName = fieldName;
-        log = LoggerFactory.getLogger(this.getClass());
+        log = LogFactory.getLog(this.getClass());
     }
 
     /**

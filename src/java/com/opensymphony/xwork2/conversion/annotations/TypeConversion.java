@@ -4,10 +4,7 @@
  */
 package com.opensymphony.xwork2.conversion.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * <!-- START SNIPPET: description -->
@@ -146,7 +143,7 @@ public @interface TypeConversion {
      * The ConversionRule can be a PROPERTY, KEY, KEY_PROPERTY, ELEMENT, COLLECTION (deprecated) or a MAP.
      * Note: Collection and Map vonversion rules can be determined via com.opensymphony.xwork2.util.DefaultObjectTypeDeterminer.
      *
-     * @see com.opensymphony.xwork2.conversion.impl.DefaultObjectTypeDeterminer
+     * @see com.opensymphony.xwork2.util.DefaultObjectTypeDeterminer
      */
     ConversionRule rule() default ConversionRule.PROPERTY;
 

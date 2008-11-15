@@ -5,10 +5,7 @@
 
 package com.opensymphony.xwork2;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Unit test for {@link TextProviderSupport}.
@@ -20,11 +17,6 @@ public class TextProviderSupportTest extends XWorkTestCase {
     private TextProviderSupport tp;
     private java.util.ResourceBundle rb;
 
-    public void testHasKey() throws Exception {
-    	assertTrue(tp.hasKey("hello"));
-    	assertFalse(tp.hasKey("not.in.bundle"));
-    }
-    
     public void testSimpleGetTexts() throws Exception {
         assertEquals("Hello World", tp.getText("hello"));
         assertEquals("not.in.bundle", tp.getText("not.in.bundle"));
@@ -43,7 +35,7 @@ public class TextProviderSupportTest extends XWorkTestCase {
     }
 
     public void testGetTextsWithListArgs() throws Exception {
-        List<Object> args = new ArrayList<Object>();
+        List args = new ArrayList();
         args.add("Santa");
         args.add("loud");
         assertEquals("Hello World", tp.getText("hello", "this is default", args)); // no args in bundle
@@ -93,7 +85,6 @@ public class TextProviderSupportTest extends XWorkTestCase {
         assertEquals("\"=!@#$%^&*()<>?:|[]\\';/.,<>`~'", val);
     } 
     
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
         rb = ResourceBundle.getBundle(TextProviderSupportTest.class.getName(), Locale.ENGLISH);
@@ -104,7 +95,6 @@ public class TextProviderSupportTest extends XWorkTestCase {
         });
     }
 
-    @Override
     protected void tearDown() throws Exception {
         rb = null;
         tp = null;

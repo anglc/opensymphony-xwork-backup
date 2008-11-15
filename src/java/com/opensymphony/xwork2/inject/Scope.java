@@ -29,8 +29,7 @@ public enum Scope {
    * One instance per injection.
    */
   DEFAULT {
-    @Override
-            <T> InternalFactory<? extends T> scopeFactory(Class<T> type, String name,
+    <T> InternalFactory<? extends T> scopeFactory(Class<T> type, String name,
         InternalFactory<? extends T> factory) {
       return factory;
     }
@@ -40,8 +39,7 @@ public enum Scope {
    * One instance per container.
    */
   SINGLETON {
-    @Override
-            <T> InternalFactory<? extends T> scopeFactory(Class<T> type, String name,
+    <T> InternalFactory<? extends T> scopeFactory(Class<T> type, String name,
         final InternalFactory<? extends T> factory) {
       return new InternalFactory<T>() {
         T instance;
@@ -54,7 +52,6 @@ public enum Scope {
           }
         }
 
-        @Override
         public String toString() {
           return factory.toString();
         }
@@ -70,8 +67,7 @@ public enum Scope {
    * eligible for garbage collection, i.e. memory leak.
    */
   THREAD {
-    @Override
-            <T> InternalFactory<? extends T> scopeFactory(Class<T> type, String name,
+    <T> InternalFactory<? extends T> scopeFactory(Class<T> type, String name,
         final InternalFactory<? extends T> factory) {
       return new InternalFactory<T>() {
         final ThreadLocal<T> threadLocal = new ThreadLocal<T>();
@@ -84,7 +80,6 @@ public enum Scope {
           return t;
         }
 
-        @Override
         public String toString() {
           return factory.toString();
         }
@@ -96,8 +91,7 @@ public enum Scope {
    * One instance per request.
    */
   REQUEST {
-    @Override
-            <T> InternalFactory<? extends T> scopeFactory(final Class<T> type,
+    <T> InternalFactory<? extends T> scopeFactory(final Class<T> type,
         final String name, final InternalFactory<? extends T> factory) {
       return new InternalFactory<T>() {
         public T create(InternalContext context) {
@@ -110,7 +104,6 @@ public enum Scope {
           }
         }
 
-        @Override
         public String toString() {
           return factory.toString();
         }
@@ -122,8 +115,7 @@ public enum Scope {
    * One instance per session.
    */
   SESSION {
-    @Override
-            <T> InternalFactory<? extends T> scopeFactory(final Class<T> type,
+    <T> InternalFactory<? extends T> scopeFactory(final Class<T> type,
         final String name, final InternalFactory<? extends T> factory) {
       return new InternalFactory<T>() {
         public T create(InternalContext context) {
@@ -136,7 +128,6 @@ public enum Scope {
           }
         }
 
-        @Override
         public String toString() {
           return factory.toString();
         }
@@ -148,8 +139,7 @@ public enum Scope {
    * One instance per wizard.
    */
   WIZARD {
-    @Override
-            <T> InternalFactory<? extends T> scopeFactory(final Class<T> type,
+    <T> InternalFactory<? extends T> scopeFactory(final Class<T> type,
         final String name, final InternalFactory<? extends T> factory) {
       return new InternalFactory<T>() {
         public T create(InternalContext context) {
@@ -162,7 +152,6 @@ public enum Scope {
           }
         }
 
-        @Override
         public String toString() {
           return factory.toString();
         }

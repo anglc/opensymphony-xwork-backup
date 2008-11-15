@@ -6,6 +6,7 @@ package com.opensymphony.xwork2.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.net.URL;
 import java.util.*;
 
@@ -58,7 +59,7 @@ public class ClassLoaderUtil {
              }
          }
 
-         if (!iterator.hasNext() && (resourceName != null) && ((resourceName.length() == 0) || (resourceName.charAt(0) != '/'))) { 
+         if (!iterator.hasNext() && (resourceName != null) && (resourceName.charAt(0) != '/')) {
              return getResources('/' + resourceName, callingClass, aggregate);
          }
 
@@ -93,7 +94,7 @@ public class ClassLoaderUtil {
             }
         }
 
-        if ((url == null) && (resourceName != null) && ((resourceName.length() == 0) || (resourceName.charAt(0) != '/'))) { 
+        if ((url == null) && (resourceName != null) && (resourceName.charAt(0) != '/')) {
             return getResource('/' + resourceName, callingClass);
         }
 
@@ -160,7 +161,7 @@ public class ClassLoaderUtil {
         E next = null;
         Set<E> loaded = new HashSet<E>();
 
-        public AggregateIterator<E> addEnumeration(Enumeration<E> e) {
+        public AggregateIterator addEnumeration(Enumeration<E> e) {
             if (e.hasMoreElements()) {
                 if (cur == null) {
                     cur = e;

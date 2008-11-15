@@ -1,13 +1,15 @@
 package com.opensymphony.xwork2.interceptor;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.easymock.MockControl;
+
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionSupport;
-import junit.framework.TestCase;
-import org.easymock.MockControl;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import junit.framework.TestCase;
 
 /**
  * @author tmjee
@@ -20,8 +22,7 @@ public class ParameterRemoverInterceptorTest extends TestCase {
 	protected MockControl actionInvocationControl;
 	protected ActionInvocation actionInvocation;
 	
-	@Override
-    protected void setUp() throws Exception {
+	protected void setUp() throws Exception {
 		contextMap = new LinkedHashMap();
 		context = new ActionContext(contextMap);
 		

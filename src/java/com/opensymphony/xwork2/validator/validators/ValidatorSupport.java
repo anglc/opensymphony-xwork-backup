@@ -4,39 +4,29 @@
  */
 package com.opensymphony.xwork2.validator.validators;
 
+import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.TextParseUtil;
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 import com.opensymphony.xwork2.validator.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
  * Abstract implementation of the Validator interface suitable for subclassing.
  *
  * @author Jason Carreira
- * @author tm_jee
- * @author Martin Gilday
  */
 public abstract class ValidatorSupport implements Validator, ShortCircuitableValidator {
 
-    protected final Logger log = LoggerFactory.getLogger(this.getClass());
+    protected final Log log = LogFactory.getLog(this.getClass());
     protected String defaultMessage = "";
     protected String messageKey;
     private ValidatorContext validatorContext;
     private boolean shortCircuit;
     private boolean parse;
     private String type;
-    private String[] messageParameters;
-    private ValueStack stack;
 
-
-    public void setValueStack(ValueStack stack) {
-        this.stack = stack;
-    }
 
     public void setDefaultMessage(String message) {
         this.defaultMessage = message;
@@ -47,15 +37,16 @@ public abstract class ValidatorSupport implements Validator, ShortCircuitableVal
     }
 
     public void setParse(boolean parse) {
-        this.parse = parse;
+    	this.parse = parse;
     }
 
     public boolean getParse() {
-        return parse;
+    	return parse;
     }
-
+    
     public String getMessage(Object object) {
         String message;
+        ValueStack stack = ActionContext.getContext().getValueStack();
         boolean pop = false;
 
         if (!stack.getRoot().contains(object)) {
@@ -66,32 +57,13 @@ public abstract class ValidatorSupport implements Validator, ShortCircuitableVal
         stack.push(this);
 
         if (messageKey != null) {
-            if ((defaultMessage == null) || ("".equals(defaultMessage.trim()))) {
+            if ((defaultMessage == null) || (defaultMessage.trim().equals(""))) {
                 defaultMessage = messageKey;
             }
-            if (validatorContext == null) {
+            if ( validatorContext == null) {
                 validatorContext = new DelegatingValidatorContext(object);
             }
-            List<Object> parsedMessageParameters = null;
-            if (messageParameters != null) {
-                parsedMessageParameters = new ArrayList<Object>();
-                for (String messageParameter : messageParameters) {
-                    if (messageParameter != null) {
-                        try {
-                            Object val = stack.findValue(messageParameter);
-                            parsedMessageParameters.add(val);
-                        } catch (Exception e) {
-                            // if there's an exception in parsing, we'll just treat the expression itself as the
-                            // parameter
-                            log.warn("exception while parsing message parameter [" + messageParameter + "]", e);
-                            parsedMessageParameters.add(messageParameter);
-                        }
-                    }
-                }
-            }
-
-            message = validatorContext.getText(messageKey, defaultMessage, parsedMessageParameters);
-
+            message = validatorContext.getText(messageKey, defaultMessage);
         } else {
             message = defaultMessage;
         }
@@ -113,14 +85,6 @@ public abstract class ValidatorSupport implements Validator, ShortCircuitableVal
 
     public String getMessageKey() {
         return messageKey;
-    }
-
-    public String[] getMessageParameters() {
-        return this.messageParameters;
-    }
-
-    public void setMessageParameters(String[] messageParameters) {
-        this.messageParameters = messageParameters;
     }
 
     public void setShortCircuit(boolean shortcircuit) {
@@ -156,6 +120,7 @@ public abstract class ValidatorSupport implements Validator, ShortCircuitableVal
      */
     protected Object conditionalParse(String expression) {
         if (parse) {
+            ValueStack stack = ActionContext.getContext().getValueStack();
             return TextParseUtil.translateVariables('$', expression, stack);
         }
         return expression;
@@ -171,6 +136,7 @@ public abstract class ValidatorSupport implements Validator, ShortCircuitableVal
      * @throws ValidationException
      */
     protected Object getFieldValue(String name, Object object) throws ValidationException {
+        ValueStack stack = ActionContext.getContext().getValueStack();
 
         boolean pop = false;
 
@@ -195,5 +161,4 @@ public abstract class ValidatorSupport implements Validator, ShortCircuitableVal
     protected void addFieldError(String propertyName, Object object) {
         validatorContext.addFieldError(propertyName, getMessage(object));
     }
-
 }

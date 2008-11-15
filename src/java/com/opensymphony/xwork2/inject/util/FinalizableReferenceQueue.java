@@ -47,7 +47,6 @@ class FinalizableReferenceQueue extends ReferenceQueue<Object> {
 
   void start() {
     Thread thread = new Thread("FinalizableReferenceQueue") {
-      @Override
       public void run() {
         while (true) {
           try {

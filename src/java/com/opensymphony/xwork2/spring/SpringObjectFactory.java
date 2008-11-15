@@ -6,8 +6,9 @@ package com.opensymphony.xwork2.spring;
 
 import com.opensymphony.xwork2.ObjectFactory;
 import com.opensymphony.xwork2.inject.Inject;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.UnsatisfiedDependencyException;
@@ -19,6 +20,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collections;
 
 /**
  * Simple implementation of the ObjectFactory that makes use of Spring's application context if one has been configured,
@@ -29,14 +31,13 @@ import java.util.Map;
  * @author Simon Stewart (sms@lateral.net)
  */
 public class SpringObjectFactory extends ObjectFactory implements ApplicationContextAware {
-    private static final Logger LOG = LoggerFactory.getLogger(SpringObjectFactory.class);
+    private static final Log log = LogFactory.getLog(SpringObjectFactory.class);
 
     protected ApplicationContext appContext;
     protected AutowireCapableBeanFactory autoWiringFactory;
     protected int autowireStrategy = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME;
-    private final Map<String, Object> classes = new HashMap<String, Object>();
+    private Map classes = Collections.synchronizedMap(new HashMap());
     private boolean useClassCache = true;
-    private boolean alwaysRespectAutowireStrategy = false;
 
     @Inject(value="applicationContextPath",required=false)
     public void setApplicationContextPath(String ctx) {
@@ -44,7 +45,7 @@ public class SpringObjectFactory extends ObjectFactory implements ApplicationCon
             setApplicationContext(new ClassPathXmlApplicationContext(ctx));
         }
     }
-
+    
     /**
      * Set the Spring ApplicationContext that should be used to look beans up with.
      *
@@ -64,19 +65,19 @@ public class SpringObjectFactory extends ObjectFactory implements ApplicationCon
     public void setAutowireStrategy(int autowireStrategy) {
         switch (autowireStrategy) {
             case AutowireCapableBeanFactory.AUTOWIRE_AUTODETECT:
-                LOG.info("Setting autowire strategy to autodetect");
+                log.info("Setting autowire strategy to autodetect");
                 this.autowireStrategy = autowireStrategy;
                 break;
             case AutowireCapableBeanFactory.AUTOWIRE_BY_NAME:
-                LOG.info("Setting autowire strategy to name");
+                log.info("Setting autowire strategy to name");
                 this.autowireStrategy = autowireStrategy;
                 break;
             case AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE:
-                LOG.info("Setting autowire strategy to type");
+                log.info("Setting autowire strategy to type");
                 this.autowireStrategy = autowireStrategy;
                 break;
             case AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR:
-                LOG.info("Setting autowire strategy to constructor");
+                log.info("Setting autowire strategy to constructor");
                 this.autowireStrategy = autowireStrategy;
                 break;
             default:
@@ -119,8 +120,7 @@ public class SpringObjectFactory extends ObjectFactory implements ApplicationCon
      *         method.
      * @throws Exception
      */
-    @Override
-    public Object buildBean(String beanName, Map<String, Object> extraContext, boolean injectInternal) throws Exception {
+    public Object buildBean(String beanName, Map extraContext, boolean injectInternal) throws Exception {
         Object o = null;
         try {
             o = appContext.getBean(beanName);
@@ -139,28 +139,20 @@ public class SpringObjectFactory extends ObjectFactory implements ApplicationCon
      * @param extraContext
      * @throws Exception
      */
-    @Override
-    public Object buildBean(Class clazz, Map<String, Object> extraContext) throws Exception {
+    public Object buildBean(Class clazz, Map extraContext) throws Exception {
         Object bean;
 
         try {
-            // Decide to follow autowire strategy or use the legacy approach which mixes injection strategies
-            if (alwaysRespectAutowireStrategy) {
-                // Leave the creation up to Spring
-                bean = autoWiringFactory.createBean(clazz, autowireStrategy, false);
-                injectApplicationContext(bean);
-                return injectInternalBeans(bean);
-            } else {
-                bean = autoWiringFactory.autowire(clazz, AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
-                bean = autoWiringFactory.applyBeanPostProcessorsBeforeInitialization(bean, bean.getClass().getName());
-                // We don't need to call the init-method since one won't be registered.
-                bean = autoWiringFactory.applyBeanPostProcessorsAfterInitialization(bean, bean.getClass().getName());
-                return autoWireBean(bean, autoWiringFactory);
-            }
+            bean = autoWiringFactory.autowire(clazz, AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
         } catch (UnsatisfiedDependencyException e) {
             // Fall back
-            return autoWireBean(super.buildBean(clazz, extraContext), autoWiringFactory);
+            bean = super.buildBean(clazz, extraContext);
         }
+
+        bean = autoWiringFactory.applyBeanPostProcessorsBeforeInitialization(bean, bean.getClass().getName());
+        // We don't need to call the init-method since one won't be registered.
+        bean = autoWiringFactory.applyBeanPostProcessorsAfterInitialization(bean, bean.getClass().getName());
+        return autoWireBean(bean, autoWiringFactory);
     }
 
     public Object autoWireBean(Object bean) {
@@ -176,27 +168,21 @@ public class SpringObjectFactory extends ObjectFactory implements ApplicationCon
             autoWiringFactory.autowireBeanProperties(bean,
                     autowireStrategy, false);
         }
-        injectApplicationContext(bean);
-
+        if (bean instanceof ApplicationContextAware) {
+            ((ApplicationContextAware) bean).setApplicationContext(appContext);
+        }
+        
         injectInternalBeans(bean);
 
         return bean;
     }
 
-    private void injectApplicationContext(Object bean) {
-        if (bean instanceof ApplicationContextAware) {
-            ((ApplicationContextAware) bean).setApplicationContext(appContext);
-        }
-    }
-
     public Class getClassInstance(String className) throws ClassNotFoundException {
         Class clazz = null;
         if (useClassCache) {
-            synchronized(classes) {
-                // this cache of classes is needed because Spring sucks at dealing with situations where the
-                // class instance changes
-                clazz = (Class) classes.get(className);
-            }
+            // this cache of classes is needed because Spring sucks at dealing with situations where the
+            // class instance changes 
+            clazz = (Class) classes.get(className);
         }
 
         if (clazz == null) {
@@ -207,9 +193,7 @@ public class SpringObjectFactory extends ObjectFactory implements ApplicationCon
             }
 
             if (useClassCache) {
-                synchronized(classes) {
-                    classes.put(className, clazz);
-                }
+                classes.put(className, clazz);
             }
         }
 
@@ -220,10 +204,9 @@ public class SpringObjectFactory extends ObjectFactory implements ApplicationCon
      * This method sets the ObjectFactory used by XWork to this object. It's best used as the "init-method" of a Spring
      * bean definition in order to hook Spring and XWork together properly (as an alternative to the
      * org.apache.struts2.spring.lifecycle.SpringObjectFactoryListener)
-     * @deprecated Since 2.1 as it isn't necessary
      */
-    @Deprecated public void initObjectFactory() {
-        // not necessary anymore
+    public void initObjectFactory() {
+        ObjectFactory.setObjectFactory(this);
     }
 
     /**
@@ -232,26 +215,16 @@ public class SpringObjectFactory extends ObjectFactory implements ApplicationCon
      *
      * @return false
      */
-    @Override
     public boolean isNoArgConstructorRequired() {
         return false;
     }
 
     /**
      *  Enable / disable caching of classes loaded by Spring.
-     *
+     *  
      * @param useClassCache
      */
     public void setUseClassCache(boolean useClassCache) {
         this.useClassCache = useClassCache;
-    }
-
-    /**
-     * Determines if the autowire strategy is always followed when creating beans
-     *
-     * @param alwaysRespectAutowireStrategy True if the strategy is always used
-     */
-    public void setAlwaysRespectAutowireStrategy(boolean alwaysRespectAutowireStrategy) {
-        this.alwaysRespectAutowireStrategy = alwaysRespectAutowireStrategy;
     }
 }

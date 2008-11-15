@@ -5,15 +5,11 @@
 
 package com.opensymphony.xwork2.validator.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * <!-- START SNIPPET: description -->
- * This annotation has been deprecated since 2.1 as its previous purpose, to define classes that support annotation validations,
- * is no longer necessary.
+ * If you want to use annotation based validation, you have to annotate the class or interface with Validation Annotation.
  * <!-- END SNIPPET: description -->
  *
  * <p/> <u>Annotation usage:</u>
@@ -33,10 +29,34 @@ import java.lang.annotation.Target;
  * <th class='confluenceTh'> Notes </th>
  * </tr>
  * <tr>
- * <td class='confluenceTd'>validations</td>
+ * <td class='confluenceTd'>message</td>
  * <td class='confluenceTd'>yes</td>
  * <td class='confluenceTd'>&nbsp;</td>
- * <td class='confluenceTd'></td>
+ * <td class='confluenceTd'>field error message</td>
+ * </tr>
+ * <tr>
+ * <td class='confluenceTd'>key</td>
+ * <td class='confluenceTd'>no</td>
+ * <td class='confluenceTd'>&nbsp;</td>
+ * <td class='confluenceTd'>i18n key from language specific properties file.</td>
+ * </tr>
+ * <tr>
+ * <td class='confluenceTd'>fieldName</td>
+ * <td class='confluenceTd'>no</td>
+ * <td class='confluenceTd'>&nbsp;</td>
+ * <td class='confluenceTd'>&nbsp;</td>
+ * </tr>
+ * <tr>
+ * <td class='confluenceTd'>shortCircuit</td>
+ * <td class='confluenceTd'>no</td>
+ * <td class='confluenceTd'>false</td>
+ * <td class='confluenceTd'>If this validator should be used as shortCircuit.</td>
+ * </tr>
+ * <tr>
+ * <td class='confluenceTd'>type</td>
+ * <td class='confluenceTd'>yes</td>
+ * <td class='confluenceTd'>ValidatorType.FIELD</td>
+ * <td class='confluenceTd'>Enum value from ValidatorType. Either FIELD or SIMPLE can be used here.</td>
  * </tr>
  * </table>
  * <!-- END SNIPPET: parameters -->
@@ -112,7 +132,6 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * @author Rainer Hermanns
- * @deprecated Since Struts 2.1 because it isn't necessary anymore
  * @version $Id$
  */
 @Target({ElementType.TYPE})

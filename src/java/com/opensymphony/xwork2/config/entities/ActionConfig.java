@@ -4,9 +4,7 @@
  */
 package com.opensymphony.xwork2.config.entities;
 
-import com.opensymphony.xwork2.util.TextUtils;
 import com.opensymphony.xwork2.util.location.Located;
-import com.opensymphony.xwork2.util.location.Location;
 
 import java.io.Serializable;
 import java.util.*;
@@ -28,51 +26,59 @@ import java.util.*;
  * @author Rainer Hermanns
  * @version $Revision$
  */
-public class ActionConfig extends Located implements Serializable {
+public class ActionConfig extends Located implements InterceptorListHolder, Parameterizable, Serializable {
 
-    public static final String WILDCARD = "*";
-
-    protected List<InterceptorMapping> interceptors; // a list of interceptorMapping Objects eg. List<InterceptorMapping>
-    protected Map<String,String> params;
+    protected List<InterceptorMapping> interceptors;
+    protected Map<String, Object> params;
     protected Map<String, ResultConfig> results;
     protected List<ExceptionMappingConfig> exceptionMappings;
     protected String className;
     protected String methodName;
     protected String packageName;
-    protected String name;
-    protected Set<String> allowedMethods;
 
-    protected ActionConfig(String packageName, String name, String className) {
-        this.packageName = packageName;
-        this.name = name;
-        this.className = className;
-        params = new LinkedHashMap<String, String>();
+
+    public ActionConfig() {
+        params = new LinkedHashMap<String, Object>();
         results = new LinkedHashMap<String, ResultConfig>();
         interceptors = new ArrayList<InterceptorMapping>();
         exceptionMappings = new ArrayList<ExceptionMappingConfig>();
-        allowedMethods = new HashSet<String>();
-        allowedMethods.add(WILDCARD);
     }
 
-    /**
-     * Clones an ActionConfig, copying data into new maps and lists
-     * @param orig The ActionConfig to clone
-     * @Since 2.1
-     */
-    protected ActionConfig(ActionConfig orig) {
-        this.name = orig.name;
-        this.className = orig.className;
-        this.methodName = orig.methodName;
-        this.packageName = orig.packageName;
-        this.params = new LinkedHashMap<String,String>(orig.params);
-        this.interceptors = new ArrayList<InterceptorMapping>(orig.interceptors);
-        this.results = new LinkedHashMap<String,ResultConfig>(orig.results);
-        this.exceptionMappings = new ArrayList<ExceptionMappingConfig>(orig.exceptionMappings);
-        this.allowedMethods = new HashSet<String>(orig.allowedMethods);
+    //Helper constuctor to maintain backward compatibility with objects that create ActionConfigs
+    //TODO this should be removed if these changes are rolled in to xwork CVS
+    public ActionConfig(String methodName, Class clazz, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors) {
+        this(methodName, clazz.getName(), parameters, results, interceptors);
     }
 
-    public String getName() {
-        return name;
+    public ActionConfig(String methodName, Class clazz, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors, List<ExceptionMappingConfig> exceptionMappings) {
+        this(methodName, clazz.getName(), parameters, results, interceptors, exceptionMappings);
+    }
+
+    public ActionConfig(String methodName, String className, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors) {
+        this(methodName, className, "", parameters, results, interceptors, Collections.EMPTY_LIST);
+    }
+
+    public ActionConfig(String methodName, String className, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors, List<ExceptionMappingConfig> exceptionMappings) {
+        this(methodName, className, "", parameters, results, interceptors, exceptionMappings);
+    }
+
+    public ActionConfig(String methodName, String className, String packageName, Map<String, Object> parameters, Map<String, ResultConfig> results, List<InterceptorMapping> interceptors) {
+        this(methodName, className, packageName, parameters, results, interceptors, Collections.EMPTY_LIST);
+    }
+
+    public ActionConfig(String methodName, String className, String packageName, Map<String, Object> parameters,
+                        Map<String, ResultConfig> results, List<InterceptorMapping> interceptors, List<ExceptionMappingConfig> exceptionMappings) {
+        this.methodName = methodName;
+        this.interceptors = interceptors;
+        this.params = parameters;
+        this.results = results;
+        this.className = className;
+        this.exceptionMappings = exceptionMappings;
+        this.packageName = packageName;
+    }
+    
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public String getClassName() {
@@ -84,11 +90,15 @@ public class ActionConfig extends Located implements Serializable {
     }
 
     public List<InterceptorMapping> getInterceptors() {
+        if (interceptors == null) {
+            interceptors = new ArrayList<InterceptorMapping>();
+        }
+
         return interceptors;
     }
 
-    public Set<String> getAllowedMethods() {
-        return allowedMethods;
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
     }
 
     /**
@@ -101,29 +111,68 @@ public class ActionConfig extends Located implements Serializable {
     }
 
     /**
+     * @param packageName The packageName to set.
+     */
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    /**
      * @return Returns the packageName.
      */
     public String getPackageName() {
         return packageName;
     }
 
-    public Map<String, String> getParams() {
+    public void setParams(Map<String, Object> params) {
+        this.params = params;
+    }
+
+    public Map<String, Object> getParams() {
+        if (params == null) {
+            params = new LinkedHashMap<String, Object>();
+        }
+
         return params;
     }
 
+    public void setResults(Map<String, ResultConfig> results) {
+        this.results = results;
+    }
+
     public Map<String, ResultConfig> getResults() {
+        if (results == null) {
+            results = new LinkedHashMap<String, ResultConfig>();
+        }
+
         return results;
     }
 
-    public boolean isAllowedMethod(String method) {
-        if (allowedMethods.size() == 1 && WILDCARD.equals(allowedMethods.iterator().next())) {
-            return true;
-        } else {
-            return allowedMethods.contains(method);
-        }
+    public void addExceptionMapping(ExceptionMappingConfig exceptionMapping) {
+        getExceptionMappings().add(exceptionMapping);
     }
 
-    @Override public boolean equals(Object o) {
+    public void addExceptionMappings(List<? extends ExceptionMappingConfig> mappings) {
+        getExceptionMappings().addAll(mappings);
+    }
+
+    public void addInterceptor(InterceptorMapping interceptor) {
+        getInterceptors().add(interceptor);
+    }
+
+    public void addInterceptors(List<InterceptorMapping> interceptors) {
+        getInterceptors().addAll(interceptors);
+    }
+
+    public void addParam(String name, Object value) {
+        getParams().put(name, value);
+    }
+
+    public void addResultConfig(ResultConfig resultConfig) {
+        getResults().put(resultConfig.getName(), resultConfig);
+    }
+
+    public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -135,10 +184,6 @@ public class ActionConfig extends Located implements Serializable {
         final ActionConfig actionConfig = (ActionConfig) o;
 
         if ((className != null) ? (!className.equals(actionConfig.className)) : (actionConfig.className != null)) {
-            return false;
-        }
-
-        if ((name != null) ? (!name.equals(actionConfig.name)) : (actionConfig.name != null)) {
             return false;
         }
 
@@ -158,170 +203,29 @@ public class ActionConfig extends Located implements Serializable {
         if ((results != null) ? (!results.equals(actionConfig.results)) : (actionConfig.results != null)) {
             return false;
         }
-
-        if ((allowedMethods != null) ? (!allowedMethods.equals(actionConfig.allowedMethods)) : (actionConfig.allowedMethods != null)) {
-            return false;
-        }
-
+        
         return true;
     }
 
-
-    @Override public int hashCode() {
+    public int hashCode() {
         int result;
-        result = (interceptors != null ? interceptors.hashCode() : 0);
-        result = 31 * result + (params != null ? params.hashCode() : 0);
-        result = 31 * result + (results != null ? results.hashCode() : 0);
-        result = 31 * result + (exceptionMappings != null ? exceptionMappings.hashCode() : 0);
-        result = 31 * result + (className != null ? className.hashCode() : 0);
-        result = 31 * result + (methodName != null ? methodName.hashCode() : 0);
-        result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (allowedMethods != null ? allowedMethods.hashCode() : 0);
+        result = ((interceptors != null) ? interceptors.hashCode() : 0);
+        result = (29 * result) + ((params != null) ? params.hashCode() : 0);
+        result = (29 * result) + ((results != null) ? results.hashCode() : 0);
+        result = (29 * result) + ((methodName != null) ? methodName.hashCode() : 0);
+
         return result;
     }
 
-    @Override public String toString() {
-        StringBuilder sb = new StringBuilder();
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
         sb.append("{ActionConfig ");
-        sb.append(name).append(" (");
         sb.append(className);
         if (methodName != null) {
             sb.append(".").append(methodName).append("()");
         }
-        sb.append(")");
         sb.append(" - ").append(location);
         sb.append("}");
         return sb.toString();
-    }
-
-    /**
-     * The builder for this object.  An instance of this object is the only way to construct a new instance.  The
-     * purpose is to enforce the immutability of the object.  The methods are structured in a way to support chaining.
-     * After setting any values you need, call the {@link #build()} method to create the object.
-     */
-    public static class Builder implements InterceptorListHolder{
-
-        private ActionConfig target;
-
-        public Builder(ActionConfig toClone) {
-            target = new ActionConfig(toClone);
-        }
-
-        public Builder(String packageName, String name, String className) {
-            target = new ActionConfig(packageName, name, className);
-        }
-
-        public Builder packageName(String name) {
-            target.packageName = name;
-            return this;
-        }
-
-        public Builder name(String name) {
-            target.name = name;
-            return this;
-        }
-
-        public Builder className(String name) {
-            target.className = name;
-            return this;
-        }
-
-        public Builder defaultClassName(String name) {
-        	if (!TextUtils.stringSet(target.className)) {
-        	  	target.className = name;
-        	}
-            return this;
-        }
-        
-        public Builder methodName(String method) {
-            target.methodName = method;
-            return this;
-        }
-
-        public Builder addExceptionMapping(ExceptionMappingConfig exceptionMapping) {
-            target.exceptionMappings.add(exceptionMapping);
-            return this;
-        }
-
-        public Builder addExceptionMappings(Collection<? extends ExceptionMappingConfig> mappings) {
-            target.exceptionMappings.addAll(mappings);
-            return this;
-        }
-
-        public Builder exceptionMappings(Collection<? extends ExceptionMappingConfig> mappings) {
-            target.exceptionMappings.clear();
-            target.exceptionMappings.addAll(mappings);
-            return this;
-        }
-
-        public Builder addInterceptor(InterceptorMapping interceptor) {
-            target.interceptors.add(interceptor);
-            return this;
-        }
-
-        public Builder addInterceptors(List<InterceptorMapping> interceptors) {
-            target.interceptors.addAll(interceptors);
-            return this;
-        }
-
-        public Builder interceptors(List<InterceptorMapping> interceptors) {
-            target.interceptors.clear();
-            target.interceptors.addAll(interceptors);
-            return this;
-        }
-
-        public Builder addParam(String name, String value) {
-            target.params.put(name, value);
-            return this;
-        }
-
-        public Builder addParams(Map<String,String> params) {
-            target.params.putAll(params);
-            return this;
-        }
-
-        public Builder addResultConfig(ResultConfig resultConfig) {
-            target.results.put(resultConfig.getName(), resultConfig);
-            return this;
-        }
-
-        public Builder addResultConfigs(Collection<ResultConfig> configs) {
-            for (ResultConfig rc : configs) {
-                target.results.put(rc.getName(), rc);
-            }
-            return this;
-        }
-
-        public Builder addResultConfigs(Map<String,ResultConfig> configs) {
-            target.results.putAll(configs);
-            return this;
-        }
-
-        public Builder addAllowedMethod(String methodName) {
-            target.allowedMethods.add(methodName);
-            return this;
-        }
-
-        public Builder addAllowedMethod(Collection<String> methods) {
-            target.allowedMethods.addAll(methods);
-            return this;
-        }
-
-        public Builder location(Location loc) {
-            target.location = loc;
-            return this;
-        }
-
-        public ActionConfig build() {
-            target.params = Collections.unmodifiableMap(target.params);
-            target.results = Collections.unmodifiableMap(target.results);
-            target.interceptors = Collections.unmodifiableList(target.interceptors);
-            target.exceptionMappings = Collections.unmodifiableList(target.exceptionMappings);
-            target.allowedMethods = Collections.unmodifiableSet(target.allowedMethods);
-            ActionConfig result = target;
-            target = new ActionConfig(target);
-            return result;
-        }
     }
 }

@@ -4,14 +4,24 @@
  */
 package com.opensymphony.xwork2.config.impl;
 
-import com.opensymphony.xwork2.config.*;
+import com.opensymphony.xwork2.ActionProxyFactory;
+import com.opensymphony.xwork2.DefaultActionProxyFactory;
+import com.opensymphony.xwork2.ObjectFactory;
+import com.opensymphony.xwork2.config.Configuration;
+import com.opensymphony.xwork2.config.ConfigurationException;
+import com.opensymphony.xwork2.config.ConfigurationProvider;
+import com.opensymphony.xwork2.config.RuntimeConfiguration;
 import com.opensymphony.xwork2.config.entities.PackageConfig;
-import com.opensymphony.xwork2.config.providers.XWorkConfigurationProvider;
 import com.opensymphony.xwork2.inject.Container;
 import com.opensymphony.xwork2.inject.ContainerBuilder;
-import com.opensymphony.xwork2.util.location.LocatableProperties;
+import com.opensymphony.xwork2.inject.Context;
+import com.opensymphony.xwork2.inject.Factory;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -19,27 +29,33 @@ import java.util.*;
  */
 public class MockConfiguration implements Configuration {
 
-    private Map<String, PackageConfig> packages = new HashMap<String, PackageConfig>();
-    private Set<String> loadedFiles = new HashSet<String>();
+    private Map packages = new HashMap();
+    private Set loadedFiles = new HashSet();
     private Container container;
     
     public MockConfiguration() {
-        ContainerBuilder builder = new ContainerBuilder();
-        LocatableProperties props = new LocatableProperties();
-        new XWorkConfigurationProvider().register(builder, props);
-        builder.constant("devMode", "false");
-        container = builder.create(true);
+        container = new ContainerBuilder()
+            .factory(ObjectFactory.class)
+            .factory(ActionProxyFactory.class, DefaultActionProxyFactory.class)
+            .factory(Configuration.class, new Factory() {
+
+                public Object create(Context context) throws Exception {
+                    return MockConfiguration.this;
+                }
+                
+            })
+            .create(true);
     }
 
     public PackageConfig getPackageConfig(String name) {
-        return packages.get(name);
+        return (PackageConfig) packages.get(name);
     }
 
-    public Set<String> getPackageConfigNames() {
+    public Set getPackageConfigNames() {
         return packages.keySet();
     }
 
-    public Map<String, PackageConfig> getPackageConfigs() {
+    public Map getPackageConfigs() {
         return packages;
     }
 
@@ -76,11 +92,5 @@ public class MockConfiguration implements Configuration {
 
     public Set<String> getLoadedFileNames() {
         return loadedFiles;
-    }
-
-    public List<PackageProvider> reloadContainer(
-            List<ContainerProvider> containerProviders)
-            throws ConfigurationException {
-        throw new UnsupportedOperationException();
     }
 }

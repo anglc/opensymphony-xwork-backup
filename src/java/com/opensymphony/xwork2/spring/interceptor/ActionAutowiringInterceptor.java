@@ -9,8 +9,8 @@ import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
 import com.opensymphony.xwork2.spring.SpringObjectFactory;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -49,7 +49,7 @@ import org.springframework.web.context.WebApplicationContext;
  * @author Eric Hauser
  */
 public class ActionAutowiringInterceptor extends AbstractInterceptor implements ApplicationContextAware {
-    private static final Logger LOG = LoggerFactory.getLogger(ActionAutowiringInterceptor.class);
+    private static final Log log = LogFactory.getLog(ActionAutowiringInterceptor.class);
 
     public static final String APPLICATION_CONTEXT = "com.opensymphony.xwork2.spring.interceptor.ActionAutowiringInterceptor.applicationContext";
 
@@ -80,13 +80,13 @@ public class ActionAutowiringInterceptor extends AbstractInterceptor implements 
      * @param invocation
      * @throws Exception
      */
-    @Override public String intercept(ActionInvocation invocation) throws Exception {
+    public String intercept(ActionInvocation invocation) throws Exception {
         if (!initialized) {
             ApplicationContext applicationContext = (ApplicationContext) ActionContext.getContext().getApplication().get(
                     WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 
             if (applicationContext == null) {
-                LOG.warn("ApplicationContext could not be found.  Action classes will not be autowired.");
+                log.warn("ApplicationContext could not be found.  Action classes will not be autowired.");
             } else {
                 setApplicationContext(applicationContext);
                 factory = new SpringObjectFactory();

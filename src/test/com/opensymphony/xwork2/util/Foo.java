@@ -4,7 +4,10 @@
  */
 package com.opensymphony.xwork2.util;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -31,7 +34,7 @@ public class Foo {
     boolean useful;
     int number;
     long aLong;
-    Calendar calendar;
+
 
     public void setALong(long aLong) {
         this.aLong = aLong;
@@ -186,13 +189,5 @@ public class Foo {
     
     public void setMeeting(Date meeting) {
     	this.meeting = meeting;
-    }
-
-    public Calendar getCalendar() {
-        return calendar;
-    }
-
-    public void setCalendar(Calendar calendar) {
-        this.calendar = calendar;
     }     
 }

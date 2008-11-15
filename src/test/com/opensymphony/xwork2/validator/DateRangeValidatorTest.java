@@ -5,9 +5,13 @@
 package com.opensymphony.xwork2.validator;
 
 import com.opensymphony.xwork2.ActionProxy;
+import com.opensymphony.xwork2.ActionProxyFactory;
+import com.opensymphony.xwork2.ObjectFactory;
 import com.opensymphony.xwork2.ValidationAware;
 import com.opensymphony.xwork2.XWorkTestCase;
+import com.opensymphony.xwork2.config.ConfigurationManager;
 import com.opensymphony.xwork2.config.providers.MockConfigurationProvider;
+import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
 import com.opensymphony.xwork2.validator.validators.DateRangeFieldValidator;
 
 import java.util.*;
@@ -55,17 +59,13 @@ public class DateRangeValidatorTest extends XWorkTestCase {
         assertEquals(min, val.getMin());
     }
 
-    @Override
     protected void setUp() throws Exception {
-        super.setUp();
         origLocale = Locale.getDefault();
         Locale.setDefault(Locale.US);
-        loadConfigurationProviders(new MockConfigurationProvider());
+        loadConfigurationProviders(new XmlConfigurationProvider("xwork-test-beans.xml"), new MockConfigurationProvider());
     }
 
-    @Override
     protected void tearDown() throws Exception {
-        super.tearDown();
         Locale.setDefault(origLocale);
     }
 }

@@ -5,15 +5,17 @@
 package com.opensymphony.xwork2.interceptor;
 
 import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 /**
  * <!-- START SNIPPET: description -->
  * This interceptor logs the amount of time in milliseconds. In order for this interceptor to work properly, the
- * logging framework must be set to at least the <tt>INFO</tt> level.
- * This interceptor relies on the <a href="http://jakarta.apache.org/commons/logging/">Commons Logging API</a> to
- * report its execution-time value.
+ * logging framework must be set to at least the
+ * <a href="http://jakarta.apache.org/commons/logging/api/org/apache/commons/logging/Log.html">INFO</a> level.
+ * This interceptor relies on the
+ * <a href="http://jakarta.apache.org/commons/logging/">Commons Logging API</a> to report its execution-time value.
  * <!-- END SNIPPET: description -->
  *
  * <!-- START SNIPPET: parameters -->
@@ -81,9 +83,9 @@ import com.opensymphony.xwork2.util.logging.LoggerFactory;
  * @author Claus Ibsen
  */
 public class TimerInterceptor extends AbstractInterceptor {
-    protected static final Logger LOG = LoggerFactory.getLogger(TimerInterceptor.class);
+    protected static final Log log = LogFactory.getLog(TimerInterceptor.class);
 
-    protected Logger categoryLogger;
+    protected Log categoryLogger;
     protected String logCategory;
     protected String logLevel;
 
@@ -103,7 +105,6 @@ public class TimerInterceptor extends AbstractInterceptor {
         this.logLevel = logLevel;
     }
 
-    @Override
     public String intercept(ActionInvocation invocation) throws Exception {
         if (! shouldLog()) {
             return invocation.invoke();
@@ -124,7 +125,7 @@ public class TimerInterceptor extends AbstractInterceptor {
         String result = invocation.invoke();
         long executionTime = System.currentTimeMillis() - startTime;
 
-        StringBuilder message = new StringBuilder(100);
+        StringBuffer message = new StringBuffer(100);
         message.append("Executed action [");
         String namespace = invocation.getProxy().getNamespace();
         if ((namespace != null) && (namespace.trim().length() > 0)) {
@@ -148,7 +149,7 @@ public class TimerInterceptor extends AbstractInterceptor {
     protected boolean shouldLog() {
         // default check first
         if (logLevel == null && logCategory == null) {
-            return LOG.isInfoEnabled();
+            return log.isInfoEnabled();
         }
 
         // okay user have set some parameters
@@ -160,11 +161,11 @@ public class TimerInterceptor extends AbstractInterceptor {
      *
      * @return the logger to use.
      */
-    protected Logger getLoggerToUse() {
+    protected Log getLoggerToUse() {
         if (logCategory != null) {
             if (categoryLogger == null) {
                 // init category logger
-                categoryLogger = LoggerFactory.getLogger(logCategory);
+                categoryLogger = LogFactory.getLog(logCategory);
                 if (logLevel == null) {
                     logLevel = "info"; // use info as default if not provided
                 }
@@ -172,7 +173,7 @@ public class TimerInterceptor extends AbstractInterceptor {
             return categoryLogger;
         }
 
-        return LOG;
+        return log;
     }
 
     /**
@@ -181,7 +182,7 @@ public class TimerInterceptor extends AbstractInterceptor {
      * @param logger  the provided logger to use.
      * @param message  the message to log.
      */
-    protected void doLog(Logger logger, String message) {
+    protected void doLog(Log logger, String message) {
         if (logLevel == null) {
             logger.info(message);
             return;
@@ -211,7 +212,7 @@ public class TimerInterceptor extends AbstractInterceptor {
      * @param level   the level to check if <code>isXXXEnabled</code>.
      * @return <tt>true</tt> if enabled, <tt>false</tt> if not.
      */
-    private static boolean isLoggerEnabled(Logger logger, String level) {
+    private static boolean isLoggerEnabled(Log logger, String level) {
         if ("debug".equalsIgnoreCase(level)) {
             return logger.isDebugEnabled();
         } else if ("info".equalsIgnoreCase(level)) {

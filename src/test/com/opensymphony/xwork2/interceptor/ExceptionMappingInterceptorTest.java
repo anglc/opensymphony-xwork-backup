@@ -9,7 +9,9 @@ import com.opensymphony.xwork2.*;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.config.entities.ExceptionMappingConfig;
 import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.ValueStackFactory;
 import com.opensymphony.xwork2.validator.ValidationException;
+import junit.framework.TestCase;
 
 import java.util.HashMap;
 
@@ -18,7 +20,7 @@ import java.util.HashMap;
  * 
  * @author Matthew E. Porter (matthew dot porter at metissian dot com)
  */
-public class ExceptionMappingInterceptorTest extends XWorkTestCase {
+public class ExceptionMappingInterceptorTest extends TestCase {
 
     ActionInvocation invocation;
     ExceptionMappingInterceptor interceptor;
@@ -253,7 +255,7 @@ public class ExceptionMappingInterceptorTest extends XWorkTestCase {
     }
 
     private void setupWithoutExceptionMappings() {
-        ActionConfig actionConfig = new ActionConfig.Builder("", "", "").build();
+        ActionConfig actionConfig = new ActionConfig();
         Mock actionProxy = new Mock(ActionProxy.class);
         actionProxy.expectAndReturn("getConfig", actionConfig);
         mockInvocation.expectAndReturn("getProxy", ((ActionProxy) actionProxy.proxy()));
@@ -261,10 +263,9 @@ public class ExceptionMappingInterceptorTest extends XWorkTestCase {
     }
 
     private void setUpWithExceptionMappings() {
-        ActionConfig actionConfig = new ActionConfig.Builder("", "", "")
-                .addExceptionMapping(new ExceptionMappingConfig.Builder("xwork", "com.opensymphony.xwork2.XWorkException", "spooky").build())
-                .addExceptionMapping(new ExceptionMappingConfig.Builder("throwable", "java.lang.Throwable", "throwable").build())
-                .build();
+        ActionConfig actionConfig = new ActionConfig();
+        actionConfig.addExceptionMapping(new ExceptionMappingConfig("xwork", "com.opensymphony.xwork2.XWorkException", "spooky"));
+        actionConfig.addExceptionMapping(new ExceptionMappingConfig("throwable", "java.lang.Throwable", "throwable"));
         Mock actionProxy = new Mock(ActionProxy.class);
         actionProxy.expectAndReturn("getConfig", actionConfig);
         mockInvocation.expectAndReturn("getProxy", ((ActionProxy) actionProxy.proxy()));
@@ -272,10 +273,9 @@ public class ExceptionMappingInterceptorTest extends XWorkTestCase {
         invocation = (ActionInvocation) mockInvocation.proxy();
     }
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        stack = ActionContext.getContext().getValueStack();
+        stack = ValueStackFactory.getFactory().createValueStack();
         mockInvocation = new Mock(ActionInvocation.class);
         mockInvocation.expectAndReturn("getStack", stack);
         mockInvocation.expectAndReturn("getInvocationContext", new ActionContext(new HashMap()));
@@ -283,7 +283,6 @@ public class ExceptionMappingInterceptorTest extends XWorkTestCase {
         interceptor.init();
     }
 
-    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         interceptor.destroy();

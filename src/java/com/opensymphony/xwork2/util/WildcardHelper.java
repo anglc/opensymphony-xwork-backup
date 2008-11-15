@@ -26,7 +26,7 @@ import java.util.Map;
  * @version $Rev$ $Date: 2005-05-07 12:11:38 -0400 (Sat, 07 May 2005)
  *          $
  */
-public class WildcardHelper implements PatternMatcher<int[]> {
+public class WildcardHelper {
     /**
      * The int representing '*' in the pattern <code>int []</code>.
      */
@@ -51,16 +51,6 @@ public class WildcardHelper implements PatternMatcher<int[]> {
      * The int value that terminates the pattern <code>int []</code>.
      */
     protected static final int MATCH_END = -3;
-
-    /**
-     * Determines if the pattern contains any * characters
-     *
-     * @param pattern The pattern
-     * @return True if no wildcards are found
-     */
-    public boolean isLiteral(String pattern) {
-        return (pattern == null || pattern.indexOf('*') == -1);
-    }
 
     /**
      * <p> Translate the given <code>String</code> into a <code>int []</code>
@@ -162,7 +152,7 @@ public class WildcardHelper implements PatternMatcher<int[]> {
      * @return True if a match
      * @throws NullPointerException If any parameters are null
      */
-    public boolean match(Map<String, String> map, String data, int[] expr) {
+    public boolean match(Map map, String data, int[] expr) {
         if (map == null) {
             throw new NullPointerException("No map provided");
         }

@@ -27,9 +27,9 @@
 package com.opensymphony.xwork2.util.profiling;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author <a href="mailto:scott@atlassian.com">Scott Farquhar</a>
@@ -71,8 +71,9 @@ public class ObjectProfiler
         if (interfaceClazz.isInterface())
         {
             InvocationHandler timerHandler = new TimerInvocationHandler(o);
-            return Proxy.newProxyInstance(interfaceClazz.getClassLoader(),
+            Object proxy = Proxy.newProxyInstance(interfaceClazz.getClassLoader(),
                     new Class[]{interfaceClazz}, timerHandler);
+            return proxy;
         }
         else
         {
@@ -102,8 +103,9 @@ public class ObjectProfiler
             {
 //                System.out.println("Return type " + returnValue.getClass().getName() + " is being proxied " + target.getReturnType().getName() + " " + logLine);
                 InvocationHandler timerHandler = new TimerInvocationHandler(returnValue);
-                return Proxy.newProxyInstance(returnValue.getClass().getClassLoader(),
+                Object objectProxy = Proxy.newProxyInstance(returnValue.getClass().getClassLoader(),
                         new Class[]{target.getReturnType()}, timerHandler);
+                return objectProxy;
             }
             else
             {

@@ -18,7 +18,6 @@ public class PackagelessAction extends ActionSupport {
     }
 
 
-    @Override
     public String execute() {
         // from action's bundle
         System.out.println(getText("actionProperty"));

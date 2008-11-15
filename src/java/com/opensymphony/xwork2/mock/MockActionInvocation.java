@@ -5,12 +5,17 @@
 
 package com.opensymphony.xwork2.mock;
 
-import com.opensymphony.xwork2.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import com.opensymphony.xwork2.ActionEventListener;
+import com.opensymphony.xwork2.ActionInvocation;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionProxy;
+import com.opensymphony.xwork2.Result;
 import com.opensymphony.xwork2.interceptor.PreResultListener;
 import com.opensymphony.xwork2.util.ValueStack;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Mock for an {@link ActionInvocation}.
@@ -30,7 +35,7 @@ public class MockActionInvocation implements ActionInvocation {
     private String resultCode;
     private ValueStack stack;
     
-    private List<PreResultListener> preResultListeners = new ArrayList<PreResultListener>();
+    private List preResultListeners = new ArrayList();
 
     public Object getAction() {
         return action;
@@ -89,10 +94,10 @@ public class MockActionInvocation implements ActionInvocation {
     }
 
     public String invoke() throws Exception {
-        for (Object preResultListener : preResultListeners) {
-            PreResultListener listener = (PreResultListener) preResultListener;
-            listener.beforeResult(this, resultCode);
-        }
+    	for (Iterator i = preResultListeners.iterator(); i.hasNext(); ) {
+    		PreResultListener listener = (PreResultListener) i.next();
+    		listener.beforeResult(this, resultCode);
+    	}
         return resultCode;
     }
 
@@ -106,9 +111,6 @@ public class MockActionInvocation implements ActionInvocation {
     
     public ActionEventListener getActionEventListener() {
         return this.actionEventListener;
-    }
-
-    public void init(ActionProxy proxy) {
     }
 
 }

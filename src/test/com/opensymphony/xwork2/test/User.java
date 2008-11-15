@@ -17,7 +17,7 @@ import java.util.Map;
 public class User implements UserMarker {
 
     private Collection collection;
-    private List<String> list;
+    private List list;
     private Map map;
     private String email;
     private String email2;
@@ -48,11 +48,11 @@ public class User implements UserMarker {
         return email2;
     }
 
-    public void setList(List<String> l) {
+    public void setList(List l) {
         list = l;
     }
 
-    public List<String> getList() {
+    public List getList() {
         return list;
     }
 

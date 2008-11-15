@@ -33,7 +33,6 @@ public class MyBean implements Serializable {
     }
 
 
-    @Override
     public String toString() {
         return "MyBean{" +
                 "id=" + id +

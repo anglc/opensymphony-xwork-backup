@@ -43,7 +43,6 @@ public class DateRangeFieldValidatorDescription extends AbstractFieldValidatorDe
      *
      * @return the field validator XML definition.
      */
-    @Override
     public String asFieldXml() {
         StringWriter sw = new StringWriter();
         PrintWriter writer = null;
@@ -86,7 +85,6 @@ public class DateRangeFieldValidatorDescription extends AbstractFieldValidatorDe
      *
      * @return the validator XML definition.
      */
-    @Override
     public String asSimpleXml() {
         StringWriter sw = new StringWriter();
         PrintWriter writer = null;

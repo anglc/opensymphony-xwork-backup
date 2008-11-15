@@ -1,117 +1,48 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
 
-import com.opensymphony.xwork2.util.TextParseUtil;
-import com.opensymphony.xwork2.util.WildcardHelper;
-
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
+
+import com.opensymphony.xwork2.util.TextParseUtil;
 
 /**
  * Utility class contains common methods used by 
  * {@link com.opensymphony.xwork2.interceptor.MethodFilterInterceptor}.
  * 
  * @author tm_jee
+ * @version $Date$ $Id$
  */
 public class MethodFilterInterceptorUtil {
-
 	/**
      * Static method to decide if the specified <code>method</code> should be
      * apply (not filtered) depending on the set of <code>excludeMethods</code> and 
      * <code>includeMethods</code>. 
-     *
+     * 
+     * <p/>
+     * 
      * <ul>
      * <li>
-     * 	<code>includeMethods</code> takes precedence over <code>excludeMethods</code>
+     * 	<code>excludeMethods</code> takes precedence over <code>includeMethods</code>
      * </li>
-     * </ul>
-     * <b>Note:</b> Supports wildcard listings in includeMethods/excludeMethods
-     *
-     * @param excludeMethods  list of methods to exclude.
-     * @param includeMethods  list of methods to include.
-     * @param method the specified method to check
-     * @return <tt>true</tt> if the method should be applied.
+     * 
+     * <p/>
+     * 
+     * asterict '*' could be used to indicate all methods.
+     * 
+     * 
+     * @param excludeMethods
+     * @param includeMethods
+     * @return boolean
      */
-    public static boolean applyMethod(Set<String> excludeMethods, Set<String> includeMethods, String method) {
-        
-        // quick check to see if any actual pattern matching is needed
-        boolean needsPatternMatch = false;
-        Iterator quickIter = includeMethods.iterator();
-        for (String incMeth : includeMethods) {
-            if (!"*".equals(incMeth) && incMeth.contains("*")) {
-                needsPatternMatch = true;
-            }
-        }
-        
-        for (String incMeth : excludeMethods) {
-            if (!"*".equals(incMeth) && incMeth.contains("*")) {
-                needsPatternMatch = true;
-            }
-        }
-
-        // this section will try to honor the original logic, while 
-        // still allowing for wildcards later
-        if (!needsPatternMatch && (includeMethods.contains("*") || includeMethods.size() == 0) ) {
-            if (excludeMethods != null 
-                    && excludeMethods.contains(method) 
-                    && !includeMethods.contains(method) ) {
-                return false;
-            }
-        }
-        
-        // test the methods using pattern matching
-        WildcardHelper wildcard = new WildcardHelper();
-        String methodCopy ;
-        if (method == null ) { // no method specified
-            methodCopy = "";
-        }
-        else {
-            methodCopy = new String(method);
-        }
-        for (String pattern : includeMethods) {
-            if (pattern.contains("*")) {
-                int[] compiledPattern = wildcard.compilePattern(pattern);
-                HashMap<String,String> matchedPatterns = new HashMap<String, String>();
-                boolean matches = wildcard.match(matchedPatterns, methodCopy, compiledPattern);
-                if (matches) {
-                    return true; // run it, includeMethods takes precedence
-                }
-            }
-            else {
-                if (pattern.equals(methodCopy)) {
-                    return true; // run it, includeMethods takes precedence
-                }
-            }
-        }
-        if (excludeMethods.contains("*") ) {
+    public static boolean applyMethod(Set excludeMethods, Set includeMethods, String method) {
+    	if (((excludeMethods.contains("*") && !includeMethods.contains("*"))
+                || excludeMethods.contains(method))
+                && !includeMethods.contains(method)) {
             return false;
         }
-
-        // CHECK ME: Previous implementation used include method 
-        for ( String pattern : excludeMethods) {
-            if (pattern.contains("*")) {
-                int[] compiledPattern = wildcard.compilePattern(pattern);
-                HashMap<String,String> matchedPatterns = new HashMap<String, String>();
-                boolean matches = wildcard.match(matchedPatterns, methodCopy, compiledPattern);
-                if (matches) {
-                    // if found, and wasn't included earlier, don't run it
-                    return false; 
-                }
-            }
-            else {
-                if (pattern.equals(methodCopy)) {
-                    // if found, and wasn't included earlier, don't run it
-                    return false; 
-                }
-            }
-        }
-    
-
-        // default fall-back from before changes
         return includeMethods.size() == 0 || includeMethods.contains(method) || includeMethods.contains("*");
     }
     
@@ -119,16 +50,15 @@ public class MethodFilterInterceptorUtil {
      * Same as {@link #applyMethod(Set, Set, String)}, except that <code>excludeMethods</code>
      * and <code>includeMethods</code> are supplied as comma separated string.
      * 
-     * @param excludeMethods  comma seperated string of methods to exclude.
-     * @param includeMethods  comma seperated string of methods to include.
-     * @param method the specified method to check
-     * @return <tt>true</tt> if the method should be applied.
+     * @param excludeMethods
+     * @param includeMethods
+     * @param method
+     * @return boolean
      */
     public static boolean applyMethod(String excludeMethods, String includeMethods, String method) {
-    	Set<String> includeMethodsSet = TextParseUtil.commaDelimitedStringToSet(includeMethods == null? "" : includeMethods);
-    	Set<String> excludeMethodsSet = TextParseUtil.commaDelimitedStringToSet(excludeMethods == null? "" : excludeMethods);
+    	Set includeMethodsSet = TextParseUtil.commaDelimitedStringToSet(includeMethods == null? "" : includeMethods);
+    	Set excludeMethodsSet = TextParseUtil.commaDelimitedStringToSet(excludeMethods == null? "" : excludeMethods);
     	
     	return applyMethod(excludeMethodsSet, includeMethodsSet, method);
     }
-
 }

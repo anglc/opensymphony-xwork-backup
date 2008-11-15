@@ -7,10 +7,10 @@ package com.opensymphony.xwork2.config;
 import com.opensymphony.xwork2.config.entities.PackageConfig;
 import com.opensymphony.xwork2.inject.Container;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.io.Serializable;
 
 
 /**
@@ -24,9 +24,9 @@ public interface Configuration extends Serializable {
 
     PackageConfig getPackageConfig(String name);
 
-    Set<String> getPackageConfigNames();
+    Set getPackageConfigNames();
 
-    Map<String, PackageConfig> getPackageConfigs();
+    Map getPackageConfigs();
 
     /**
      * The current runtime configuration. Currently, if changes have been made to the Configuration since the last
@@ -43,19 +43,9 @@ public interface Configuration extends Serializable {
      */
     void destroy();
 
-    /**
-     * @deprecated Since 2.1
-     * @param providers
-     * @throws ConfigurationException
-     */
-    @Deprecated void reload(List<ConfigurationProvider> providers) throws ConfigurationException;
-    
-    /**
-     * @since 2.1
-     * @param containerProviders
-     * @throws ConfigurationException
-     */
-    List<PackageProvider> reloadContainer(List<ContainerProvider> containerProviders) throws ConfigurationException;
+    void reload(List<ConfigurationProvider> providers) throws ConfigurationException;
+
+    void removePackageConfig(String name);
 
     /**
      * @return the container

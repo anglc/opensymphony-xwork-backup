@@ -5,8 +5,8 @@
 
 package com.opensymphony.xwork2.validator.metadata;
 
-import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.PrintWriter;
 
 /**
  * <code>DoubleRangeFieldValidatorDescription</code>
@@ -44,7 +44,6 @@ public class DoubleRangeFieldValidatorDescription extends AbstractFieldValidator
      *
      * @return the field validator XML definition.
      */
-    @Override
     public String asFieldXml() {
         StringWriter sw = new StringWriter();
         PrintWriter writer = null;
@@ -87,7 +86,6 @@ public class DoubleRangeFieldValidatorDescription extends AbstractFieldValidator
      *
      * @return the validator XML definition.
      */
-    @Override
     public String asSimpleXml() {
         StringWriter sw = new StringWriter();
         PrintWriter writer = null;

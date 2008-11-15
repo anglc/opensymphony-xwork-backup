@@ -6,10 +6,16 @@ package com.opensymphony.xwork2.validator;
 
 import com.opensymphony.xwork2.*;
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 
-import java.util.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 
 /**
@@ -29,7 +35,8 @@ public class DelegatingValidatorContext implements ValidatorContext {
      * are used internally to set errors and get and set error text.
      */
     public DelegatingValidatorContext(ValidationAware validationAware, TextProvider textProvider,
-                                      LocaleProvider localeProvider) {
+            LocaleProvider localeProvider)
+    {
         this.textProvider = textProvider;
         this.validationAware = validationAware;
         this.localeProvider = localeProvider;
@@ -59,27 +66,27 @@ public class DelegatingValidatorContext implements ValidatorContext {
         validationAware = new LoggingValidationAware(clazz);
     }
 
-    public void setActionErrors(Collection<String> errorMessages) {
+    public void setActionErrors(Collection errorMessages) {
         validationAware.setActionErrors(errorMessages);
     }
 
-    public Collection<String> getActionErrors() {
+    public Collection getActionErrors() {
         return validationAware.getActionErrors();
     }
 
-    public void setActionMessages(Collection<String> messages) {
+    public void setActionMessages(Collection messages) {
         validationAware.setActionMessages(messages);
     }
 
-    public Collection<String> getActionMessages() {
+    public Collection getActionMessages() {
         return validationAware.getActionMessages();
     }
 
-    public void setFieldErrors(Map<String, List<String>> errorMap) {
+    public void setFieldErrors(Map errorMap) {
         validationAware.setFieldErrors(errorMap);
     }
 
-    public Map<String, List<String>> getFieldErrors() {
+    public Map getFieldErrors() {
         return validationAware.getFieldErrors();
     }
 
@@ -91,10 +98,6 @@ public class DelegatingValidatorContext implements ValidatorContext {
         return localeProvider.getLocale();
     }
 
-    public boolean hasKey(String key) {
-    	return textProvider.hasKey(key);
-    }
-    
     public String getText(String aTextName) {
         return textProvider.getText(aTextName);
     }
@@ -107,7 +110,7 @@ public class DelegatingValidatorContext implements ValidatorContext {
         return textProvider.getText(aTextName, defaultValue, obj);
     }
 
-    public String getText(String aTextName, List<Object> args) {
+    public String getText(String aTextName, List args) {
         return textProvider.getText(aTextName, args);
     }
 
@@ -115,7 +118,7 @@ public class DelegatingValidatorContext implements ValidatorContext {
         return textProvider.getText(key, args);
     }
 
-    public String getText(String aTextName, String defaultValue, List<Object> args) {
+    public String getText(String aTextName, String defaultValue, List args) {
         return textProvider.getText(aTextName, defaultValue, args);
     }
 
@@ -127,12 +130,12 @@ public class DelegatingValidatorContext implements ValidatorContext {
         return textProvider.getTexts(aBundleName);
     }
 
-    public String getText(String key, String defaultValue, List<Object> args, ValueStack stack) {
-        return textProvider.getText(key, defaultValue, args, stack);
+    public String getText(String key, String defaultValue, List args, ValueStack stack) {
+        return textProvider.getText(key,defaultValue,args,stack);
     }
 
     public String getText(String key, String defaultValue, String[] args, ValueStack stack) {
-        return textProvider.getText(key, defaultValue, args, stack);
+        return textProvider.getText(key,defaultValue,args,stack);
     }
 
     public ResourceBundle getTexts() {
@@ -168,13 +171,8 @@ public class DelegatingValidatorContext implements ValidatorContext {
     }
 
     public static TextProvider makeTextProvider(Object object, LocaleProvider localeProvider) {
-        // the object argument passed through here will most probably be an ActionSupport decendant which does
-        // implements TextProvider.
-        if ((object != null) && (object instanceof TextProvider)) {
-            return new CompositeTextProvider(new TextProvider[]{
-                    ((TextProvider) object),
-                    new TextProviderSupport(object.getClass(), localeProvider)
-            });
+        if (object instanceof TextProvider) {
+            return (TextProvider) object;
         } else {
             return new TextProviderFactory().createInstance(object.getClass(), localeProvider);
         }
@@ -222,49 +220,50 @@ public class DelegatingValidatorContext implements ValidatorContext {
     }
 
     /**
-     * An implementation of ValidationAware which logs errors and messages.
+     * An implementation of ValidationAware which logs errors and messages. 
      */
     private static class LoggingValidationAware implements ValidationAware {
 
-        private Logger log;
+        private Log log;
 
         public LoggingValidationAware(Class clazz) {
-            log = LoggerFactory.getLogger(clazz);
+            log = LogFactory.getLog(clazz);
         }
 
         public LoggingValidationAware(Object obj) {
-            log = LoggerFactory.getLogger(obj.getClass());
+            log = LogFactory.getLog(obj.getClass());
         }
 
-        public void setActionErrors(Collection<String> errorMessages) {
-            for (Object errorMessage : errorMessages) {
-                String s = (String) errorMessage;
+        public void setActionErrors(Collection errorMessages) {
+            for (Iterator iterator = errorMessages.iterator(); iterator.hasNext();) {
+                String s = (String) iterator.next();
                 addActionError(s);
             }
         }
 
-        public Collection<String> getActionErrors() {
+        public Collection getActionErrors() {
             return null;
         }
 
-        public void setActionMessages(Collection<String> messages) {
-            for (Object message : messages) {
-                String s = (String) message;
+        public void setActionMessages(Collection messages) {
+            for (Iterator iterator = messages.iterator(); iterator.hasNext();) {
+                String s = (String) iterator.next();
                 addActionMessage(s);
             }
         }
 
-        public Collection<String> getActionMessages() {
+        public Collection getActionMessages() {
             return null;
         }
 
-        public void setFieldErrors(Map<String, List<String>> errorMap) {
-            for (Map.Entry<String, List<String>> entry : errorMap.entrySet()) {
-                addFieldError(entry.getKey(), entry.getValue().toString());
+        public void setFieldErrors(Map errorMap) {
+            for (Iterator iterator = errorMap.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                addFieldError((String) entry.getKey(), (String) entry.getValue());
             }
         }
 
-        public Map<String, List<String>> getFieldErrors() {
+        public Map getFieldErrors() {
             return null;
         }
 
