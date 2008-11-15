@@ -18,69 +18,111 @@
     <owners>
         <person>
             <name>Patrick Lightbody</name>
-            <email>plightbo@gmail.com</email>
+            <email>plightbo (AT) gmail (DOT) com</email>
             <role>OGNL and TypeConversion</role>
         </person>
         <person>
             <name>Jason Carreira</name>
-            <email>jcarreira@gmail.com</email>
+            <email>jcarreira (AT) gmail (DOT) com</email>
             <role>Validation Framework, Interceptors, ActionInvocation / ActionProxy</role>
         </person>
         <person>
             <name>Rainer Hermanns</name>
-            <email>rainerh@gmail.com</email>
+            <email>rainerh (AT) gmail (DOT) com</email>
         </person>
     </owners>
 
     <developers>
         <person>
             <name>Cameron Braid</name>
-            <email>cameron@braid.com.au</email>
+            <email>cameron (AT) braid (DOT) com (DOT) au</email>
         </person>
         <person>
             <name>Bill Lynch</name>
-            <email>bill@jivesoftware.com</email>
+            <email>bill (AT) jivesoftware (DOT) com</email>
         </person>
         <person>
             <name>James House</name>
-            <email>jhouse@revolition.net</email>
+            <email>jhouse (AT) revolition (DOT) net</email>
         </person>
         <person>
             <name>Jon Lipsky</name>
-            <email>jon.lipsky@xesoft.com</email>
+            <email>jon (DOT) lipsky (AT) xesoft (DOT) com</email>
             <role>XWork Configuration Editor</role>
         </person>
         <person>
             <name>Matthew Payne</name>
-            <email>matthew.payne@sutternow.com</email>
+            <email>matthew (DOT) payne (AT) sutternow (DOT) com</email>
         </person>
         <person>
             <name>Matt Ho</name>
-            <email>matt@xtreme.com</email>
+            <email>matt (AT) xtreme (DOT) com</email>
         </person>
         <person>
             <name>Mark Woon</name>
-            <email>morpheus@helix.stanford.edu</email>
+            <email>morpheus (AT) helix (DOT) stanford (DOT) edu</email>
         </person>
         <person>
             <name>Peter Kelley</name>
-            <email>yellekau@yahoo.com</email>
+            <email>yellekau (AT) yahoo (DOT) com</email>
         </person>
         <person>
             <name>Don Brown</name>
-            <email>mrdon@twdata.org</email>
+            <email>mrdon (AT) twdata (DOT) org</email>
         </person>
         <person>
             <name>James Holmes</name>
             <email>james (AT) jamesholmes (DOT) com</email>
         </person>
-        <person>
-            <name>Toby Jee</name>
-            <email>tmjee1 (AT) gmail (DOT) com</email>
-        </person>
     </developers>
 
     <releases>
+        <release>
+            <version>2.0.7</version>
+            <date>11/15/2008</date>
+            <jiraId>21791</jiraId>
+            <downloads>
+                <download>
+                    <url>http://release.opensymphony.com/xwork/2.0.7/xwork-2.0.7-all.zip</url>
+                    <name>All: Contains all jars, libs, sources and docs</name>
+                </download>
+                <download>
+                    <url>http://release.opensymphony.com/xwork/2.0.7/xwork-2.0.7-src.zip</url>
+                    <name>Sources: Sources and deps with maven2 pom and basic ant build</name>
+                </download>
+                <download>
+                    <url>http://release.opensymphony.com/xwork/2.0.7/xwork-2.0.7-java14.zip</url>
+                    <name>Java14: Java 1.4 compliant jars and deps</name>
+                </download>
+                <download>
+                    <url>http://release.opensymphony.com/xwork/2.0.7/xwork-2.0.7-lib.zip</url>
+                    <name>Lib: Jars and Libs only</name>
+                </download>
+            </downloads>
+        </release>
+        <release>
+            <version>2.0.6</version>
+            <date>10/14/2008</date>
+            <jiraId>21782</jiraId>
+            <downloads>
+                <download>
+                    <url>http://release.opensymphony.com/xwork/2.0.6/xwork-2.0.6-all.zip</url>
+                    <name>All: Contains all jars, libs, sources and docs</name>
+                </download>
+                <download>
+                    <url>http://release.opensymphony.com/xwork/2.0.6/xwork-2.0.6-src.zip</url>
+                    <name>Sources: Sources and deps with maven2 pom and basic ant build</name>
+                </download>
+                <download>
+                    <url>http://release.opensymphony.com/xwork/2.0.6/xwork-2.0.6-java14.zip</url>
+                    <name>Java14: Java 1.4 compliant jars and deps</name>
+                </download>
+                <download>
+                    <url>http://release.opensymphony.com/xwork/2.0.6/xwork-2.0.6-lib.zip</url>
+                    <name>Lib: Jars and Libs only</name>
+                </download>
+            </downloads>
+        </release>
         <release>
             <version>2.0.5</version>
             <date>06/13/2008</date>
@@ -264,17 +306,6 @@
                     <name>Lib: Jars and Libs only</name>
                 </download>
             </downloads>
-        </release>
-        <release>   
-          <version>1.2.4</version>
-          <date>10/01/2008</date>
-          <jiraId>21713</jiraId>
-          <downloads>
-             <download>
-               <url>http://release.opensymphony.com/xwork-1.2.4.zip</url>
-               <name>Full</name>
-             </download>
-          </downloads>
         </release>
         <release>
             <version>1.2.3</version>

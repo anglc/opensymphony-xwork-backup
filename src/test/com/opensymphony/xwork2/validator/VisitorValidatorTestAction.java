@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class VisitorValidatorTestAction extends ActionSupport {
 
-    private List<TestBean> testBeanList = new ArrayList<TestBean>();
+    private List testBeanList = new ArrayList();
     private String context;
     private TestBean bean = new TestBean();
     private TestBean[] testBeanArray;
@@ -59,11 +59,11 @@ public class VisitorValidatorTestAction extends ActionSupport {
         return testBeanArray;
     }
 
-    public void setTestBeanList(List<TestBean> testBeanList) {
+    public void setTestBeanList(List testBeanList) {
         this.testBeanList = testBeanList;
     }
 
-    public List<TestBean> getTestBeanList() {
+    public List getTestBeanList() {
         return testBeanList;
     }
 }

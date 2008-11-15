@@ -4,13 +4,13 @@
  */
 package com.opensymphony.xwork2.conversion.metadata;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import com.opensymphony.xwork2.conversion.annotations.ConversionRule;
-import com.opensymphony.xwork2.conversion.impl.DefaultObjectTypeDeterminer;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import com.opensymphony.xwork2.util.DefaultObjectTypeDeterminer;
 
-import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.PrintWriter;
 
 /**
  * <code>ConversionDescription</code>
@@ -23,7 +23,7 @@ public class ConversionDescription {
     /**
      * Jakarta commons-logging reference.
      */
-    protected static Logger log = null;
+    protected static Log log = null;
 
 
     public static final String KEY_PREFIX = "Key_";
@@ -44,7 +44,7 @@ public class ConversionDescription {
     public String type = null;
 
     public ConversionDescription() {
-        log = LoggerFactory.getLogger(this.getClass());
+        log = LogFactory.getLog(this.getClass());
     }
 
     /**
@@ -54,7 +54,7 @@ public class ConversionDescription {
      */
     public ConversionDescription(String property) {
         this.property = property;
-        log = LoggerFactory.getLogger(this.getClass());
+        log = LogFactory.getLog(this.getClass());
     }
 
     /**

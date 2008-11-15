@@ -4,38 +4,34 @@
  */
 package com.opensymphony.xwork2.config.providers;
 
+import com.opensymphony.xwork2.util.ClassLoaderUtil;
+import com.opensymphony.xwork2.util.FileManager;
+import com.opensymphony.xwork2.util.TextUtils;
 import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.ObjectFactory;
 import com.opensymphony.xwork2.XWorkException;
-import com.opensymphony.xwork2.config.Configuration;
-import com.opensymphony.xwork2.config.ConfigurationException;
-import com.opensymphony.xwork2.config.ConfigurationProvider;
-import com.opensymphony.xwork2.config.ConfigurationUtil;
-import com.opensymphony.xwork2.config.entities.*;
+import com.opensymphony.xwork2.config.*;
 import com.opensymphony.xwork2.config.impl.LocatableFactory;
-import com.opensymphony.xwork2.inject.Container;
-import com.opensymphony.xwork2.inject.ContainerBuilder;
-import com.opensymphony.xwork2.inject.Inject;
-import com.opensymphony.xwork2.inject.Scope;
-import com.opensymphony.xwork2.util.*;
+import com.opensymphony.xwork2.config.entities.*;
+import com.opensymphony.xwork2.inject.*;
+import com.opensymphony.xwork2.util.DomHelper;
 import com.opensymphony.xwork2.util.location.LocatableProperties;
 import com.opensymphony.xwork2.util.location.Location;
 import com.opensymphony.xwork2.util.location.LocationUtils;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 
 
@@ -50,7 +46,7 @@ import java.util.*;
  */
 public class XmlConfigurationProvider implements ConfigurationProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(XmlConfigurationProvider.class);
+    private static final Log LOG = LogFactory.getLog(XmlConfigurationProvider.class);
 
     private List<Document> documents;
     private Set<String> includedFileNames;
@@ -61,7 +57,6 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
     private boolean errorIfMissing;
     private Map<String, String> dtdMappings;
     private Configuration configuration;
-    private boolean throwExceptionOnDuplicateBeans = true;
 
     public XmlConfigurationProvider() {
         this("xwork.xml", true);
@@ -81,10 +76,6 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
         mappings.put("-//OpenSymphony Group//XWork 1.1//EN", "xwork-1.1.dtd");
         mappings.put("-//OpenSymphony Group//XWork 1.0//EN", "xwork-1.0.dtd");
         setDtdMappings(mappings);
-    }
-
-    public void setThrowExceptionOnDuplicateBeans(boolean val) {
-        this.throwExceptionOnDuplicateBeans = val;
     }
 
     public void setDtdMappings(Map<String, String> mappings) {
@@ -112,7 +103,6 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
     public void destroy() {
     }
 
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -131,7 +121,6 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
         return true;
     }
 
-    @Override
     public int hashCode() {
         return ((configFileName != null) ? configFileName.hashCode() : 0);
     }
@@ -163,7 +152,7 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
 
                     final String nodeName = child.getNodeName();
 
-                    if ("bean".equals(nodeName)) {
+                    if (nodeName.equals("bean")) {
                         String type = child.getAttribute("type");
                         String name = child.getAttribute("name");
                         String impl = child.getAttribute("class");
@@ -196,14 +185,13 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                             if ("true".equals(onlyStatic)) {
                                 // Force loading of class to detect no class def found exceptions
                                 cimpl.getDeclaredClasses();
+
                                 containerBuilder.injectStatics(cimpl);
                             } else {
                                 if (containerBuilder.contains(ctype, name)) {
                                     Location loc = LocationUtils.getLocation(loadedBeans.get(ctype.getName() + name));
-                                    if (throwExceptionOnDuplicateBeans) {
-                                        throw new ConfigurationException("Bean type " + ctype + " with the name " +
-                                                name + " has already been loaded by " + loc, child);
-                                    }
+                                    throw new ConfigurationException("Bean type " + ctype + " with the name " +
+                                            name + " has already been loaded by " + loc, child);
                                 }
 
                                 // Force loading of class to detect no class def found exceptions
@@ -222,7 +210,7 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                                 LOG.debug("Unable to load optional class: " + ex);
                             }
                         }
-                    } else if ("constant".equals(nodeName)) {
+                    } else if (nodeName.equals("constant")) {
                         String name = child.getAttribute("name");
                         String value = child.getAttribute("value");
                         props.setProperty(name, value, childNode);
@@ -247,7 +235,7 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
 
                     final String nodeName = child.getNodeName();
 
-                    if ("package".equals(nodeName)) {
+                    if (nodeName.equals("package")) {
                         PackageConfig cfg = addPackage(child);
                         if (cfg.isNeedsRefresh()) {
                             reloads.add(child);
@@ -285,11 +273,11 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
             }
 
             // Print out error messages for all misconfigured inheritence packages
-            if (result.size() > 0) {
+            if (result.size() > 0 ) {
                 for (Element rp : result) {
                     String parent = rp.getAttribute("extends");
-                    if (parent != null) {
-                        List<PackageConfig> parents = ConfigurationUtil.buildParentsFromString(configuration, parent);
+                    if ( parent != null) {
+                        List parents = ConfigurationUtil.buildParentsFromString(configuration, parent);
                         if (parents != null && parents.size() <= 0) {
                             LOG.error("Unable to find parent packages " + parent);
                         }
@@ -315,7 +303,7 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
         return false;
     }
 
-    protected void addAction(Element actionElement, PackageConfig.Builder packageContext) throws ConfigurationException {
+    protected void addAction(Element actionElement, PackageConfig packageContext) throws ConfigurationException {
         String name = actionElement.getAttribute("name");
         String className = actionElement.getAttribute("class");
         String methodName = actionElement.getAttribute("method");
@@ -331,39 +319,34 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
         // use the default-class-ref from the <package/>
         if (!TextUtils.stringSet(className)) {
             // if there is a package default-class-ref use that, otherwise use action support
-           /* if (TextUtils.stringSet(packageContext.getDefaultClassRef())) {
+            if (TextUtils.stringSet(packageContext.getDefaultClassRef())) {
                 className = packageContext.getDefaultClassRef();
             } else {
                 className = ActionSupport.class.getName();
-            }*/
-
-        } else {
-            if (!verifyAction(className, name, location)) {
-                return;
             }
         }
 
+        if (!verifyAction(className, name, location)) {
+            return;
+        }
 
+        Map actionParams = XmlHelper.getParams(actionElement);
 
-        Map<String, ResultConfig> results;
+        Map results;
+
         try {
             results = buildResults(actionElement, packageContext);
         } catch (ConfigurationException e) {
             throw new ConfigurationException("Error building results for action " + name + " in namespace " + packageContext.getNamespace(), e, actionElement);
         }
 
-        List<InterceptorMapping> interceptorList = buildInterceptorList(actionElement, packageContext);
+        List interceptorList = buildInterceptorList(actionElement, packageContext);
 
-        List<ExceptionMappingConfig> exceptionMappings = buildExceptionMappings(actionElement, packageContext);
+        List exceptionMappings = buildExceptionMappings(actionElement, packageContext);
 
-        ActionConfig actionConfig = new ActionConfig.Builder(packageContext.getName(), name, className)
-                .methodName(methodName)
-                .addResultConfigs(results)
-                .addInterceptors(interceptorList)
-                .addExceptionMappings(exceptionMappings)
-                .addParams(XmlHelper.getParams(actionElement))
-                .location(location)
-                .build();
+        ActionConfig actionConfig = new ActionConfig(methodName, className, packageContext.getName(), actionParams, results, interceptorList,
+                exceptionMappings);
+        actionConfig.setLocation(location);
         packageContext.addActionConfig(name, actionConfig);
 
         if (LOG.isDebugEnabled()) {
@@ -410,10 +393,10 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
      * Create a PackageConfig from an XML element representing it.
      */
     protected PackageConfig addPackage(Element packageElement) throws ConfigurationException {
-        PackageConfig.Builder newPackage = buildPackageContext(packageElement);
+        PackageConfig newPackage = buildPackageContext(packageElement);
 
         if (newPackage.isNeedsRefresh()) {
-            return newPackage.build();
+            return newPackage;
         }
 
         if (LOG.isDebugEnabled()) {
@@ -449,12 +432,11 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
         // load the default action reference for this package
         loadDefaultActionRef(newPackage, packageElement);
 
-        PackageConfig cfg = newPackage.build();
-        configuration.addPackageConfig(cfg.getName(), cfg);
-        return cfg;
+        configuration.addPackageConfig(newPackage.getName(), newPackage);
+        return newPackage;
     }
 
-    protected void addResultTypes(PackageConfig.Builder packageContext, Element element) {
+    protected void addResultTypes(PackageConfig packageContext, Element element) {
         NodeList resultTypeList = element.getElementsByTagName("result-type");
 
         for (int i = 0; i < resultTypeList.getLength(); i++) {
@@ -474,19 +456,19 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                 catch (Throwable t) {
                     // if we get here, the result type doesn't have a default param defined.
                 }
-                ResultTypeConfig.Builder resultType = new ResultTypeConfig.Builder(name, className).defaultResultParam(paramName)
-                        .location(DomHelper.getLocationObject(resultTypeElement));
+                ResultTypeConfig resultType = new ResultTypeConfig(name, className, paramName);
+                resultType.setLocation(DomHelper.getLocationObject(resultTypeElement));
 
-                Map<String, String> params = XmlHelper.getParams(resultTypeElement);
+                Map params = XmlHelper.getParams(resultTypeElement);
 
                 if (!params.isEmpty()) {
-                    resultType.addParams(params);
+                    resultType.setParams(params);
                 }
-                packageContext.addResultTypeConfig(resultType.build());
+                packageContext.addResultTypeConfig(resultType);
 
                 // set the default result type
                 if ("true".equals(def)) {
-                    packageContext.defaultResultType(name);
+                    packageContext.setDefaultResultType(name);
                 }
             }
         }
@@ -506,15 +488,15 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
         return null;
     }
 
-    protected List<InterceptorMapping> buildInterceptorList(Element element, PackageConfig.Builder context) throws ConfigurationException {
-        List<InterceptorMapping> interceptorList = new ArrayList<InterceptorMapping>();
+    protected List buildInterceptorList(Element element, PackageConfig context) throws ConfigurationException {
+        List interceptorList = new ArrayList();
         NodeList interceptorRefList = element.getElementsByTagName("interceptor-ref");
 
         for (int i = 0; i < interceptorRefList.getLength(); i++) {
             Element interceptorRefElement = (Element) interceptorRefList.item(i);
 
             if (interceptorRefElement.getParentNode().equals(element) || interceptorRefElement.getParentNode().getNodeName().equals(element.getNodeName())) {
-                List<InterceptorMapping> interceptors = lookupInterceptorReference(context, interceptorRefElement);
+                List interceptors = lookupInterceptorReference(context, interceptorRefElement);
                 interceptorList.addAll(interceptors);
             }
         }
@@ -527,7 +509,7 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
      * <p/>
      * If no parents are found, it will return a root package.
      */
-    protected PackageConfig.Builder buildPackageContext(Element packageElement) {
+    protected PackageConfig buildPackageContext(Element packageElement) {
         String parent = packageElement.getAttribute("extends");
         String abstractVal = packageElement.getAttribute("abstract");
         boolean isAbstract = Boolean.valueOf(abstractVal).booleanValue();
@@ -540,33 +522,36 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                     "a custom ObjectFactory or Interceptor.", packageElement);
         }
 
-        PackageConfig.Builder cfg = new PackageConfig.Builder(name)
-                .namespace(namespace)
-                .isAbstract(isAbstract)
-                .location(DomHelper.getLocationObject(packageElement));
+        PackageConfig cfg = null;
 
+        if (!TextUtils.stringSet(TextUtils.noNull(parent))) { // no parents
 
-        if (TextUtils.stringSet(TextUtils.noNull(parent))) { // has parents, let's look it up
+            cfg = new PackageConfig(name, namespace, isAbstract);
+        } else { // has parents, let's look it up
 
-            List<PackageConfig> parents = ConfigurationUtil.buildParentsFromString(configuration, parent);
+            List parents = ConfigurationUtil.buildParentsFromString(configuration, parent);
 
             if (parents.size() <= 0) {
-                cfg.needsRefresh(true);
+                cfg = new PackageConfig(name, namespace, isAbstract);
+                cfg.setNeedsRefresh(true);
             } else {
-                cfg.addParents(parents);
+                cfg = new PackageConfig(name, namespace, isAbstract, parents);
             }
         }
 
+        if (cfg != null) {
+            cfg.setLocation(DomHelper.getLocationObject(packageElement));
+        }
         return cfg;
     }
 
     /**
      * Build a map of ResultConfig objects from below a given XML element.
      */
-    protected Map<String, ResultConfig> buildResults(Element element, PackageConfig.Builder packageContext) {
+    protected Map buildResults(Element element, PackageConfig packageContext) {
         NodeList resultEls = element.getElementsByTagName("result");
 
-        Map<String, ResultConfig> results = new LinkedHashMap<String, ResultConfig>();
+        Map results = new LinkedHashMap();
 
         for (int i = 0; i < resultEls.getLength(); i++) {
             Element resultElement = (Element) resultEls.item(i);
@@ -593,12 +578,10 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                 }
 
 
-                ResultTypeConfig config = packageContext.getResultType(resultType);
+                ResultTypeConfig config = packageContext.getAllResultTypeConfigs().get(resultType);
 
                 if (config == null) {
-                    throw new ConfigurationException("There is no result type defined for type '" + resultType
-                            + "' mapped with name '" + resultName + "'."
-                            + "  Did you mean '" + guessResultType(resultType) + "'?", resultElement);
+                    throw new ConfigurationException("There is no result type defined for type '" + resultType + "' mapped with name '" + resultName + "'", resultElement);
                 }
 
                 String resultClass = config.getClazz();
@@ -614,11 +597,11 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                 {
                     // if <result ...>something</result> then we add a parameter of 'something' as this is the most used result param
                     if (resultElement.getChildNodes().getLength() >= 1) {
-                        resultParams = new LinkedHashMap<String, String>();
+                        resultParams = new LinkedHashMap();
 
                         String paramName = config.getDefaultResultParam();
                         if (paramName != null) {
-                            StringBuilder paramValue = new StringBuilder();
+                            StringBuffer paramValue = new StringBuffer();
                             for (int j = 0; j < resultElement.getChildNodes().getLength(); j++) {
                                 if (resultElement.getChildNodes().item(j).getNodeType() == Node.TEXT_NODE) {
                                     String val = resultElement.getChildNodes().item(j).getNodeValue();
@@ -638,17 +621,15 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                 }
 
                 // create new param map, so that the result param can override the config param
-                Map<String, String> params = new LinkedHashMap<String, String>();
-                Map<String, String> configParams = config.getParams();
+                Map params = new LinkedHashMap();
+                Map configParams = config.getParams();
                 if (configParams != null) {
                     params.putAll(configParams);
                 }
                 params.putAll(resultParams);
 
-                ResultConfig resultConfig = new ResultConfig.Builder(resultName, resultClass)
-                        .addParams(params)
-                        .location(DomHelper.getLocationObject(element))
-                        .build();
+                ResultConfig resultConfig = new ResultConfig(resultName, resultClass, params);
+                resultConfig.setLocation(DomHelper.getLocationObject(element));
                 results.put(resultConfig.getName(), resultConfig);
             }
         }
@@ -656,33 +637,13 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
         return results;
     }
 
-    protected String guessResultType(String type) {
-        StringBuilder sb = null;
-        if (type != null) {
-            sb = new StringBuilder();
-            boolean capNext = false;
-            for (int x=0; x<type.length(); x++) {
-                char c = type.charAt(x);
-                if (c == '-') {
-                    capNext = true;
-                    continue;
-                } else if (Character.isLowerCase(c) && capNext) {
-                    c = Character.toUpperCase(c);
-                    capNext = false;
-                }
-                sb.append(c);
-            }
-        }
-        return (sb != null ? sb.toString() : null);
-    }
-
     /**
      * Build a map of ResultConfig objects from below a given XML element.
      */
-    protected List<ExceptionMappingConfig> buildExceptionMappings(Element element, PackageConfig.Builder packageContext) {
+    protected List buildExceptionMappings(Element element, PackageConfig packageContext) {
         NodeList exceptionMappingEls = element.getElementsByTagName("exception-mapping");
 
-        List<ExceptionMappingConfig> exceptionMappings = new ArrayList<ExceptionMappingConfig>();
+        List exceptionMappings = new ArrayList();
 
         for (int i = 0; i < exceptionMappingEls.getLength(); i++) {
             Element ehElement = (Element) exceptionMappingEls.item(i);
@@ -692,16 +653,14 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                 String exceptionClassName = ehElement.getAttribute("exception");
                 String exceptionResult = ehElement.getAttribute("result");
 
-                Map<String, String> params = XmlHelper.getParams(ehElement);
+                Map params = XmlHelper.getParams(ehElement);
 
                 if (!TextUtils.stringSet(emName)) {
                     emName = exceptionResult;
                 }
 
-                ExceptionMappingConfig ehConfig = new ExceptionMappingConfig.Builder(emName, exceptionClassName, exceptionResult)
-                        .addParams(params)
-                        .location(DomHelper.getLocationObject(ehElement))
-                        .build();
+                ExceptionMappingConfig ehConfig = new ExceptionMappingConfig(emName, exceptionClassName, exceptionResult, params);
+                ehConfig.setLocation(DomHelper.getLocationObject(ehElement));
                 exceptionMappings.add(ehConfig);
             }
         }
@@ -710,54 +669,54 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
     }
 
 
-    protected void loadDefaultInterceptorRef(PackageConfig.Builder packageContext, Element element) {
+    protected void loadDefaultInterceptorRef(PackageConfig packageContext, Element element) {
         NodeList resultTypeList = element.getElementsByTagName("default-interceptor-ref");
 
         if (resultTypeList.getLength() > 0) {
             Element defaultRefElement = (Element) resultTypeList.item(0);
-            packageContext.defaultInterceptorRef(defaultRefElement.getAttribute("name"));
+            packageContext.setDefaultInterceptorRef(defaultRefElement.getAttribute("name"));
         }
     }
 
-    protected void loadDefaultActionRef(PackageConfig.Builder packageContext, Element element) {
+    protected void loadDefaultActionRef(PackageConfig packageContext, Element element) {
         NodeList resultTypeList = element.getElementsByTagName("default-action-ref");
 
         if (resultTypeList.getLength() > 0) {
             Element defaultRefElement = (Element) resultTypeList.item(0);
-            packageContext.defaultActionRef(defaultRefElement.getAttribute("name"));
+            packageContext.setDefaultActionRef(defaultRefElement.getAttribute("name"));
         }
     }
 
     /**
      * Load all of the global results for this package from the XML element.
      */
-    protected void loadGlobalResults(PackageConfig.Builder packageContext, Element packageElement) {
+    protected void loadGlobalResults(PackageConfig packageContext, Element packageElement) {
         NodeList globalResultList = packageElement.getElementsByTagName("global-results");
 
         if (globalResultList.getLength() > 0) {
             Element globalResultElement = (Element) globalResultList.item(0);
-            Map<String, ResultConfig> results = buildResults(globalResultElement, packageContext);
+            Map results = buildResults(globalResultElement, packageContext);
             packageContext.addGlobalResultConfigs(results);
         }
     }
 
-    protected void loadDefaultClassRef(PackageConfig.Builder packageContext, Element element) {
+    protected void loadDefaultClassRef(PackageConfig packageContext, Element element) {
         NodeList defaultClassRefList = element.getElementsByTagName("default-class-ref");
         if (defaultClassRefList.getLength() > 0) {
             Element defaultClassRefElement = (Element) defaultClassRefList.item(0);
-            packageContext.defaultClassRef(defaultClassRefElement.getAttribute("class"));
+            packageContext.setDefaultClassRef(defaultClassRefElement.getAttribute("class"));
         }
     }
 
     /**
      * Load all of the global results for this package from the XML element.
      */
-    protected void loadGobalExceptionMappings(PackageConfig.Builder packageContext, Element packageElement) {
+    protected void loadGobalExceptionMappings(PackageConfig packageContext, Element packageElement) {
         NodeList globalExceptionMappingList = packageElement.getElementsByTagName("global-exception-mappings");
 
         if (globalExceptionMappingList.getLength() > 0) {
             Element globalExceptionMappingElement = (Element) globalExceptionMappingList.item(0);
-            List<ExceptionMappingConfig> exceptionMappings = buildExceptionMappings(globalExceptionMappingElement, packageContext);
+            List exceptionMappings = buildExceptionMappings(globalExceptionMappingElement, packageContext);
             packageContext.addGlobalExceptionMappingConfigs(exceptionMappings);
         }
     }
@@ -772,23 +731,23 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
     //            loadConfigurationFile(fileName, db);
     //        }
     //    }
-    protected InterceptorStackConfig loadInterceptorStack(Element element, PackageConfig.Builder context) throws ConfigurationException {
+    protected InterceptorStackConfig loadInterceptorStack(Element element, PackageConfig context) throws ConfigurationException {
         String name = element.getAttribute("name");
 
-        InterceptorStackConfig.Builder config = new InterceptorStackConfig.Builder(name)
-                .location(DomHelper.getLocationObject(element));
+        InterceptorStackConfig config = new InterceptorStackConfig(name);
+        config.setLocation(DomHelper.getLocationObject(element));
         NodeList interceptorRefList = element.getElementsByTagName("interceptor-ref");
 
         for (int j = 0; j < interceptorRefList.getLength(); j++) {
             Element interceptorRefElement = (Element) interceptorRefList.item(j);
-            List<InterceptorMapping> interceptors = lookupInterceptorReference(context, interceptorRefElement);
+            List interceptors = lookupInterceptorReference(context, interceptorRefElement);
             config.addInterceptors(interceptors);
         }
 
-        return config.build();
+        return config;
     }
 
-    protected void loadInterceptorStacks(Element element, PackageConfig.Builder context) throws ConfigurationException {
+    protected void loadInterceptorStacks(Element element, PackageConfig context) throws ConfigurationException {
         NodeList interceptorStackList = element.getElementsByTagName("interceptor-stack");
 
         for (int i = 0; i < interceptorStackList.getLength(); i++) {
@@ -800,7 +759,7 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
         }
     }
 
-    protected void loadInterceptors(PackageConfig.Builder context, Element element) throws ConfigurationException {
+    protected void loadInterceptors(PackageConfig context, Element element) throws ConfigurationException {
         NodeList interceptorList = element.getElementsByTagName("interceptor");
 
         for (int i = 0; i < interceptorList.getLength(); i++) {
@@ -808,11 +767,9 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
             String name = interceptorElement.getAttribute("name");
             String className = interceptorElement.getAttribute("class");
 
-            Map<String, String> params = XmlHelper.getParams(interceptorElement);
-            InterceptorConfig config = new InterceptorConfig.Builder(name, className)
-                    .addParams(params)
-                    .location(DomHelper.getLocationObject(interceptorElement))
-                    .build();
+            Map params = XmlHelper.getParams(interceptorElement);
+            InterceptorConfig config = new InterceptorConfig(name, className, params);
+            config.setLocation(DomHelper.getLocationObject(interceptorElement));
 
             context.addInterceptorConfig(config);
         }
@@ -828,7 +785,7 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
     //            addPackage(packageElement);
     //        }
     //    }
-    private List<Document> loadConfigurationFiles(String fileName, Element includeElement) {
+    private List loadConfigurationFiles(String fileName, Element includeElement) {
         List<Document> docs = new ArrayList<Document>();
         if (!includedFileNames.contains(fileName)) {
             if (LOG.isDebugEnabled()) {
@@ -852,8 +809,10 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                 if (errorIfMissing) {
                     throw new ConfigurationException("Could not open files of the name " + fileName, ioException);
                 } else {
-                    LOG.info("Unable to locate configuration files of the name "
-                            + fileName + ", skipping");
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Unable to locate configuration files of the name "
+                                + fileName + ", skipping");
+                    }
                     return docs;
                 }
             }
@@ -871,9 +830,9 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
                     doc = DomHelper.parse(in, dtdMappings);
                 } catch (XWorkException e) {
                     if (includeElement != null) {
-                        throw new ConfigurationException("Unable to load " + url, e, includeElement);
+                        throw new ConfigurationException(e, includeElement);
                     } else {
-                        throw new ConfigurationException("Unable to load " + url, e);
+                        throw new ConfigurationException(e);
                     }
                 } catch (Exception e) {
                     final String s = "Caught exception while loading file " + fileName;
@@ -900,20 +859,9 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
 
                         final String nodeName = child.getNodeName();
 
-                        if ("include".equals(nodeName)) {
+                        if (nodeName.equals("include")) {
                             String includeFileName = child.getAttribute("file");
-                            if (includeFileName.indexOf('*') != -1) {
-                                // handleWildCardIncludes(includeFileName, docs, child);
-                                ClassPathFinder wildcardFinder = new ClassPathFinder();
-                                wildcardFinder.setPattern(includeFileName);
-                                Vector<String> wildcardMatches = wildcardFinder.findMatches();
-                                for (String match : wildcardMatches) {
-                                    docs.addAll(loadConfigurationFiles(match, child));
-                                }
-                            } else {
-
-                                docs.addAll(loadConfigurationFiles(includeFileName, child));
-                            }
+                            docs.addAll(loadConfigurationFiles(includeFileName, child));
                         }
                     }
                 }
@@ -926,127 +874,6 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
             }
         }
         return docs;
-    }
-
-    private void handleWildCardIncludes(String includeFileName, List<Document> docs, Element child) {
-        // check for star*, pedantic
-        if (includeFileName.indexOf('*') == -1) {
-            throw new XWorkException("handleWildCardIncludes called with name not containing wildcard");
-        }
-        LOG.info("encountered wildcard include, checking for - " + includeFileName);
-        URL[] curDirUrls;
-
-        // curDirUrls = ClassLoaderUtil.getResources("/", this.getClass(), true);
-        ClassLoader cl = XmlConfigurationProvider.class.getClassLoader();
-        URLClassLoader ucl;
-        if (cl instanceof URLClassLoader) {
-            ucl = (URLClassLoader) cl;
-        } else {
-            throw new XWorkException("cannot create an URLClassLoader from current classloader");
-        }
-        curDirUrls = ucl.getURLs();
-
-        String fileNamePrefix = null;
-        if (!includeFileName.startsWith("*")) {
-            fileNamePrefix = includeFileName.substring(0, includeFileName.indexOf('*'));
-        }
-
-        String fileNameSuffix = null;
-        if (!includeFileName.endsWith("*")) {
-            fileNameSuffix = includeFileName.substring(includeFileName.lastIndexOf('*') + 1);
-        }
-
-        String relativeDir = null;
-
-        if (includeFileName.contains("/")) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("includeFileName contains a /");
-            }
-            if (includeFileName.lastIndexOf('/') > includeFileName.indexOf('*')) {
-                throw new XWorkException("wildcard includes does not support wildcard directories");
-            }
-            fileNamePrefix = includeFileName.substring(includeFileName.lastIndexOf('/') + 1, includeFileName.indexOf('*'));
-            relativeDir = includeFileName.substring(0, includeFileName.lastIndexOf('/'));
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("relativeDir = " + relativeDir + ", fileNameMask = " + fileNamePrefix);
-            }
-        }
-
-        for (URL baseSearchURL : curDirUrls) {
-            if (!"file".equals(baseSearchURL.getProtocol())) {
-                continue;
-            }
-
-            File searchDir;
-
-            if (relativeDir != null) {
-                if (relativeDir.startsWith("/")) {
-                    relativeDir = relativeDir.substring(relativeDir.indexOf('/') + 1);
-                }
-                File parent;
-                try {
-                    parent = new File(baseSearchURL.toURI());
-                } catch (URISyntaxException e) {
-                    throw new XWorkException("bad URI for searchDir - " + baseSearchURL.toString());
-                }
-                if (!parent.isDirectory()) {
-                    continue;
-                }
-                searchDir = new File(parent, relativeDir);
-            } else {
-                try {
-                    searchDir = new File(baseSearchURL.toURI());
-                } catch (URISyntaxException e) {
-                    throw new XWorkException("bad URI for searchDir - " + baseSearchURL.toString());
-                }
-            }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("using - " + searchDir.toURI().toString() + ", as searchDir");
-            }
-            if (searchDir != null && searchDir.isDirectory()) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("getting searchDir file list");
-                }
-                String[] filesInDir = searchDir.list();
-                if (filesInDir == null) {
-                    throw new XWorkException("unable to find any files in include directory");
-                }
-                for (String fileInDir : filesInDir) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("checking - " + fileInDir);
-                    }
-                    boolean fileMatches = false;
-                    if (fileNameSuffix != null || fileNamePrefix != null) {
-                        fileMatches = (fileNameSuffix != null && fileNamePrefix != null &&
-                                fileNameSuffix.length() + fileNamePrefix.length() < fileInDir.length() &&
-                                fileInDir.startsWith(fileNamePrefix) && fileInDir.endsWith(fileNameSuffix));
-                        fileMatches = fileMatches ||
-                                (fileNamePrefix == null &&
-                                        fileInDir.endsWith(fileNameSuffix));
-                        fileMatches = fileMatches ||
-                                (fileNameSuffix == null &&
-                                        fileInDir.startsWith(fileNamePrefix));
-                    }
-
-                    if (fileMatches) {
-                        if (relativeDir != null) {
-                            if (!relativeDir.endsWith("/")) {
-                                relativeDir = relativeDir.concat("/");
-                            }
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("calling load on - " + relativeDir + fileInDir);
-                            }
-                            docs.addAll(loadConfigurationFiles(relativeDir + fileInDir, child));
-                        } else {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("calling load on - " + fileInDir);
-                            }
-                            docs.addAll(loadConfigurationFiles(fileInDir, child));
-                        }
-                    }
-                }
-            }
-        }
     }
 
     protected Iterator<URL> getConfigurationUrls(String fileName) throws IOException {
@@ -1070,9 +897,9 @@ public class XmlConfigurationProvider implements ConfigurationProvider {
      * @param context               The PackageConfig to lookup the interceptor from
      * @return A list of Interceptor objects
      */
-    private List<InterceptorMapping> lookupInterceptorReference(PackageConfig.Builder context, Element interceptorRefElement) throws ConfigurationException {
+    private List lookupInterceptorReference(PackageConfig context, Element interceptorRefElement) throws ConfigurationException {
         String refName = interceptorRefElement.getAttribute("name");
-        Map<String, String> refParams = XmlHelper.getParams(interceptorRefElement);
+        Map refParams = XmlHelper.getParams(interceptorRefElement);
 
         Location loc = LocationUtils.getLocation(interceptorRefElement);
         return InterceptorBuilder.constructInterceptorReference(context, refName, refParams, loc, objectFactory);

@@ -7,12 +7,13 @@ package com.opensymphony.xwork2;
 import com.opensymphony.xwork2.util.LocalizedTextUtil;
 import com.opensymphony.xwork2.util.ValueStack;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.text.MessageFormat;
 
 /**
  * DefaultTextProvider gets texts from only the default resource bundles associated with the
@@ -26,11 +27,9 @@ public class DefaultTextProvider implements TextProvider, Serializable, Unchaina
 
     private static final Object[] EMPTY_ARGS = new Object[0];
 
-    public DefaultTextProvider() {
-    }
+    public static final DefaultTextProvider INSTANCE = new DefaultTextProvider();
 
-    public boolean hasKey(String key) {
-        return getText(key) != null;
+    private DefaultTextProvider() {
     }
 
     public String getText(String key) {
@@ -45,7 +44,7 @@ public class DefaultTextProvider implements TextProvider, Serializable, Unchaina
         return text;
     }
 
-    public String getText(String key, List<Object> args) {
+    public String getText(String key, List args) {
         Object[] params;
         if (args != null) {
             params = args.toArray();
@@ -67,7 +66,7 @@ public class DefaultTextProvider implements TextProvider, Serializable, Unchaina
         return LocalizedTextUtil.findDefaultText(key, ActionContext.getContext().getLocale(), params);
     }
 
-    public String getText(String key, String defaultValue, List<Object> args) {
+    public String getText(String key, String defaultValue, List args) {
         String text = getText(key, args);
         if (text == null) {
             MessageFormat format = new MessageFormat(defaultValue);
@@ -104,20 +103,19 @@ public class DefaultTextProvider implements TextProvider, Serializable, Unchaina
 
 
     public String getText(String key, String defaultValue, String obj) {
-        List<Object> args = new ArrayList<Object>(1);
+        List args = new ArrayList(1);
         args.add(obj);
         return getText(key, defaultValue, args);
     }
 
-    public String getText(String key, String defaultValue, List<Object> args, ValueStack stack) {
+    public String getText(String key, String defaultValue, List args, ValueStack stack) {
         //we're not using the value stack here
         return getText(key, defaultValue, args);
     }
 
     public String getText(String key, String defaultValue, String[] args, ValueStack stack) {
         //we're not using the value stack here
-        List<Object> values = new ArrayList<Object>(Arrays.asList(args));
-        return getText(key, defaultValue, values);
+        return getText(key, defaultValue, Arrays.asList(args));
     }
 
     public ResourceBundle getTexts(String bundleName) {
@@ -128,4 +126,7 @@ public class DefaultTextProvider implements TextProvider, Serializable, Unchaina
         return null;
     }
 
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }
 }

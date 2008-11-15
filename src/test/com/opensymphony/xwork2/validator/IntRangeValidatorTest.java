@@ -4,10 +4,8 @@
  */
 package com.opensymphony.xwork2.validator;
 
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionProxy;
-import com.opensymphony.xwork2.ValidationAware;
-import com.opensymphony.xwork2.XWorkTestCase;
+import com.opensymphony.xwork2.*;
+import com.opensymphony.xwork2.config.ConfigurationManager;
 import com.opensymphony.xwork2.config.providers.MockConfigurationProvider;
 import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
 
@@ -26,10 +24,10 @@ import java.util.Map;
 public class IntRangeValidatorTest extends XWorkTestCase {
 
     public void testRangeValidation() {
-        HashMap<String, String> params = new HashMap<String, String>();
+        HashMap params = new HashMap();
         params.put("bar", "5");
 
-        HashMap<String, Object> extraContext = new HashMap<String, Object>();
+        HashMap extraContext = new HashMap();
         extraContext.put(ActionContext.PARAMETERS, params);
 
         try {
@@ -37,11 +35,11 @@ public class IntRangeValidatorTest extends XWorkTestCase {
             proxy.execute();
             assertTrue(((ValidationAware) proxy.getAction()).hasFieldErrors());
 
-            Map<String, List<String>> errors = ((ValidationAware) proxy.getAction()).getFieldErrors();
-            List<String> errorMessages = errors.get("bar");
+            Map errors = ((ValidationAware) proxy.getAction()).getFieldErrors();
+            List errorMessages = (List) errors.get("bar");
             assertEquals(1, errorMessages.size());
 
-            String errorMessage = errorMessages.get(0);
+            String errorMessage = (String) errorMessages.get(0);
             assertNotNull(errorMessage);
         } catch (Exception e) {
             e.printStackTrace();
@@ -49,7 +47,6 @@ public class IntRangeValidatorTest extends XWorkTestCase {
         }
     }
 
-    @Override
     protected void setUp() throws Exception {
         loadConfigurationProviders(new XmlConfigurationProvider("xwork-test-beans.xml"), new MockConfigurationProvider());
     }

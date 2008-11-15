@@ -17,14 +17,14 @@
  */
 package com.opensymphony.xwork2.config.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.opensymphony.xwork2.XWorkTestCase;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.config.entities.ExceptionMappingConfig;
 import com.opensymphony.xwork2.config.entities.InterceptorMapping;
 import com.opensymphony.xwork2.config.entities.ResultConfig;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class ActionConfigMatcherTest extends XWorkTestCase {
 
@@ -33,13 +33,13 @@ public class ActionConfigMatcherTest extends XWorkTestCase {
     private ActionConfigMatcher matcher;
     
     // ----------------------------------------------------- Setup and Teardown
-    @Override public void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         configMap = buildActionConfigMap();
         matcher = new ActionConfigMatcher(configMap);
     }
 
-    @Override public void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 
@@ -134,30 +134,39 @@ public class ActionConfigMatcherTest extends XWorkTestCase {
 
     private Map<String,ActionConfig> buildActionConfigMap() {
         Map<String, ActionConfig> map = new HashMap<String,ActionConfig>();
-
-        HashMap params = new HashMap();
+        
+        ActionConfig config = new ActionConfig();
+        
+        config.setClassName("foo.bar.{1}Action");
+        config.setMethodName("do{2}");
+        config.setPackageName("package-{1}");
+        
+        HashMap<String, Object> params = new HashMap<String,Object>();
         params.put("first", "{1}");
         params.put("second", "{2}");
-
-        ActionConfig config = new ActionConfig.Builder("package-{1}", "foo/*/*", "foo.bar.{1}Action")
-                .methodName("do{2}")
-                .addParams(params)
-                .addExceptionMapping(new ExceptionMappingConfig.Builder("foo{1}", "java.lang.{2}Exception", "success{1}")
-                    .addParams(new HashMap(params))
-                    .build())
-                .addInterceptor(new InterceptorMapping(null, null))
-                .addResultConfig(new ResultConfig.Builder("success{1}", "foo.{2}").addParams(params).build())
-                .build();
+        config.setParams(params);
         map.put("foo/*/*", config);
         
-        config = new ActionConfig.Builder("package-{1}", "bar/*/**", "bar")
-                .methodName("do{1}_{1}")
-                .addParam("first", "{2}")
-                .build();
+        config.addExceptionMapping(new ExceptionMappingConfig(
+                "foo{1}", "java.lang.{2}Exception", "success{1}", new HashMap(params)));
+        
+        config.addInterceptor(new InterceptorMapping());
+        
+        config.addResultConfig(new ResultConfig("success{1}", "foo.{2}", new HashMap(params)));
+        
+        config = new ActionConfig();
+        
+        config.setClassName("bar");
+        config.setMethodName("do{1}_{1}");
+        config.setPackageName("package-{1}");
+        
+        params = new HashMap<String,Object>();
+        params.put("first", "{2}");
+        config.setParams(params);
         
         map.put("bar/*/**", config);
         
-        map.put("noWildcard", new ActionConfig.Builder("", "", "").build());
+        map.put("noWildcard", new ActionConfig());
 
         return map;
     }

@@ -4,11 +4,11 @@
 */
 package com.opensymphony.xwork2.interceptor;
 
-import com.opensymphony.xwork2.*;
+import com.opensymphony.xwork2.mock.MockActionProxy;
+import com.opensymphony.xwork2.mock.MockActionInvocation;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
-import com.opensymphony.xwork2.mock.MockActionInvocation;
-import com.opensymphony.xwork2.mock.MockActionProxy;
+import com.opensymphony.xwork2.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +32,7 @@ import java.util.Map;
 public class AliasInterceptorTest extends XWorkTestCase {
 
     public void testUsingDefaultInterceptorThatAliasPropertiesAreCopied() throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
+        Map params = new HashMap();
         params.put("aliasSource", "source here");
 
         loadConfigurationProviders(new XmlConfigurationProvider("xwork-sample.xml"));
@@ -43,6 +43,7 @@ public class AliasInterceptorTest extends XWorkTestCase {
         actionOne.setBar(23);
         proxy.execute();
         assertEquals(actionOne.getAliasSource(), actionOne.getAliasDest());
+
     }
 
     public void testInvalidAliasExpression() throws Exception {
@@ -51,9 +52,10 @@ public class AliasInterceptorTest extends XWorkTestCase {
 
         MockActionProxy map = new MockActionProxy();
 
-        ActionConfig cfg = new ActionConfig.Builder("", "", "")
-                .addParam("aliases", "invalid alias expression")
-                .build();
+        ActionConfig cfg = new ActionConfig();
+        Map params = new HashMap();
+        params.put("aliases", "invalid alias expression");
+        cfg.setParams(params);
         map.setConfig(cfg);
 
         mai.setProxy(map);
@@ -74,9 +76,10 @@ public class AliasInterceptorTest extends XWorkTestCase {
 
         MockActionProxy map = new MockActionProxy();
 
-        ActionConfig cfg = new ActionConfig.Builder("", "", "")
-                .addParam("hello", "invalid alias expression")
-                .build();
+        ActionConfig cfg = new ActionConfig();
+        Map params = new HashMap();
+        params.put("hello", "invalid alias expression");
+        cfg.setParams(params);
         map.setConfig(cfg);
 
         mai.setProxy(map);
@@ -98,9 +101,10 @@ public class AliasInterceptorTest extends XWorkTestCase {
 
         MockActionProxy map = new MockActionProxy();
 
-        ActionConfig cfg = new ActionConfig.Builder("", "", "")
-                .addParam("hello", "invalid alias expression")
-                .build();
+        ActionConfig cfg = new ActionConfig();
+        Map params = new HashMap();
+        params.put("hello", "invalid alias expression");
+        cfg.setParams(params);
         map.setConfig(cfg);
 
         mai.setProxy(map);

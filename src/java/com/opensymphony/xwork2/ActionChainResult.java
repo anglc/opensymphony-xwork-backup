@@ -7,10 +7,14 @@ package com.opensymphony.xwork2;
 import com.opensymphony.xwork2.inject.Inject;
 import com.opensymphony.xwork2.util.TextParseUtil;
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 
-import java.util.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.LinkedList;
 
 
 /**
@@ -44,7 +48,7 @@ import java.util.*;
 * <b>Example:</b>
 *
 * <pre><!-- START SNIPPET: example -->
-* &lt;package name="public" extends="struts-default"&gt;
+* &lt;package name="public" extends="webwork-default"&gt;
 *     &lt;!-- Chain creatAccount to login, using the default parameter --&gt;
 *     &lt;action name="createAccount" class="..."&gt;
 *         &lt;result type="chain"&gt;login&lt;/result&gt;
@@ -59,7 +63,7 @@ import java.util.*;
 *     &lt;/action&gt;
 * &lt;/package&gt;
 *
-* &lt;package name="secure" extends="struts-default" namespace="/secure"&gt;
+* &lt;package name="secure" extends="webwork-default" namespace="/secure"&gt;
 *     &lt;action name="dashboard" class="..."&gt;
 *         &lt;result&gt;dashboard.jsp&lt;/result&gt;
 *     &lt;/action&gt;
@@ -70,7 +74,7 @@ import java.util.*;
 */
 public class ActionChainResult implements Result {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ActionChainResult.class);
+    private static final Log log = LogFactory.getLog(ActionChainResult.class);
 
     /**
      * The result parameter name to set the name of the action to chain to.
@@ -171,11 +175,11 @@ public class ActionChainResult implements Result {
      * Get the XWork chain history.
      * The stack is a list of <code>namespace/action!method</code> keys.
      */
-    public static LinkedList<String> getChainHistory() {
-        LinkedList<String> chainHistory = (LinkedList<String>) ActionContext.getContext().get(CHAIN_HISTORY);
+    public static LinkedList getChainHistory() {
+        LinkedList chainHistory = (LinkedList) ActionContext.getContext().get(CHAIN_HISTORY);
         //  Add if not exists
         if (chainHistory == null) {
-            chainHistory = new LinkedList<String>();
+            chainHistory = new LinkedList();
             ActionContext.getContext().put(CHAIN_HISTORY, chainHistory);
         }
 
@@ -209,20 +213,23 @@ public class ActionChainResult implements Result {
         }
         addToHistory(finalNamespace, finalActionName, finalMethodName);
 
-        HashMap<String, Object> extraContext = new HashMap<String, Object>();
+        HashMap extraContext = new HashMap();
         extraContext.put(ActionContext.VALUE_STACK, ActionContext.getContext().getValueStack());
         extraContext.put(ActionContext.PARAMETERS, ActionContext.getContext().getParameters());
         extraContext.put(CHAIN_HISTORY, ActionChainResult.getChainHistory());
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Chaining to action " + finalActionName);
+        if (log.isDebugEnabled()) {
+            log.debug("Chaining to action " + finalActionName);
         }
 
-        proxy = actionProxyFactory.createActionProxy(finalNamespace, finalActionName, finalMethodName, extraContext);
+        proxy = actionProxyFactory.createActionProxy(finalNamespace, finalActionName, extraContext);
+        if (null != finalMethodName) {
+            proxy.setMethod(finalMethodName);
+        }
         proxy.execute();
     }
 
-    @Override public boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -235,7 +242,7 @@ public class ActionChainResult implements Result {
         return true;
     }
 
-    @Override public int hashCode() {
+    public int hashCode() {
         int result;
         result = (actionName != null ? actionName.hashCode() : 0);
         result = 31 * result + (namespace != null ? namespace.hashCode() : 0);
@@ -244,13 +251,13 @@ public class ActionChainResult implements Result {
     }
 
     private boolean isInChainHistory(String namespace, String actionName, String methodName) {
-        LinkedList<? extends String> chainHistory = ActionChainResult.getChainHistory();
+        LinkedList chainHistory = ActionChainResult.getChainHistory();
 
         if (chainHistory == null) {
             return false;
         } else {
             //  Actions to skip
-            Set<String> skipActionsList = new HashSet<String>();
+            Set skipActionsList = new HashSet();
             if (skipActions != null && skipActions.length() > 0) {
                 ValueStack stack = ActionContext.getContext().getValueStack();
                 String finalSkipActions = TextParseUtil.translateVariables(this.skipActions, stack);
@@ -266,7 +273,7 @@ public class ActionChainResult implements Result {
     }
 
     private void addToHistory(String namespace, String actionName, String methodName) {
-        List<String> chainHistory = ActionChainResult.getChainHistory();
+        LinkedList chainHistory = ActionChainResult.getChainHistory();
         chainHistory.add(makeKey(namespace, actionName, methodName));
     }
 

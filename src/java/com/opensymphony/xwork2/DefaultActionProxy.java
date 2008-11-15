@@ -4,18 +4,20 @@
  */
 package com.opensymphony.xwork2;
 
+import com.opensymphony.xwork2.util.TextUtils;
 import com.opensymphony.xwork2.config.Configuration;
 import com.opensymphony.xwork2.config.ConfigurationException;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.inject.Inject;
 import com.opensymphony.xwork2.util.LocalizedTextUtil;
-import com.opensymphony.xwork2.util.TextUtils;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 import com.opensymphony.xwork2.util.profiling.UtilTimerStack;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Map;
 
 
 /**
@@ -32,12 +34,13 @@ public class DefaultActionProxy implements ActionProxy, Serializable {
 	
 	private static final long serialVersionUID = 3293074152487468527L;
 
-	private static final Logger LOG = LoggerFactory.getLogger(DefaultActionProxy.class);
+	private static final Log LOG = LogFactory.getLog(DefaultActionProxy.class);
 
     protected Configuration configuration;
     protected ActionConfig config;
     protected ActionInvocation invocation;
     protected UnknownHandler unknownHandler;
+    protected Map extraContext;
     protected String actionName;
     protected String namespace;
     protected String method;
@@ -54,9 +57,9 @@ public class DefaultActionProxy implements ActionProxy, Serializable {
      * The reason for the builder methods is so that you can use a subclass to create your own DefaultActionProxy instance
      * (like a RMIActionProxy).
      */
-    protected DefaultActionProxy(ActionInvocation inv, String namespace, String actionName, String methodName, boolean executeResult, boolean cleanupContext) {
+    protected DefaultActionProxy(String namespace, String actionName, Map extraContext, boolean executeResult, boolean cleanupContext) throws Exception {
         
-        this.invocation = inv;
+    		
 		this.cleanupContext = cleanupContext;
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Creating an DefaultActionProxy for namespace " + namespace + " and action name " + actionName);
@@ -65,7 +68,8 @@ public class DefaultActionProxy implements ActionProxy, Serializable {
 		this.actionName = actionName;
 		this.namespace = namespace;
 		this.executeResult = executeResult;
-        this.method = methodName;
+		this.extraContext = extraContext;
+    	
     }
     
     @Inject
@@ -142,6 +146,11 @@ public class DefaultActionProxy implements ActionProxy, Serializable {
         return method;
     }
 
+    public void setMethod(String method) {
+        this.method = method;
+        resolveMethod();
+    }
+
     private void resolveMethod() {
         // if the method is set to null, use the one from the configuration
         // if the one from the configuration is also null, use "execute"
@@ -153,7 +162,7 @@ public class DefaultActionProxy implements ActionProxy, Serializable {
         }
     }
 
-    protected void prepare()  {
+    public void prepare() throws Exception {
         String profileKey = "create DefaultActionProxy: ";
         try {
             UtilTimerStack.push(profileKey);
@@ -176,15 +185,9 @@ public class DefaultActionProxy implements ActionProxy, Serializable {
                 }
                 throw new ConfigurationException(message);
             }
-
-            resolveMethod();
             
-            if (!config.isAllowedMethod(method)) {
-                throw new ConfigurationException("Invalid method: "+method+" for action "+actionName);
-            }
-
-            invocation.init(this);
-
+            invocation = new DefaultActionInvocation(objectFactory, unknownHandler, this, extraContext, true, actionEventListener);
+            resolveMethod();
         } finally {
             UtilTimerStack.pop(profileKey);
         }

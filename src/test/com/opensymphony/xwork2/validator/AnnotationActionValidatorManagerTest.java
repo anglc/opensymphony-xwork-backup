@@ -5,13 +5,12 @@
 package com.opensymphony.xwork2.validator;
 
 import com.opensymphony.xwork2.AnnotatedTestBean;
-import com.opensymphony.xwork2.SimpleAnnotationAction;
 import com.opensymphony.xwork2.XWorkTestCase;
+import com.opensymphony.xwork2.SimpleAnnotationAction;
 import com.opensymphony.xwork2.test.AnnotationDataAware2;
-import com.opensymphony.xwork2.test.AnnotationUser;
 import com.opensymphony.xwork2.test.SimpleAnnotationAction2;
 import com.opensymphony.xwork2.test.SimpleAnnotationAction3;
-import com.opensymphony.xwork2.util.FileManager;
+import com.opensymphony.xwork2.test.AnnotationUser;
 import com.opensymphony.xwork2.validator.validators.*;
 
 import java.util.List;
@@ -31,12 +30,12 @@ public class AnnotationActionValidatorManagerTest extends XWorkTestCase {
 
     AnnotationActionValidatorManager annotationActionValidatorManager;
 
-    @Override protected void setUp() throws Exception {
+    protected void setUp() throws Exception {
+        annotationActionValidatorManager = new AnnotationActionValidatorManager();
         super.setUp();
-        annotationActionValidatorManager = (AnnotationActionValidatorManager) container.getInstance(ActionValidatorManager.class);
     }
 
-    @Override protected void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         annotationActionValidatorManager = null;
         super.tearDown();
     }
@@ -54,21 +53,6 @@ public class AnnotationActionValidatorManagerTest extends XWorkTestCase {
         assertEquals(17, validatorList.size());
     }
 
-    public void testGetValidatorsForGivenMethodNameWithoutReloading() throws ValidationException {
-        List validatorList = annotationActionValidatorManager.getValidators(SimpleAnnotationAction.class, alias, "execute");
-
-        //disable configuration reload/devmode
-        FileManager.setReloadingConfigs(false);
-
-        //17 in the class level + 0 in the alias
-        assertEquals(12, validatorList.size());
-        
-        validatorList = annotationActionValidatorManager.getValidators(SimpleAnnotationAction.class, alias, "execute");
-
-        //expect same number of validators
-        assertEquals(12, validatorList.size());
-    }
-    
     public void testDefaultMessageInterpolation() {
         // get validators
         List validatorList = annotationActionValidatorManager.getValidators(AnnotatedTestBean.class, "beanMessageBundle");
@@ -84,7 +68,7 @@ public class AnnotationActionValidatorManagerTest extends XWorkTestCase {
             assertTrue(context.hasErrors());
             assertTrue(context.hasFieldErrors());
 
-            List<String> l = context.getFieldErrors().get("count");
+            List l = (List) context.getFieldErrors().get("count");
             assertNotNull(l);
             assertEquals(1, l.size());
             assertEquals("Smaller Invalid Count: 99", l.get(0));
@@ -212,7 +196,7 @@ public class AnnotationActionValidatorManagerTest extends XWorkTestCase {
             assertTrue(context.hasErrors());
             assertTrue(context.hasFieldErrors());
 
-            List<String> l = context.getFieldErrors().get("count");
+            List l = (List) context.getFieldErrors().get("count");
             assertNotNull(l);
             assertEquals(1, l.size());
             assertEquals("Count must be between 1 and 100, current value is 150.", l.get(0));
@@ -244,11 +228,11 @@ public class AnnotationActionValidatorManagerTest extends XWorkTestCase {
             assertTrue(context.hasFieldErrors());
 
             // check field errors
-            List<String> l = context.getFieldErrors().get("email");
+            List l = (List) context.getFieldErrors().get("email");
             assertNotNull(l);
             assertEquals(1, l.size());
             assertEquals("Not a valid e-mail.", l.get(0));
-            l = context.getFieldErrors().get("email2");
+            l = (List) context.getFieldErrors().get("email2");
             assertNotNull(l);
             assertEquals(2, l.size());
             assertEquals("Not a valid e-mail2.", l.get(0));
@@ -256,7 +240,7 @@ public class AnnotationActionValidatorManagerTest extends XWorkTestCase {
 
             // check action errors
             assertTrue(context.hasActionErrors());
-            l = (List<String>) context.getActionErrors();
+            l = (List) context.getActionErrors();
             assertNotNull(l);
             assertEquals(2, l.size()); // both expression test failed see AnnotationUser-validation.xml
             assertEquals("Email does not start with mark", l.get(0));

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2;
 
+import com.opensymphony.xwork2.config.Configuration;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 
 
@@ -13,55 +14,49 @@ import com.opensymphony.xwork2.config.entities.ActionConfig;
  * An example of this would be a remote proxy, where the layer between XWork and the action might be RMI or SOAP.
  *
  * @author Jason Carreira
+ *         Created Jun 9, 2003 11:27:55 AM
  */
 public interface ActionProxy {
 
     /**
-     * Gets the Action instance for this Proxy.
-     *
-     * @return the Action instance
+     * Called after all dependencies are set
+     */
+    void prepare() throws Exception;
+    
+    /**
+     * @return the Action instance for this Proxy
      */
     Object getAction();
 
     /**
-     * Gets the alias name this ActionProxy is mapped to.
-     *
-     * @return the alias name
+     * @return the alias name this ActionProxy is mapped to
      */
     String getActionName();
 
     /**
-     * Gets the ActionConfig this ActionProxy is built from.
-     *
-     * @return the ActionConfig
+     * @return the ActionConfig this ActionProxy is built from
      */
     ActionConfig getConfig();
 
     /**
-     * Sets whether this ActionProxy should also execute the Result after executing the Action.
+     * Sets whether this ActionProxy should also execute the Result after executing the Action
      *
-     * @param executeResult <tt>true</tt> to also execute the Result.
+     * @param executeResult
      */
     void setExecuteResult(boolean executeResult);
 
     /**
-     * Gets the status of whether the ActionProxy is set to execute the Result after the Action is executed.
-     *
-     * @return the status
+     * @return the status of whether the ActionProxy is set to execute the Result after the Action is executed
      */
     boolean getExecuteResult();
 
     /**
-     * Gets the ActionInvocation associated with this ActionProxy.
-     *
-     * @return the ActionInvocation
+     * @return the ActionInvocation associated with this ActionProxy
      */
     ActionInvocation getInvocation();
 
     /**
-     * Gets the namespace the ActionConfig for this ActionProxy is mapped to.
-     *
-     * @return the namespace
+     * @return the namespace the ActionConfig for this ActionProxy is mapped to
      */
     String getNamespace();
 
@@ -70,15 +65,21 @@ public interface ActionProxy {
      * ThreadLocal before invoking the ActionInvocation, then set the old ActionContext back into the ThreadLocal.
      *
      * @return the result code returned from executing the ActionInvocation
-     * @throws Exception can be thrown.
+     * @throws Exception
      * @see ActionInvocation
      */
     String execute() throws Exception;
 
     /**
-     * Gets the method name to execute, or <tt>null</tt> if no method has been specified (meaning <code>execute</code> will be invoked).
+     * Sets the method to execute for the action invocation. If no method is specified, the method provided by
+     * in the action's configuration will be used.
      *
-     * @return the method to execute
+     * @param method the string name of the method to invoke
+     */
+    void setMethod(String method);
+
+    /**
+     * Returns the method to execute, or null if no method has been specified (meaning "execute" will be invoked)
      */
     String getMethod();
     

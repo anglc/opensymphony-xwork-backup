@@ -15,9 +15,9 @@ import java.util.*;
  */
 public class GenericValidatorContext extends DelegatingValidatorContext {
 
-    private Collection<String> actionErrors;
-    private Collection<String> actionMessages;
-    private Map<String, List<String>> fieldErrors;
+    private Collection actionErrors;
+    private Collection actionMessages;
+    private Map fieldErrors;
 
 
     public GenericValidatorContext(Object object) {
@@ -25,28 +25,23 @@ public class GenericValidatorContext extends DelegatingValidatorContext {
     }
 
 
-    @Override
-    public synchronized void setActionErrors(Collection<String> errorMessages) {
+    public synchronized void setActionErrors(Collection errorMessages) {
         this.actionErrors = errorMessages;
     }
 
-    @Override
-    public synchronized Collection<String> getActionErrors() {
-        return new ArrayList<String>(internalGetActionErrors());
+    public synchronized Collection getActionErrors() {
+        return new ArrayList(internalGetActionErrors());
     }
 
-    @Override
-    public synchronized void setActionMessages(Collection<String> messages) {
+    public synchronized void setActionMessages(Collection messages) {
         this.actionMessages = messages;
     }
 
-    @Override
-    public synchronized Collection<String> getActionMessages() {
-        return new ArrayList<String>(internalGetActionMessages());
+    public synchronized Collection getActionMessages() {
+        return new ArrayList(internalGetActionMessages());
     }
 
-    @Override
-    public synchronized void setFieldErrors(Map<String, List<String>> errorMap) {
+    public synchronized void setFieldErrors(Map errorMap) {
         this.fieldErrors = errorMap;
     }
 
@@ -55,12 +50,10 @@ public class GenericValidatorContext extends DelegatingValidatorContext {
      *
      * @return an unmodifiable Map with errors mapped from fieldname (String) to Collection of String error messages
      */
-    @Override
-    public synchronized Map<String, List<String>> getFieldErrors() {
-        return new HashMap<String, List<String>>(internalGetFieldErrors());
+    public synchronized Map getFieldErrors() {
+        return new HashMap(internalGetFieldErrors());
     }
 
-    @Override
     public synchronized void addActionError(String anErrorMessage) {
         internalGetActionErrors().add(anErrorMessage);
     }
@@ -68,25 +61,22 @@ public class GenericValidatorContext extends DelegatingValidatorContext {
     /**
      * Add an Action level message to this Action
      */
-    @Override
     public void addActionMessage(String aMessage) {
         internalGetActionMessages().add(aMessage);
     }
 
-    @Override
     public synchronized void addFieldError(String fieldName, String errorMessage) {
-        final Map<String, List<String>> errors = internalGetFieldErrors();
-        List<String> thisFieldErrors = errors.get(fieldName);
+        final Map errors = internalGetFieldErrors();
+        List thisFieldErrors = (List) errors.get(fieldName);
 
         if (thisFieldErrors == null) {
-            thisFieldErrors = new ArrayList<String>();
+            thisFieldErrors = new ArrayList();
             errors.put(fieldName, thisFieldErrors);
         }
 
         thisFieldErrors.add(errorMessage);
     }
 
-    @Override
     public synchronized boolean hasActionErrors() {
         return (actionErrors != null) && !actionErrors.isEmpty();
     }
@@ -96,35 +86,33 @@ public class GenericValidatorContext extends DelegatingValidatorContext {
      *
      * @return (hasActionErrors() || hasFieldErrors())
      */
-    @Override
     public synchronized boolean hasErrors() {
         return (hasActionErrors() || hasFieldErrors());
     }
 
-    @Override
     public synchronized boolean hasFieldErrors() {
         return (fieldErrors != null) && !fieldErrors.isEmpty();
     }
 
-    private Collection<String> internalGetActionErrors() {
+    private Collection internalGetActionErrors() {
         if (actionErrors == null) {
-            actionErrors = new ArrayList<String>();
+            actionErrors = new ArrayList();
         }
 
         return actionErrors;
     }
 
-    private Collection<String> internalGetActionMessages() {
+    private Collection internalGetActionMessages() {
         if (actionMessages == null) {
-            actionMessages = new ArrayList<String>();
+            actionMessages = new ArrayList();
         }
 
         return actionMessages;
     }
 
-    private Map<String, List<String>> internalGetFieldErrors() {
+    private Map internalGetFieldErrors() {
         if (fieldErrors == null) {
-            fieldErrors = new HashMap<String, List<String>>();
+            fieldErrors = new HashMap();
         }
 
         return fieldErrors;

@@ -5,9 +5,11 @@
 package com.opensymphony.xwork2.validator;
 
 import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.XWorkTestCase;
 import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.ValueStackFactory;
 import com.opensymphony.xwork2.validator.validators.URLValidator;
+
+import junit.framework.TestCase;
 
 /**
  * Test case for URLValidator
@@ -15,7 +17,7 @@ import com.opensymphony.xwork2.validator.validators.URLValidator;
  * @author tm_jee
  * @version $Date$ $Id$
  */
-public class URLValidatorTest extends XWorkTestCase {
+public class URLValidatorTest extends TestCase {
 
 	
 	ValueStack stack;
@@ -26,8 +28,7 @@ public class URLValidatorTest extends XWorkTestCase {
 		URLValidator validator = new URLValidator();
 		validator.setValidatorContext(new GenericValidatorContext(new Object()));
 		validator.setFieldName("testingUrl1");
-        validator.setValueStack(ActionContext.getContext().getValueStack());
-        validator.validate(new MyObject());
+		validator.validate(new MyObject());
 		
 		assertFalse(validator.getValidatorContext().hasErrors());
 		assertFalse(validator.getValidatorContext().hasActionErrors());
@@ -40,8 +41,7 @@ public class URLValidatorTest extends XWorkTestCase {
 		URLValidator validator = new URLValidator();
 		validator.setValidatorContext(new GenericValidatorContext(new Object()));
 		validator.setFieldName("testingUrl2");
-        validator.setValueStack(ActionContext.getContext().getValueStack());
-        validator.validate(new MyObject());
+		validator.validate(new MyObject());
 		
 		assertFalse(validator.getValidatorContext().hasErrors());
 		assertFalse(validator.getValidatorContext().hasActionErrors());
@@ -54,8 +54,7 @@ public class URLValidatorTest extends XWorkTestCase {
 		URLValidator validator = new URLValidator();
 		validator.setValidatorContext(new GenericValidatorContext(new Object()));
 		validator.setFieldName("testingUrl3");
-        validator.setValueStack(ActionContext.getContext().getValueStack());
-        validator.validate(new MyObject());
+		validator.validate(new MyObject());
 		
 		assertTrue(validator.getValidatorContext().hasErrors());
 		assertFalse(validator.getValidatorContext().hasActionErrors());
@@ -69,8 +68,7 @@ public class URLValidatorTest extends XWorkTestCase {
 		URLValidator validator = new URLValidator();
 		validator.setValidatorContext(new GenericValidatorContext(new Object()));
 		validator.setFieldName("testingUrl4");
-        validator.setValueStack(ActionContext.getContext().getValueStack());
-        validator.validate(new MyObject());
+		validator.validate(new MyObject());
 		
 		assertFalse(validator.getValidatorContext().hasErrors());
 		assertFalse(validator.getValidatorContext().hasActionErrors());
@@ -83,8 +81,7 @@ public class URLValidatorTest extends XWorkTestCase {
 		URLValidator validator = new URLValidator();
 		validator.setValidatorContext(new GenericValidatorContext(new Object()));
 		validator.setFieldName("testingUrl5");
-        validator.setValueStack(ActionContext.getContext().getValueStack());
-        validator.validate(new MyObject());
+		validator.validate(new MyObject());
 		
 		assertFalse(validator.getValidatorContext().hasErrors());
 		assertFalse(validator.getValidatorContext().hasActionErrors());
@@ -92,16 +89,13 @@ public class URLValidatorTest extends XWorkTestCase {
 		assertFalse(validator.getValidatorContext().hasFieldErrors());
 	}
 	
-	@Override
-    protected void setUp() throws Exception {
-	    super.setUp();
-		stack = ActionContext.getContext().getValueStack();
+	protected void setUp() throws Exception {
+		stack = ValueStackFactory.getFactory().createValueStack();
 		actionContext = ActionContext.getContext();
+		actionContext.setValueStack(stack);
 	}
 	
-	@Override
-    protected void tearDown() throws Exception {
-	    super.tearDown();
+	protected void tearDown() throws Exception {
 		stack = null;
 		actionContext = null;
 	}

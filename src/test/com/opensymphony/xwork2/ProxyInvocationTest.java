@@ -1,9 +1,9 @@
 package com.opensymphony.xwork2;
 
-import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
 
 /**
  * Contribed by: Ruben Inoto
@@ -19,6 +19,9 @@ public class ProxyInvocationTest extends XWorkTestCase {
      */
     public void testProxyInvocation() throws Exception {
 
+        
+        ObjectFactory.setObjectFactory(new ProxyObjectFactory());
+
         ActionProxy proxy = actionProxyFactory
             .createActionProxy("", "ProxyInvocation", createDummyContext());
         ActionInvocation invocation = proxy.getInvocation();
@@ -31,15 +34,14 @@ public class ProxyInvocationTest extends XWorkTestCase {
     /** 
      * Needed for the creation of the action proxy
      */
-    private Map<String, Object> createDummyContext() {
-        Map<String, Object> params = new HashMap<String, Object>();
+    private Map createDummyContext() {
+        Map params = new HashMap();
         params.put("blah", "this is blah");
-        Map<String, Object> extraContext = new HashMap<String, Object>();
+        Map extraContext = new HashMap();
         extraContext.put(ActionContext.PARAMETERS, params);
         return extraContext;
     }
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
 

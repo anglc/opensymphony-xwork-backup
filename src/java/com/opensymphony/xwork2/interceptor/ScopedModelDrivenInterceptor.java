@@ -4,15 +4,15 @@
  */
 package com.opensymphony.xwork2.interceptor;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ObjectFactory;
 import com.opensymphony.xwork2.XWorkException;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.inject.Inject;
-
-import java.lang.reflect.Method;
-import java.util.Map;
 
 /**
  * <!-- START SNIPPET: description -->
@@ -56,7 +56,7 @@ import java.util.Map;
  * <!-- START SNIPPET: example -->
  * 
  * &lt;-- Basic usage --&gt;
- * &lt;interceptor name="scopedModelDriven" class="com.opensymphony.interceptor.ScopedModelDrivenInterceptor" /&gt;
+ * &lt;interceptor name="scoped-model-driven" class="com.opensymphony.interceptor.ScopedModelDrivenInterceptor" /&gt;
  * 
  * &lt;-- Using all available parameters --&gt;
  * &lt;interceptor name="gangsterForm" class="com.opensymphony.interceptor.ScopedModelDrivenInterceptor"&gt;
@@ -83,7 +83,7 @@ public class ScopedModelDrivenInterceptor extends AbstractInterceptor {
     
     protected Object resolveModel(ObjectFactory factory, ActionContext actionContext, String modelClassName, String modelScope, String modelName) throws Exception {
         Object model = null;
-        Map<String, Object> scopeMap = actionContext.getContextMap();
+        Map scopeMap = actionContext.getContextMap();
         if ("session".equals(modelScope)) {
             scopeMap = actionContext.getSession();
         }
@@ -96,7 +96,6 @@ public class ScopedModelDrivenInterceptor extends AbstractInterceptor {
         return model;
     }
 
-    @Override
     public String intercept(ActionInvocation invocation) throws Exception {
         Object action = invocation.getAction();
 

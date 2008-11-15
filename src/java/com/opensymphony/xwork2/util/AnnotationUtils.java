@@ -6,11 +6,12 @@ package com.opensymphony.xwork2.util;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +22,6 @@ import java.util.regex.Pattern;
  *
  * @author Rainer Hermanns
  * @author Zsolt Szasz, zsolt at lorecraft dot com
- * @author Dan Oxlade, dan d0t oxlade at gmail d0t c0m
  * @version $Id$
  */
 public class AnnotationUtils {
@@ -84,7 +84,7 @@ public class AnnotationUtils {
      * @param clazz
      * @param allInterfaces
      */
-    public static void addAllInterfaces(Class clazz, List<Class> allInterfaces) {
+    public static void addAllInterfaces(Class clazz, List allInterfaces) {
         if (clazz == null) {
             return;
         }
@@ -94,61 +94,12 @@ public class AnnotationUtils {
         addAllInterfaces(clazz.getSuperclass(), allInterfaces);
     }
 
-	/**
-	 * For the given <code>Class</code> get a collection of the the {@link AnnotatedElement}s 
-	 * that match the given <code>annotation</code>s or if no <code>annotation</code>s are 
-	 * specified then return all of the annotated elements of the given <code>Class</code>. 
-	 * Includes only the method level annotations.
-	 * 
-	 * @param clazz The {@link Class} to inspect
-	 * @param annotation the {@link Annotation}s to find
-	 * @return A {@link Collection}&lt;{@link AnnotatedElement}&gt; containing all of the
-	 *  method {@link AnnotatedElement}s matching the specified {@link Annotation}s
-	 */
-	public static final Collection<Method> getAnnotatedMethods(Class clazz, Class<? extends Annotation>... annotation){
-		Collection<Method> toReturn = new HashSet<Method>();
-		
-		for(Method m : clazz.getMethods()){
-			if( ArrayUtils.isNotEmpty(annotation) && isAnnotatedBy(m,annotation) ){
-				toReturn.add(m);
-			}else if( ArrayUtils.isEmpty(annotation) && ArrayUtils.isNotEmpty(m.getAnnotations())){
-				toReturn.add(m);
-			}
-		}
-		
-		return toReturn;
-	}
-
-	/**
-	 * Varargs version of <code>AnnotatedElement.isAnnotationPresent()</code>
-	 * @see AnnotatedElement
-	 */
-	public static final boolean isAnnotatedBy(AnnotatedElement annotatedElement, Class<? extends Annotation>... annotation) {
-		if(ArrayUtils.isEmpty(annotation)) return false;
-		
-		for( Class<? extends Annotation> c : annotation ){
-			if( annotatedElement.isAnnotationPresent(c) ) return true;
-		}
-		
-		return false;
-	}    
-    
-	/**
-	 * 
-	 * @deprecated since 2.0.4 use getAnnotatedMethods
-	 */
-    @Deprecated
     public static List<Method> findAnnotatedMethods(Class clazz, Class<? extends Annotation> annotationClass) {
         List<Method> methods = new ArrayList<Method>();
         findRecursively(clazz, annotationClass, methods);
         return methods;
     }
 
-    /**
-     * 
-     * @deprecated since 2.0.4 use getAnnotatedMethods
-     */
-    @Deprecated
     public static void findRecursively(Class clazz, Class<? extends Annotation> annotationClass, List<Method> methods) {
         for (Method m : clazz.getDeclaredMethods()) {
             if (m.getAnnotation(annotationClass) != null) { methods.add(0, m); }
@@ -205,9 +156,9 @@ public class AnnotationUtils {
 
         if (directory.exists()) {
             final String[] files = directory.list();
-            for (String file : files) {
-                if (file.endsWith(".class")) {
-                    classes.add(pckgname + "." + file.substring(0, file.length() - 6));
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].endsWith(".class")) {
+                    classes.add(pckgname + "." + files[i].substring(0, files[i].length() - 6));
                 }
             }
         }

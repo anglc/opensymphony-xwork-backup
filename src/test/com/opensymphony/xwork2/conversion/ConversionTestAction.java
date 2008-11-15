@@ -5,13 +5,10 @@
 package com.opensymphony.xwork2.conversion;
 
 import com.opensymphony.xwork2.Action;
-import com.opensymphony.xwork2.conversion.annotations.Conversion;
-import com.opensymphony.xwork2.conversion.annotations.ConversionRule;
-import com.opensymphony.xwork2.conversion.annotations.ConversionType;
-import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
+import com.opensymphony.xwork2.conversion.annotations.*;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.HashMap;
 
 /**
  * <code>ConversionTestAction</code>

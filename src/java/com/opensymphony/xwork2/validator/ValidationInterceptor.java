@@ -1,18 +1,11 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.validator;
 
 import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.ActionProxy;
-import com.opensymphony.xwork2.Validateable;
-import com.opensymphony.xwork2.inject.Inject;
-import com.opensymphony.xwork2.interceptor.DefaultWorkflowInterceptor;
 import com.opensymphony.xwork2.interceptor.MethodFilterInterceptor;
-import com.opensymphony.xwork2.interceptor.PrefixMethodInvocationUtil;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 
 /**
  * <!-- START SNIPPET: description -->
@@ -27,10 +20,9 @@ import com.opensymphony.xwork2.util.logging.LoggerFactory;
  * parameter. <b>excludeMethods</b> accepts a comma-delimited list of method names. For example, requests to
  * <b>foo!input.action</b> and <b>foo!back.action</b> will be skipped by this interceptor if you set the
  * <b>excludeMethods</b> parameter to "input, back".
- * 
- * </ol>
- * 
- * <p/> The workflow of the action request does not change due to this interceptor. Rather,
+ *
+ * <p/>Note that this has nothing to do with the {@link com.opensymphony.xwork2.Validateable} interface and simply adds
+ * error messages to the action. The workflow of the action request does not change due to this interceptor. Rather,
  * this interceptor is often used in conjuction with the <b>workflow</b> interceptor.
  *
  * <p/>
@@ -47,15 +39,8 @@ import com.opensymphony.xwork2.util.logging.LoggerFactory;
  *
  * <ul>
  *
- * <li>alwaysInvokeValidate - Defaults to true. If true validate() method will always
- * be invoked, otherwise it will not.</li>
+ * <li>None</li>
  *
- * <li>programmatic - Defaults to true. If true and the action is Validateable call validate(),
- * and any method that starts with "validate".
- * </li>
- * 
- * <li>declarative - Defaults to true. Perform validation based on xml or annotations.</li>
- * 
  * </ul>
  *
  * <!-- END SNIPPET: parameters -->
@@ -113,140 +98,55 @@ import com.opensymphony.xwork2.util.logging.LoggerFactory;
  * @author <a href='mailto:the_mindstorm[at]evolva[dot]ro'>Alexandru Popescu</a>
  * @see ActionValidatorManager
  * @see com.opensymphony.xwork2.interceptor.DefaultWorkflowInterceptor
+ * 
+ * @version $Date$ $Id$
  */
 public class ValidationInterceptor extends MethodFilterInterceptor {
 
     private boolean validateAnnotatedMethodOnly;
-    
-    private ActionValidatorManager actionValidatorManager;
-    
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultWorkflowInterceptor.class);
-    
-    private final static String VALIDATE_PREFIX = "validate";
-    private final static String ALT_VALIDATE_PREFIX = "validateDo";
-    
-    private boolean alwaysInvokeValidate = true;
-    private boolean programmatic = true;
-    private boolean declarative = true;
 
-    @Inject
-    public void setActionValidatorManager(ActionValidatorManager mgr) {
-        this.actionValidatorManager = mgr;
-    }
-    
-    /**
-     * Determines if {@link Validateable}'s <code>validate()</code> should be called,
-     * as well as methods whose name that start with "validate". Defaults to "true".
-     * 
-     * @param programmatic <tt>true</tt> then <code>validate()</code> is invoked.
-     */
-    public void setProgrammatic(boolean programmatic) {
-        this.programmatic = programmatic;
-    }
-
-    /**
-     * Determines if validation based on annotations or xml should be performed. Defaults 
-     * to "true".
-     * 
-     * @param declarative <tt>true</tt> then perform validation based on annotations or xml.
-     */
-    public void setDeclarative(boolean declarative) {
-        this.declarative = declarative;
-    }
-
-    /**
-     * Determines if {@link Validateable}'s <code>validate()</code> should always 
-     * be invoked. Default to "true".
-     * 
-     * @param alwaysInvokeValidate <tt>true</tt> then <code>validate()</code> is always invoked.
-     */
-    public void setAlwaysInvokeValidate(String alwaysInvokeValidate) {
-            this.alwaysInvokeValidate = Boolean.parseBoolean(alwaysInvokeValidate);
-    }
-
-    /**
-     * Gets if <code>validate()</code> should always be called or only per annotated method.
-     *
-     * @return <tt>true</tt> to only validate per annotated method, otherwise <tt>false</tt> to always validate.
-     */
     public boolean isValidateAnnotatedMethodOnly() {
         return validateAnnotatedMethodOnly;
     }
 
     /**
      * Determine if <code>validate()</code> should always be called or only per annotated method.
-     * Default to <tt>false</tt>.
+     * Default to "false".
      *
-     * @param validateAnnotatedMethodOnly  <tt>true</tt> to only validate per annotated method, otherwise <tt>false</tt> to always validate.
+     * @param validateAnnotatedMethodOnly
      */
     public void setValidateAnnotatedMethodOnly(boolean validateAnnotatedMethodOnly) {
         this.validateAnnotatedMethodOnly = validateAnnotatedMethodOnly;
     }
 
     /**
-     * Gets the current action and its context and delegates to {@link ActionValidatorManager} proper validate method.
+     * Gets the current action and its context and calls {@link DefaultActionValidatorManager#validate(Object, String)}.
      *
-     * @param invocation  the execution state of the Action.
+     * @param invocation the execution state of the Action.
      * @throws Exception if an error occurs validating the action.
      */
     protected void doBeforeInvocation(ActionInvocation invocation) throws Exception {
         Object action = invocation.getAction();
-        ActionProxy proxy = invocation.getProxy();
-        String context = proxy.getActionName();
-        String method = proxy.getMethod();
+        String context = invocation.getProxy().getActionName();
+        String method = invocation.getProxy().getMethod();
 
         if (log.isDebugEnabled()) {
             log.debug("Validating "
                     + invocation.getProxy().getNamespace() + "/" + invocation.getProxy().getActionName() + " with method "+ method +".");
-        }
-        
 
-        if (declarative) {
-           if (validateAnnotatedMethodOnly) {
-               actionValidatorManager.validate(action, context, method);
-           } else {
-               actionValidatorManager.validate(action, context);
-           }
-       }    
-        
-        if (action instanceof Validateable && programmatic) {
-            // keep exception that might occured in validateXXX or validateDoXXX
-            Exception exception = null; 
-            
-            Validateable validateable = (Validateable) action;
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Invoking validate() on action "+validateable);
-            }
-            
-            try {
-                PrefixMethodInvocationUtil.invokePrefixMethod(
-                                invocation, 
-                                new String[] { VALIDATE_PREFIX, ALT_VALIDATE_PREFIX });
-            }
-            catch(Exception e) {
-                // If any exception occurred while doing reflection, we want 
-                // validate() to be executed
-                LOG.warn("an exception occured while executing the prefix method", e);
-                exception = e;
-            }
-            
-            
-            if (alwaysInvokeValidate) {
-                validateable.validate();
-            }
-            
-            if (exception != null) { 
-                // rethrow if something is wrong while doing validateXXX / validateDoXXX 
-                throw exception;
-            }
         }
+
+        if (validateAnnotatedMethodOnly) {
+            ActionValidatorManagerFactory.getInstance().validate(action, context, method);
+        } else {
+            ActionValidatorManagerFactory.getInstance().validate(action, context);
+        }
+
     }
 
-    @Override
     protected String doIntercept(ActionInvocation invocation) throws Exception {
         doBeforeInvocation(invocation);
         
         return invocation.invoke();
     }
-
 }

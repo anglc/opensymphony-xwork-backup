@@ -14,8 +14,7 @@ public class ProxyObjectFactory extends ObjectFactory {
      * It returns an instance of the bean except if the class is FooAction. 
      * In this case, it returns a FooProxy of it.
      */
-    @Override
-    public Object buildBean(Class clazz, Map<String, Object> extraContext)
+    public Object buildBean(Class clazz, Map extraContext)
         throws Exception {
         Object bean = super.buildBean(clazz, extraContext);
         if(clazz.equals(ProxyInvocationAction.class)) {

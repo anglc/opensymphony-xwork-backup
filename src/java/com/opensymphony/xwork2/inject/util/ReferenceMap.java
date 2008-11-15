@@ -23,7 +23,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.ref.Reference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -367,12 +372,10 @@ public class ReferenceMap<K, V> implements Map<K, V>, Serializable {
       return wrapped;
     }
 
-    @Override
     public int hashCode() {
       return wrapped.hashCode();
     }
 
-    @Override
     public boolean equals(Object obj) {
       // defer to reference's equals() logic.
       return obj.equals(this);
@@ -388,7 +391,6 @@ public class ReferenceMap<K, V> implements Map<K, V>, Serializable {
       super(wrapped);
     }
 
-    @Override
     public int hashCode() {
       return System.identityHashCode(wrapped);
     }
@@ -547,12 +549,10 @@ public class ReferenceMap<K, V> implements Map<K, V>, Serializable {
       return put(key, value);
     }
 
-    @Override
     public int hashCode() {
       return key.hashCode() * 31 + value.hashCode();
     }
 
-    @Override
     public boolean equals(Object o) {
       if (!(o instanceof ReferenceMap.Entry)) {
         return false;
@@ -562,7 +562,6 @@ public class ReferenceMap<K, V> implements Map<K, V>, Serializable {
       return key.equals(entry.key) && value.equals(entry.value);
     }
 
-    @Override
     public String toString() {
       return key + "=" + value;
     }

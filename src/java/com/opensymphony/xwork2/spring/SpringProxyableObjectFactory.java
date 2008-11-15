@@ -4,8 +4,8 @@
  */
 package com.opensymphony.xwork2.spring;
 
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -22,25 +22,24 @@ import java.util.Map;
  */
 public class SpringProxyableObjectFactory extends SpringObjectFactory {
     
-    private static final Logger LOG = LoggerFactory.getLogger(SpringProxyableObjectFactory.class);
+    private static final Log log = LogFactory.getLog(SpringProxyableObjectFactory.class);
 
-    private List<String> skipBeanNames = new ArrayList<String>();
+    private List skipBeanNames = new ArrayList();
 
-    @Override
-    public Object buildBean(String beanName, Map<String, Object> extraContext) throws Exception {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Building bean for name " + beanName);
+    public Object buildBean(String beanName, Map extraContext) throws Exception {
+        if (log.isDebugEnabled()) {
+            log.debug("Building bean for name " + beanName);
         }
         if (!skipBeanNames.contains(beanName)) {
             ApplicationContext anAppContext = getApplicationContext(extraContext);
             try {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Trying the application context... appContext = " + anAppContext + ",\n bean name = " + beanName);
+                if (log.isDebugEnabled()) {
+                    log.debug("Trying the application context... appContext = " + anAppContext + ",\n bean name = " + beanName);
                 }
                 return anAppContext.getBean(beanName);
             } catch (NoSuchBeanDefinitionException e) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Did not find bean definition for bean named " + beanName + ", creating a new one...");
+                if (log.isDebugEnabled()) {
+                    log.debug("Did not find bean definition for bean named " + beanName + ", creating a new one...");
                 }
                 if (autoWiringFactory instanceof BeanDefinitionRegistry) {
                     try {
@@ -48,14 +47,14 @@ public class SpringProxyableObjectFactory extends SpringObjectFactory {
                         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) autoWiringFactory;
                         RootBeanDefinition def = new RootBeanDefinition(clazz, autowireStrategy);
                         def.setSingleton(false);
-                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Registering a new bean definition for class " + beanName);
+                         if (log.isDebugEnabled()) {
+                            log.debug("Registering a new bean definition for class " + beanName);
                         }
                         registry.registerBeanDefinition(beanName,def);
                         try {
                             return anAppContext.getBean(beanName);
                         } catch (NoSuchBeanDefinitionException e2) {
-                            LOG.warn("Could not register new bean definition for bean " + beanName);
+                            log.warn("Could not register new bean definition for bean " + beanName);
                             skipBeanNames.add(beanName);
                         }
                     } catch (ClassNotFoundException e1) {
@@ -64,8 +63,8 @@ public class SpringProxyableObjectFactory extends SpringObjectFactory {
                 }
             }
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Returning autowired instance created by default ObjectFactory");
+        if (log.isDebugEnabled()) {
+            log.debug("Returning autowired instance created by default ObjectFactory");
         }
         return autoWireBean(super.buildBean(beanName, extraContext), autoWiringFactory);
     }
@@ -78,7 +77,7 @@ public class SpringProxyableObjectFactory extends SpringObjectFactory {
      *
      * @param context  provided context.
      */
-    protected ApplicationContext getApplicationContext(Map<String, Object> context) {
+    protected ApplicationContext getApplicationContext(Map context) {
         return appContext;
     }
 }

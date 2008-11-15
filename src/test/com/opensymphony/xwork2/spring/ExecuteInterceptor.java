@@ -3,9 +3,10 @@
  */
 package com.opensymphony.xwork2.spring;
 
-import com.opensymphony.xwork2.Action;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
+import com.opensymphony.xwork2.Action;
 
 
 /**

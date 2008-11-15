@@ -5,10 +5,7 @@
 
 package com.opensymphony.xwork2.validator.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * <!-- START SNIPPET: description -->
@@ -87,10 +84,6 @@ public @interface CustomValidator {
      */
     String fieldName() default "";
 
-    /**
-     * The default error message for this validator.
-     * NOTE: It is required to set a message, if you are not using the message key for 18n lookup!
-     */
     String message() default "";
 
     String key() default "";

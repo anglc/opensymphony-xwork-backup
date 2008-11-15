@@ -4,17 +4,18 @@
  */
 package com.opensymphony.xwork2.validator;
 
-import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
-import com.opensymphony.xwork2.XWorkTestCase;
 import com.opensymphony.xwork2.validator.validators.StringLengthFieldValidator;
+
+import junit.framework.TestCase;
+
 
 /**
  * 
  * @author tm_jee
  * @version $Date$ $Id$
  */
-public class StringLengthFieldValidatorTest extends XWorkTestCase {
+public class StringLengthFieldValidatorTest extends TestCase {
 
 	protected InternalActionSupport action;
 	protected StringLengthFieldValidator validator;
@@ -121,8 +122,7 @@ public class StringLengthFieldValidatorTest extends XWorkTestCase {
 		validator.setValidatorContext(new DelegatingValidatorContext(action));
 		validator.setMaxLength(5);
 		validator.setMinLength(2);
-        validator.setValueStack(ActionContext.getContext().getValueStack());
-    }
+	}
 	
 	
 	@Override

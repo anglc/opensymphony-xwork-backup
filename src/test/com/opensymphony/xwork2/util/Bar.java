@@ -43,7 +43,6 @@ public class Bar extends ActionSupport {
         return title;
     }
 
-    @Override
     public String toString() {
         return getTitle() + ":" + getSomethingElse();
     }

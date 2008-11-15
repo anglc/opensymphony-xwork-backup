@@ -13,7 +13,7 @@ import java.util.ResourceBundle;
 /**
  * Provides access to {@link ResourceBundle}s and their underlying text messages.
  * Implementing classes can delegate {@link TextProviderSupport}. Messages will be
- * searched in multiple resource bundles, startinag with the one associated with
+ * searched in multiple resource bundles, starting with the one associated with
  * this particular class (action in most cases), continuing to try the message
  * bundle associated with each superclass as well. It will stop once a bundle is
  * found that contains the given text. This gives a cascading style that allow
@@ -29,14 +29,6 @@ import java.util.ResourceBundle;
  * @see TextProviderSupport
  */
 public interface TextProvider {
-
-    /**
-     * Checks if a message key exists.
-     *
-     * @param key
-     * @return boolean true if key exists, false otherwise.
-     */
-    boolean hasKey(String key);
 
     /**
      * Gets a message based on a message key, or null if no message is found.
@@ -76,8 +68,7 @@ public interface TextProvider {
      * @param args a list args to be used in a {@link java.text.MessageFormat} message
      * @return the message as found in the resource bundle, or null if none is found.
      */
-    String getText(String key, List<Object> args);
-
+    String getText(String key, List args);
     /**
      * Gets a message based on a key using the supplied args, as defined in
      * {@link java.text.MessageFormat}, or null if no message is found.
@@ -98,7 +89,7 @@ public interface TextProvider {
      * @param args         a list args to be used in a {@link java.text.MessageFormat} message
      * @return the message as found in the resource bundle, or defaultValue if none is found
      */
-    String getText(String key, String defaultValue, List<Object> args);
+    String getText(String key, String defaultValue, List args);
 
     /**
      * Gets a message based on a key using the supplied args, as defined in
@@ -124,7 +115,7 @@ public interface TextProvider {
      * @param stack        the value stack to use for finding the text
      * @return the message as found in the resource bundle, or defaultValue if none is found
      */
-    String getText(String key, String defaultValue, List<Object> args, ValueStack stack);
+    String getText(String key, String defaultValue, List args, ValueStack stack);
 
     /**
      * Gets a message based on a key using the supplied args, as defined in
@@ -143,15 +134,12 @@ public interface TextProvider {
     /**
      * Get the named bundle, such as "com/acme/Foo".
      *
-     * @param bundleName the name of the resource bundle, such as <code>"com/acme/Foo"</code>.
-     * @return the bundle
+     * @param bundleName the name of the resource bundle, such as "com/acme/Foo"
      */
     ResourceBundle getTexts(String bundleName);
 
     /**
      * Get the resource bundle associated with the implementing class (usually an action).
-     *
-     * @return the bundle
      */
     ResourceBundle getTexts();
 }

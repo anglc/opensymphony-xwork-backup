@@ -5,40 +5,40 @@
 
 package com.opensymphony.xwork2.interceptor;
 
-import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.util.TextParseUtil;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
-
 import java.util.Collections;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.opensymphony.xwork2.ActionInvocation;
+import com.opensymphony.xwork2.util.TextParseUtil;
 
 
 /**
  * <!-- START SNIPPET: javadoc -->
  * 
- * MethodFilterInterceptor is an abstract <code>Interceptor</code> used as
- * a base class for interceptors that will filter execution based on method 
- * names according to specified included/excluded method lists.
+ * An abstract <code>Interceptor</code> that is applied to selectively according
+ * to specified included/excluded method lists.
  * 
  * <p/>
  * 
- * Settable parameters are as follows:
+ * Setable parameters are as follows:
  * 
  * <ul>
- * 		<li>excludeMethods - method names to be excluded from interceptor processing</li>
- * 		<li>includeMethods - method names to be included in interceptor processing</li>
+ * 		<li>excludeMethods - methods name to be excluded</li>
+ * 		<li>includeMethods - methods name to be included</li>
  * </ul>
  * 
  * <p/>
  * 
  * <b>NOTE:</b> If method name are available in both includeMethods and 
- * excludeMethods, it will be considered as an included method: 
+ * excludeMethods, it will still be considered as an included method. In short
  * includeMethods takes precedence over excludeMethods.
  * 
  * <p/>
  * 
- * Interceptors that extends this capability include:
+ * Interceptors that extends this capability would be :-
  * 
  * <ul>
  *    <li>TokenInterceptor</li>
@@ -60,16 +60,16 @@ import java.util.Set;
  * @version $Date$ $Id$
  */
 public abstract class MethodFilterInterceptor extends AbstractInterceptor {
-    protected transient Logger log = LoggerFactory.getLogger(getClass());
+    protected transient Log log = LogFactory.getLog(getClass());
     
-    protected Set<String> excludeMethods = Collections.emptySet();
-    protected Set<String> includeMethods = Collections.emptySet();
+    protected Set excludeMethods = Collections.EMPTY_SET;
+    protected Set includeMethods = Collections.EMPTY_SET;
 
     public void setExcludeMethods(String excludeMethods) {
         this.excludeMethods = TextParseUtil.commaDelimitedStringToSet(excludeMethods);
     }
     
-    public Set<String> getExcludeMethodsSet() {
+    public Set getExcludeMethodsSet() {
     	return excludeMethods;
     }
 
@@ -77,11 +77,10 @@ public abstract class MethodFilterInterceptor extends AbstractInterceptor {
         this.includeMethods = TextParseUtil.commaDelimitedStringToSet(includeMethods);
     }
     
-    public Set<String> getIncludeMethodsSet() {
+    public Set getIncludeMethodsSet() {
     	return includeMethods;
     }
 
-    @Override
     public String intercept(ActionInvocation invocation) throws Exception {
         if (applyInterceptor(invocation)) {
             return doIntercept(invocation);

@@ -12,9 +12,12 @@ import com.opensymphony.xwork2.config.entities.ResultConfig;
 import com.opensymphony.xwork2.inject.ContainerBuilder;
 import com.opensymphony.xwork2.mock.MockResult;
 import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.ValueStackFactory;
 import com.opensymphony.xwork2.util.location.LocatableProperties;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**
@@ -42,16 +45,24 @@ public class ActionNestingTest extends XWorkTestCase {
         return VALUE;
     }
 
-    @Override public void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         loadConfigurationProviders(new NestedTestConfigurationProvider());
 
-        context = ActionContext.getContext();
-        context.getValueStack().push(this);
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
+
+        // create the action context
+        Map contextMap = stack.getContext();
+
+        // give the value stack a context
+        stack.push(this);
+        context = new ActionContext(contextMap);
+        ActionContext.setContext(context);
     }
 
-    @Override protected void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
+        ActionContext.setContext(null);
     }
 
     public void testNestedContext() throws Exception {
@@ -76,7 +87,7 @@ public class ActionNestingTest extends XWorkTestCase {
         ValueStack stack = ActionContext.getContext().getValueStack();
         assertEquals(VALUE, stack.findValue(KEY));
 
-        HashMap<String, Object> extraContext = new HashMap<String, Object>();
+        HashMap extraContext = new HashMap();
         extraContext.put(ActionContext.VALUE_STACK, stack);
 
         ActionProxy proxy = actionProxyFactory.createActionProxy(NAMESPACE, STACK_ACTION_NAME, extraContext);
@@ -98,25 +109,27 @@ public class ActionNestingTest extends XWorkTestCase {
         }
 
         public void register(ContainerBuilder builder, LocatableProperties props) {
+            builder.factory(ObjectFactory.class);
+            builder.factory(ActionProxyFactory.class, DefaultActionProxyFactory.class);
         }
         
         public void loadPackages() {
             
-            PackageConfig packageContext = new PackageConfig.Builder("nestedActionTest")
-                .addActionConfig(SIMPLE_ACTION_NAME, new ActionConfig.Builder("nestedActionTest", SIMPLE_ACTION_NAME, SimpleAction.class.getName())
-                        .addResultConfig(new ResultConfig.Builder(Action.SUCCESS, MockResult.class.getName()).build())
-                        .addResultConfig(new ResultConfig.Builder(Action.ERROR, MockResult.class.getName()).build())
-                        .build())
-                .addActionConfig(NO_STACK_ACTION_NAME, new ActionConfig.Builder("nestedActionTest", NO_STACK_ACTION_NAME, NestedAction.class.getName())
-                        .addResultConfig(new ResultConfig.Builder(Action.SUCCESS, MockResult.class.getName()).build())
-                        .methodName("noStack")
-                        .build())
-                .addActionConfig(STACK_ACTION_NAME, new ActionConfig.Builder("nestedActionTest", STACK_ACTION_NAME, NestedAction.class.getName())
-                        .addResultConfig(new ResultConfig.Builder(Action.SUCCESS, MockResult.class.getName()).build())
-                        .methodName("stack")
-                        .build())
-                .namespace(NAMESPACE)
-                .build();
+            PackageConfig packageContext = new PackageConfig("nestedActionTest");
+            ActionConfig config = new ActionConfig(null, SimpleAction.class, null, null, null);
+            config.addResultConfig(new ResultConfig(Action.SUCCESS, MockResult.class.getName()));
+            config.addResultConfig(new ResultConfig(Action.ERROR, MockResult.class.getName()));
+            config.setPackageName("nestedActionTest");
+            packageContext.addActionConfig(SIMPLE_ACTION_NAME, config);
+            config = new ActionConfig("noStack", com.opensymphony.xwork2.NestedAction.class, null, null, null);
+            config.addResultConfig(new ResultConfig(Action.SUCCESS, MockResult.class.getName()));
+            config.setPackageName("nestedActionTest");
+            packageContext.addActionConfig(NO_STACK_ACTION_NAME, config);
+            config = new ActionConfig("stack", com.opensymphony.xwork2.NestedAction.class, null, null, null);
+            config.addResultConfig(new ResultConfig(Action.SUCCESS, MockResult.class.getName()));
+            config.setPackageName("nestedActionTest");
+            packageContext.addActionConfig(STACK_ACTION_NAME, config);
+            packageContext.setNamespace(NAMESPACE);
             configuration.addPackageConfig("nestedActionTest", packageContext);
         }
 

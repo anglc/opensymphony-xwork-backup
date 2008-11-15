@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,15 +12,16 @@ import java.util.Map;
  * in a Collection. Field level error messages are kept in a Map from String field name to a List of field error msgs.
  *
  * @author plightbo 
+ * @version $Revision$
  */
 public interface ValidationAware {
 
     /**
      * Set the Collection of Action-level String error messages.
      *
-     * @param errorMessages Collection of String error messages
+     * @param errorMessages
      */
-    void setActionErrors(Collection<String> errorMessages);
+    void setActionErrors(Collection errorMessages);
 
     /**
      * Get the Collection of Action-level error messages for this action. Error messages should not
@@ -30,14 +30,12 @@ public interface ValidationAware {
      *
      * @return Collection of String error messages
      */
-    Collection<String> getActionErrors();
+    Collection getActionErrors();
 
     /**
      * Set the Collection of Action-level String messages (not errors).
-     *
-     * @param messages Collection of String messages (not errors).
      */
-    void setActionMessages(Collection<String> messages);
+    void setActionMessages(Collection messages);
 
     /**
      * Get the Collection of Action-level messages for this action. Messages should not be added
@@ -46,14 +44,14 @@ public interface ValidationAware {
      *
      * @return Collection of String messages
      */
-    Collection<String> getActionMessages();
+    Collection getActionMessages();
 
     /**
      * Set the field error map of fieldname (String) to Collection of String error messages.
      *
-     * @param errorMap field error map
+     * @param errorMap
      */
-    void setFieldErrors(Map<String, List<String>> errorMap);
+    void setFieldErrors(Map errorMap);
 
     /**
      * Get the field specific errors associated with this action. Error messages should not be added
@@ -62,19 +60,17 @@ public interface ValidationAware {
      *
      * @return Map with errors mapped from fieldname (String) to Collection of String error messages
      */
-    Map<String, List<String>> getFieldErrors();
+    Map getFieldErrors();
 
     /**
      * Add an Action-level error message to this Action.
      *
-     * @param anErrorMessage  the error message
+     * @param anErrorMessage
      */
     void addActionError(String anErrorMessage);
 
     /**
      * Add an Action-level message to this Action.
-     *
-     * @param aMessage  the message
      */
     void addActionMessage(String aMessage);
 
@@ -101,11 +97,9 @@ public interface ValidationAware {
     boolean hasActionMessages();
 
     /**
-     * Checks whether there are any action errors or field errors.
-     * <p/>
-     * <b>Note</b>: that this does not have the same meaning as in WW 1.x.
+     * Note that this does not have the same meaning as in WW 1.x.
      *
-     * @return <code>(hasActionErrors() || hasFieldErrors())</code>
+     * @return (hasActionErrors() || hasFieldErrors())
      */
     boolean hasErrors();
 
@@ -115,5 +109,4 @@ public interface ValidationAware {
      * @return whether there are any field errors
      */
     boolean hasFieldErrors();
-
 }

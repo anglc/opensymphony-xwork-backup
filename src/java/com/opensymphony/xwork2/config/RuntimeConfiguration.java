@@ -6,8 +6,8 @@ package com.opensymphony.xwork2.config;
 
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 
-import java.io.Serializable;
 import java.util.Map;
+import java.io.Serializable;
 
 
 /**
@@ -38,5 +38,5 @@ public interface RuntimeConfiguration extends Serializable {
      *                 </pre>
      *         should return a valid config for valid namespace/name pairs
      */
-    Map<String, Map<String, ActionConfig>> getActionConfigs();
+    Map getActionConfigs();
 }

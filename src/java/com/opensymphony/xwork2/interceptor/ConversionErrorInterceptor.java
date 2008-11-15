@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
@@ -7,18 +7,17 @@ package com.opensymphony.xwork2.interceptor;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ValidationAware;
-import com.opensymphony.xwork2.conversion.impl.XWorkConverter;
 import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.XWorkConverter;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 
 /**
  * <!-- START SNIPPET: description -->
- * ConversionErrorInterceptor adds conversion errors from the ActionContext to the Action's field errors.
  *
- * <p/>
  * This interceptor adds any error found in the {@link ActionContext}'s conversionErrors map as a field error (provided
  * that the action implements {@link ValidationAware}). In addition, any field that contains a validation error has its
  * original value saved such that any subsequent requests for that value return the original value rather than the value
@@ -66,27 +65,29 @@ import java.util.Map;
  * <!-- END SNIPPET: example -->
  * </pre>
  *
+ * ConversionErrorInterceptor adds conversion errors from the ActionContext to the Action's field errors.
+ *
  * @author Jason Carreira
  */
 public class ConversionErrorInterceptor extends AbstractInterceptor {
-
     public static final String ORIGINAL_PROPERTY_OVERRIDE = "original.property.override";
 
     protected Object getOverrideExpr(ActionInvocation invocation, Object value) {
         return "'" + value + "'";
     }
 
-    @Override
     public String intercept(ActionInvocation invocation) throws Exception {
 
         ActionContext invocationContext = invocation.getInvocationContext();
-        Map<String, Object> conversionErrors = invocationContext.getConversionErrors();
+        Map conversionErrors = invocationContext.getConversionErrors();
         ValueStack stack = invocationContext.getValueStack();
 
-        HashMap<Object, Object> fakie = null;
+        HashMap fakie = null;
 
-        for (Map.Entry<String, Object> entry : conversionErrors.entrySet()) {
-            String propertyName = entry.getKey();
+        for (Iterator iterator = conversionErrors.entrySet().iterator();
+             iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            String propertyName = (String) entry.getKey();
             Object value = entry.getValue();
 
             if (shouldAddError(propertyName, value)) {
@@ -99,7 +100,7 @@ public class ConversionErrorInterceptor extends AbstractInterceptor {
                 }
 
                 if (fakie == null) {
-                    fakie = new HashMap<Object, Object>();
+                    fakie = new HashMap();
                 }
 
                 fakie.put(propertyName, getOverrideExpr(invocation, value));
@@ -111,7 +112,7 @@ public class ConversionErrorInterceptor extends AbstractInterceptor {
             stack.getContext().put(ORIGINAL_PROPERTY_OVERRIDE, fakie);
             invocation.addPreResultListener(new PreResultListener() {
                 public void beforeResult(ActionInvocation invocation, String resultCode) {
-                    Map<Object, Object> fakie = (Map<Object, Object>) invocation.getInvocationContext().get(ORIGINAL_PROPERTY_OVERRIDE);
+                    Map fakie = (Map) invocation.getInvocationContext().get(ORIGINAL_PROPERTY_OVERRIDE);
 
                     if (fakie != null) {
                         invocation.getStack().setExprOverrides(fakie);

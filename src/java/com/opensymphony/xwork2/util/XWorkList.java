@@ -7,9 +7,9 @@ package com.opensymphony.xwork2.util;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ObjectFactory;
 import com.opensymphony.xwork2.XWorkException;
-import com.opensymphony.xwork2.conversion.impl.XWorkConverter;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,26 +24,26 @@ import java.util.Map;
  * using ObjectFactory's {@link ObjectFactory#buildBean(Class,java.util.Map) buildBean} method.
  *
  * @author Patrick Lightbody
+ * @deprecated Native support for expanding lists and maps is provided in XWork 1.1, so this is no longer needed.
  */
 public class XWorkList extends ArrayList {
-    private static final Logger LOG = LoggerFactory.getLogger(XWorkConverter.class);
+    private static final Log LOG = LogFactory.getLog(XWorkConverter.class);
 
     private Class clazz;
-    private XWorkConverter conv;
 
-    private ObjectFactory objectFactory;
-
-    public XWorkList(ObjectFactory fac, XWorkConverter conv, Class clazz) {
-        this.conv = conv;
+    public XWorkList(Class clazz) {
         this.clazz = clazz;
-        this.objectFactory = fac;
     }
 
-    public XWorkList(ObjectFactory fac, XWorkConverter conv, Class clazz, int initialCapacity) {
+    public XWorkList(Class clazz, Collection c) {
+        super(c.size());
+        this.clazz = clazz;
+        addAll(c);
+    }
+
+    public XWorkList(Class clazz, int initialCapacity) {
         super(initialCapacity);
         this.clazz = clazz;
-        this.conv = conv;
-        this.objectFactory = fac;
     }
 
     /**
@@ -58,7 +58,6 @@ public class XWorkList extends ArrayList {
      * @param index   index at which the specified element is to be inserted.
      * @param element element to be inserted.
      */
-    @Override
     public void add(int index, Object element) {
         if (index >= this.size()) {
             get(index);
@@ -77,7 +76,6 @@ public class XWorkList extends ArrayList {
      * @param element element to be appended to this list.
      * @return <tt>true</tt> (as per the general contract of Collection.add).
      */
-    @Override
     public boolean add(Object element) {
         element = convert(element);
 
@@ -97,14 +95,15 @@ public class XWorkList extends ArrayList {
      * @return <tt>true</tt> if this list changed as a result of the call.
      * @throws NullPointerException if the specified collection is null.
      */
-    @Override
     public boolean addAll(Collection c) {
         if (c == null) {
             throw new NullPointerException("Collection to add is null");
         }
 
-        for (Object aC : c) {
-            add(aC);
+        Iterator it = c.iterator();
+
+        while (it.hasNext()) {
+            add(it.next());
         }
 
         return true;
@@ -124,7 +123,6 @@ public class XWorkList extends ArrayList {
      * @param c     elements to be inserted into this list.
      * @return <tt>true</tt> if this list changed as a result of the call.
      */
-    @Override
     public boolean addAll(int index, Collection c) {
         if (c == null) {
             throw new NullPointerException("Collection to add is null");
@@ -156,12 +154,11 @@ public class XWorkList extends ArrayList {
      * @param index index of element to return.
      * @return the element at the specified position in this list.
      */
-    @Override
     public synchronized Object get(int index) {
         while (index >= this.size()) {
             try {
                 //todo
-                this.add(objectFactory.buildBean(clazz, null)); //ActionContext.getContext().getContextMap()));
+                this.add(ObjectFactory.getObjectFactory().buildBean(clazz, null)); //ActionContext.getContext().getContextMap()));
             } catch (Exception e) {
                 throw new XWorkException(e);
             }
@@ -181,7 +178,6 @@ public class XWorkList extends ArrayList {
      * @param element element to be stored at the specified position.
      * @return the element previously at the specified position.
      */
-    @Override
     public Object set(int index, Object element) {
         if (index >= this.size()) {
             get(index);
@@ -199,14 +195,13 @@ public class XWorkList extends ArrayList {
                 LOG.debug("Converting from " + element.getClass().getName() + " to " + clazz.getName());
             }
 
-            Map<String, Object> context = ActionContext.getContext().getContextMap();
-            element = conv.convertValue(context, null, null, null, element, clazz);
+            Map context = ActionContext.getContext().getContextMap();
+            element = XWorkConverter.getInstance().convertValue(context, null, null, null, element, clazz);
         }
 
         return element;
     }
 
-    @Override
     public boolean contains(Object element) {
         element = convert(element);
 

@@ -4,10 +4,11 @@
  */
 package com.opensymphony.xwork2;
 
-import com.opensymphony.xwork2.config.Configuration;
-import com.opensymphony.xwork2.inject.Inject;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**
@@ -31,38 +32,14 @@ public class SimpleAction extends ActionSupport {
     private int bar;
     private int baz;
     private int foo;
-    private long longFoo;
-    private short shortFoo;
     private double percentage;
     private Map<Integer,String> indexedProps = new HashMap<Integer,String>();
 
     private String aliasSource;
     private String aliasDest;
-    private Map<String,String> protectedMap = new HashMap<String,String>();
-    private Map<String,String> existingMap = new HashMap<String,String>();
-    
-    public static boolean resultCalled;
 
 
     public SimpleAction() {
-        resultCalled = false;
-        existingMap.put("existingKey", "value");
-    }
-    
-    public Map<String,String> getTheProtectedMap() {
-        return protectedMap;
-    }
-    
-    protected Map<String,String> getTheSemiProtectedMap() {
-        return protectedMap;
-    }
-
-    public void setExistingMap(Map<String,String> map) {
-        this.existingMap = map;
-    }
-
-    public Map<String,String> getTheExistingMap() {
-        return existingMap;
     }
 
 
@@ -192,19 +169,7 @@ public class SimpleAction extends ActionSupport {
     }
     
     public Result resultAction() throws Exception {
-    	return new Result() {
-            public Configuration configuration;
-
-            @Inject
-            public void setConfiguration(Configuration config) {
-                this.configuration = config;
-            }
-            public void execute(ActionInvocation invocation) throws Exception {
-                if (configuration != null)
-                    resultCalled = true;
-            }
-    	    
-    	};
+    	return new VoidResult();
     }
 
     public String exceptionMethod() throws Exception {
@@ -215,7 +180,6 @@ public class SimpleAction extends ActionSupport {
         return "OK";
     }
 
-    @Override
     public String execute() throws Exception {
         if (foo == bar) {
             return ERROR;
@@ -236,25 +200,5 @@ public class SimpleAction extends ActionSupport {
     
     public String doInput() throws Exception {
         return INPUT;
-    }
-
-
-    public long getLongFoo() {
-        return longFoo;
-    }
-
-
-    public void setLongFoo(long longFoo) {
-        this.longFoo = longFoo;
-    }
-
-
-    public short getShortFoo() {
-        return shortFoo;
-    }
-
-
-    public void setShortFoo(short shortFoo) {
-        this.shortFoo = shortFoo;
     }
 }

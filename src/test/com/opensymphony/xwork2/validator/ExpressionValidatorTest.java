@@ -7,7 +7,11 @@ package com.opensymphony.xwork2.validator;
 import com.mockobjects.dynamic.C;
 import com.mockobjects.dynamic.Mock;
 import com.opensymphony.xwork2.*;
+import com.opensymphony.xwork2.config.ConfigurationManager;
 import com.opensymphony.xwork2.config.providers.MockConfigurationProvider;
+import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
+import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.ValueStackFactory;
 import com.opensymphony.xwork2.validator.validators.ExpressionValidator;
 
 import java.util.Collection;
@@ -29,7 +33,7 @@ public class ExpressionValidatorTest extends XWorkTestCase {
         ActionContext.getContext().getValueStack().push(bean);
 
         DelegatingValidatorContext context = new DelegatingValidatorContext(new ValidationAwareSupport());
-        container.getInstance(ActionValidatorManager.class).validate(bean, "expressionValidation", context);
+        ActionValidatorManagerFactory.getInstance().validate(bean, "expressionValidation", context);
         assertTrue(context.hasFieldErrors());
 
         final Map fieldErrors = context.getFieldErrors();
@@ -41,17 +45,17 @@ public class ExpressionValidatorTest extends XWorkTestCase {
 
         bean.setName("abcdefg");
         context = new DelegatingValidatorContext(new ValidationAwareSupport());
-        container.getInstance(ActionValidatorManager.class).validate(bean, "expressionValidation", context);
+        ActionValidatorManagerFactory.getInstance().validate(bean, "expressionValidation", context);
         assertFalse(context.hasFieldErrors());
     }
 
     public void testExpressionValidatorFailure() throws Exception {
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap params = new HashMap();
         params.put("date", "12/23/2002");
         params.put("foo", "5");
         params.put("bar", "7");
 
-        HashMap<String, Object> extraContext = new HashMap<String, Object>();
+        HashMap extraContext = new HashMap();
         extraContext.put(ActionContext.PARAMETERS, params);
 
         ActionProxy proxy = actionProxyFactory.createActionProxy("", MockConfigurationProvider.VALIDATION_ACTION_NAME, extraContext);
@@ -67,14 +71,14 @@ public class ExpressionValidatorTest extends XWorkTestCase {
     }
 
     public void testExpressionValidatorSuccess() throws Exception {
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap params = new HashMap();
 
         //make it not fail
         params.put("date", "12/23/2002");
         params.put("foo", "10");
         params.put("bar", "7");
 
-        HashMap<String, Object> extraContext = new HashMap<String, Object>();
+        HashMap extraContext = new HashMap();
         extraContext.put(ActionContext.PARAMETERS, params);
 
         ActionProxy proxy = actionProxyFactory.createActionProxy("", MockConfigurationProvider.VALIDATION_ACTION_NAME, extraContext);
@@ -95,16 +99,16 @@ public class ExpressionValidatorTest extends XWorkTestCase {
         ExpressionValidator ev = new ExpressionValidator();
         ev.setValidatorContext(new DelegatingValidatorContext(mock.proxy()));
         ev.setExpression("{top}");
-        ev.setValueStack(ActionContext.getContext().getValueStack());
+
         ev.validate("Hello"); // {top} will evalute to Hello that is not a Boolean
         mock.verify();
     }
 
-    @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
+        ActionContext.setContext(new ActionContext(stack.getContext()));
 
-        loadConfigurationProviders(new MockConfigurationProvider());
+        loadConfigurationProviders(new XmlConfigurationProvider("xwork-test-beans.xml"), new MockConfigurationProvider());
     }
 
 }

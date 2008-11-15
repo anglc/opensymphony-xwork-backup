@@ -5,8 +5,9 @@
 package com.opensymphony.xwork2;
 
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
 import java.util.*;
@@ -18,62 +19,52 @@ import java.util.*;
  */
 public class ActionSupport implements Action, Validateable, ValidationAware, TextProvider, LocaleProvider, Serializable {
 
-    protected static Logger LOG = LoggerFactory.getLogger(ActionSupport.class);
+    protected static Log LOG = LogFactory.getLog(ActionSupport.class);
 
     private final transient TextProvider textProvider = new TextProviderFactory().createInstance(getClass(), this);
     private final ValidationAwareSupport validationAware = new ValidationAwareSupport();
 
 
-    public void setActionErrors(Collection<String> errorMessages) {
+    public void setActionErrors(Collection errorMessages) {
         validationAware.setActionErrors(errorMessages);
     }
 
-    public Collection<String> getActionErrors() {
+    public Collection getActionErrors() {
         return validationAware.getActionErrors();
     }
 
-    public void setActionMessages(Collection<String> messages) {
+    public void setActionMessages(Collection messages) {
         validationAware.setActionMessages(messages);
     }
 
-    public Collection<String> getActionMessages() {
+    public Collection getActionMessages() {
         return validationAware.getActionMessages();
     }
 
     /**
      * @deprecated Use {@link #getActionErrors()}.
      */
-    @Deprecated public Collection<String> getErrorMessages() {
+    public Collection getErrorMessages() {
         return getActionErrors();
     }
 
     /**
      * @deprecated Use {@link #getFieldErrors()}.
      */
-    @Deprecated public Map<String, List<String>> getErrors() {
+    public Map getErrors() {
         return getFieldErrors();
     }
 
-    public void setFieldErrors(Map<String, List<String>> errorMap) {
+    public void setFieldErrors(Map errorMap) {
         validationAware.setFieldErrors(errorMap);
     }
 
-    public Map<String, List<String>> getFieldErrors() {
+    public Map getFieldErrors() {
         return validationAware.getFieldErrors();
     }
 
     public Locale getLocale() {
-        ActionContext ctx = ActionContext.getContext();
-        if (ctx != null) {
-            return ctx.getLocale();
-        } else {
-            LOG.debug("Action context not initialized");
-            return null;
-        }
-    }
-
-    public boolean hasKey(String key) {
-        return textProvider.hasKey(key);
+        return ActionContext.getContext().getLocale();
     }
 
     public String getText(String aTextName) {
@@ -88,7 +79,7 @@ public class ActionSupport implements Action, Validateable, ValidationAware, Tex
         return textProvider.getText(aTextName, defaultValue, obj);
     }
 
-    public String getText(String aTextName, List<Object> args) {
+    public String getText(String aTextName, List args) {
         return textProvider.getText(aTextName, args);
     }
 
@@ -96,7 +87,7 @@ public class ActionSupport implements Action, Validateable, ValidationAware, Tex
         return textProvider.getText(key, args);
     }
 
-    public String getText(String aTextName, String defaultValue, List<Object> args) {
+    public String getText(String aTextName, String defaultValue, List args) {
         return textProvider.getText(aTextName, defaultValue, args);
     }
 
@@ -104,7 +95,7 @@ public class ActionSupport implements Action, Validateable, ValidationAware, Tex
         return textProvider.getText(key, defaultValue, args);
     }
 
-    public String getText(String key, String defaultValue, List<Object> args, ValueStack stack) {
+    public String getText(String key, String defaultValue, List args, ValueStack stack) {
         return textProvider.getText(key, defaultValue, args, stack);
     }
 
@@ -135,7 +126,7 @@ public class ActionSupport implements Action, Validateable, ValidationAware, Tex
     public String input() throws Exception {
         return INPUT;
     }
-
+    
     public String doDefault() throws Exception {
         return SUCCESS;
     }
@@ -148,7 +139,7 @@ public class ActionSupport implements Action, Validateable, ValidationAware, Tex
      * See also {@link com.opensymphony.xwork2.Action#execute()}.
      *
      * @return returns {@link #SUCCESS}
-     * @throws Exception can be thrown by subclasses.
+     * @throws Exception  can be thrown by subclasses.
      */
     public String execute() throws Exception {
         return SUCCESS;
@@ -171,38 +162,6 @@ public class ActionSupport implements Action, Validateable, ValidationAware, Tex
     }
 
     /**
-     * Clears field errors. Useful for Continuations and other situations
-     * where you might want to clear parts of the state on the same action.
-     */
-    public void clearFieldErrors() {
-        validationAware.clearFieldErrors();
-    }
-
-    /**
-     * Clears action errors. Useful for Continuations and other situations
-     * where you might want to clear parts of the state on the same action.
-     */
-    public void clearActionErrors() {
-        validationAware.clearActionErrors();
-    }
-
-    /**
-     * Clears messages. Useful for Continuations and other situations
-     * where you might want to clear parts of the state on the same action.
-     */
-    public void clearMessages() {
-        validationAware.clearMessages();
-    }
-
-    /**
-     * Clears all errors. Useful for Continuations and other situations
-     * where you might want to clear parts of the state on the same action.
-     */
-    public void clearErrors() {
-        validationAware.clearErrors();
-    }
-
-    /**
      * Clears all errors and messages. Useful for Continuations and other situations
      * where you might want to clear parts of the state on the same action.
      */
@@ -217,7 +176,7 @@ public class ActionSupport implements Action, Validateable, ValidationAware, Tex
     public void validate() {
     }
 
-    @Override public Object clone() throws CloneNotSupportedException {
+    public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
 
@@ -226,11 +185,11 @@ public class ActionSupport implements Action, Validateable, ValidationAware, Tex
      * Stops the action invocation immediately (by throwing a PauseException) and causes the action invocation to return
      * the specified result, such as {@link #SUCCESS}, {@link #INPUT}, etc.
      * <p/>
-     * <p/>
+     *
      * The next time this action is invoked (and using the same continuation ID), the method will resume immediately
      * after where this method was called, with the entire call stack in the execute method restored.
      * <p/>
-     * <p/>
+     *
      * Note: this method can <b>only</b> be called within the {@link #execute()} method.
      * <!-- END SNIPPET: pause-method -->
      *

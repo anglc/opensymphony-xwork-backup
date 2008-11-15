@@ -1,15 +1,17 @@
 package com.opensymphony.xwork2.validator;
 
 import com.opensymphony.xwork2.*;
+import com.opensymphony.xwork2.config.ConfigurationManager;
 import com.opensymphony.xwork2.config.providers.MockConfigurationProvider;
 import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
 import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.ValueStackFactory;
 import com.opensymphony.xwork2.validator.validators.DoubleRangeFieldValidator;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Locale;
 
 /**
  * Unit test for {@link DoubleRangeFieldValidator}.
@@ -19,25 +21,24 @@ import java.util.Map;
  * @version $Id$
  */
 public class DoubleRangeValidatorTest extends XWorkTestCase {
-    private DoubleRangeFieldValidator val;
 
     public void testRangeValidationWithError() throws Exception {
         // must set a locale to US as error message contains a locale dependent number (see XW-490)
         Locale defLocale = Locale.getDefault();
         Locale.setDefault(Locale.US);
-        
+
         ActionProxy proxy = actionProxyFactory.createActionProxy("", MockConfigurationProvider.VALIDATION_ACTION_NAME, null);
         proxy.execute();
         assertTrue(((ValidationAware) proxy.getAction()).hasFieldErrors());
 
-        Map<String, List<String>> errors = ((ValidationAware) proxy.getAction()).getFieldErrors();
+        Map errors = ((ValidationAware) proxy.getAction()).getFieldErrors();
         Iterator it = errors.entrySet().iterator();
 
-        List<String> errorMessages = errors.get("percentage");
+        List errorMessages = (List) errors.get("percentage");
         assertNotNull("Expected double range validation error message.", errorMessages);
         assertEquals(1, errorMessages.size());
 
-        String errorMessage = errorMessages.get(0);
+        String errorMessage = (String) errorMessages.get(0);
         assertNotNull("Expecting: percentage must be between 0.1 and 10.1, current value is 100.0123.", errorMessage);
         assertEquals("percentage must be between 0.1 and 10.1, current value is 100.0123.", errorMessage);
 
@@ -49,14 +50,15 @@ public class DoubleRangeValidatorTest extends XWorkTestCase {
         proxy.execute();
         assertTrue(((ValidationAware) proxy.getAction()).hasFieldErrors());
 
-        Map<String, List<String>> errors = ((ValidationAware) proxy.getAction()).getFieldErrors();
+        Map errors = ((ValidationAware) proxy.getAction()).getFieldErrors();
         Iterator it = errors.entrySet().iterator();
 
-        List<String> errorMessages = errors.get("percentage");
+        List errorMessages = (List) errors.get("percentage");
         assertNull("Expected no double range validation error message.", errorMessages);
     }
 
     public void testRangeNoExclusiveAndNoValueInStack() throws Exception {
+        DoubleRangeFieldValidator val = new DoubleRangeFieldValidator();
         val.setFieldName("hello");
         val.validate("world");
     }
@@ -66,10 +68,11 @@ public class DoubleRangeValidatorTest extends XWorkTestCase {
         prod.setName("coca cola");
         prod.setPrice(5.99);
 
-        ValueStack stack = ActionContext.getContext().getValueStack();
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
         stack.push(prod);
         ActionContext.getContext().setValueStack(stack);
 
+        DoubleRangeFieldValidator val = new DoubleRangeFieldValidator();
         val.setMinInclusive("0");
         val.setMaxInclusive("10");
         val.setFieldName("price");
@@ -82,10 +85,11 @@ public class DoubleRangeValidatorTest extends XWorkTestCase {
         prod.setPrice(5.99);
         prod.setVolume(new Double(12.34));
 
-        ValueStack stack = ActionContext.getContext().getValueStack();
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
         stack.push(prod);
         ActionContext.getContext().setValueStack(stack);
 
+        DoubleRangeFieldValidator val = new DoubleRangeFieldValidator();
         val.setMinInclusive("0");
         val.setMaxInclusive("30");
         val.setFieldName("volume");
@@ -96,10 +100,11 @@ public class DoubleRangeValidatorTest extends XWorkTestCase {
         MyTestProduct prod = new MyTestProduct();
         prod.setName("coca cola");
 
-        ValueStack stack = ActionContext.getContext().getValueStack();
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
         stack.push(prod);
         ActionContext.getContext().setValueStack(stack);
 
+        DoubleRangeFieldValidator val = new DoubleRangeFieldValidator();
         val.setMinInclusive("0");
         val.setMaxInclusive("10");
         val.setFieldName("name");
@@ -118,10 +123,11 @@ public class DoubleRangeValidatorTest extends XWorkTestCase {
         prod.setName("coca cola");
         prod.setPrice(9.95);
 
-        ValueStack stack = ActionContext.getContext().getValueStack();
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
         stack.push(prod);
         ActionContext.getContext().setValueStack(stack);
 
+        DoubleRangeFieldValidator val = new DoubleRangeFieldValidator();
         val.setFieldName("price");
 
         DelegatingValidatorContext context = new DelegatingValidatorContext(new ValidationAwareSupport());
@@ -143,10 +149,11 @@ public class DoubleRangeValidatorTest extends XWorkTestCase {
         prod.setName("coca cola");
         prod.setPrice(9.95);
 
-        ValueStack stack = ActionContext.getContext().getValueStack();
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
         stack.push(prod);
         ActionContext.getContext().setValueStack(stack);
 
+        DoubleRangeFieldValidator val = new DoubleRangeFieldValidator();
         val.setFieldName("price");
 
         DelegatingValidatorContext context = new DelegatingValidatorContext(new ValidationAwareSupport());
@@ -161,31 +168,8 @@ public class DoubleRangeValidatorTest extends XWorkTestCase {
         assertTrue(context.hasErrors());
     }
 
-    public void testNoValue() throws Exception {
-        ValueStack stack = ActionContext.getContext().getValueStack();
-        ActionContext.getContext().setValueStack(stack);
-
-        val.setFieldName("price");
-
-        DelegatingValidatorContext context = new DelegatingValidatorContext(new ValidationAwareSupport());
-        val.setValidatorContext(context);
-
-        val.setMinInclusive("9.95");
-        val.validate(null);
-        assertTrue(!context.hasErrors()); // should pass as null value passed in
-    }
-
-    @Override
     protected void setUp() throws Exception {
-        loadConfigurationProviders(new XmlConfigurationProvider("xwork-default.xml"),  new MockConfigurationProvider());
-        val = new DoubleRangeFieldValidator();
-        val.setValueStack(ActionContext.getContext().getValueStack());
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        val = null;
+        loadConfigurationProviders(new XmlConfigurationProvider("xwork-test-beans.xml"), new MockConfigurationProvider());
     }
 
     private class MyTestProduct {

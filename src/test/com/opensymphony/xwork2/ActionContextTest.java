@@ -7,6 +7,8 @@ package com.opensymphony.xwork2;
 import com.opensymphony.xwork2.util.ValueStack;
 import com.opensymphony.xwork2.util.ValueStackFactory;
 
+import junit.framework.TestCase;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +18,7 @@ import java.util.Map;
  *
  * @author Jason Carreira
  */
-public class ActionContextTest extends XWorkTestCase {
+public class ActionContextTest extends TestCase {
 
     private static final String APPLICATION_KEY = "com.opensymphony.xwork2.ActionContextTest.application";
     private static final String SESSION_KEY = "com.opensymphony.xwork2.ActionContextTest.session";
@@ -25,17 +27,16 @@ public class ActionContextTest extends XWorkTestCase {
 
     private ActionContext context;
 
-    @Override public void setUp() throws Exception {
-        super.setUp();
-        ValueStack valueStack = container.getInstance(ValueStackFactory.class).createValueStack();
-        Map<String, Object> extraContext = valueStack.getContext();
-        Map<String, Object> application = new HashMap<String, Object>();
+    public void setUp() {
+        ValueStack valueStack = ValueStackFactory.getFactory().createValueStack();
+        Map extraContext = valueStack.getContext();
+        Map application = new HashMap();
         application.put(APPLICATION_KEY, APPLICATION_KEY);
 
-        Map<String, Object> session = new HashMap<String, Object>();
+        Map session = new HashMap();
         session.put(SESSION_KEY, SESSION_KEY);
 
-        Map<String, Object> params = new HashMap<String, Object>();
+        Map params = new HashMap();
         params.put(PARAMETERS_KEY, PARAMETERS_KEY);
         extraContext.put(ActionContext.APPLICATION, application);
         extraContext.put(ActionContext.SESSION, session);
@@ -43,6 +44,10 @@ public class ActionContextTest extends XWorkTestCase {
         extraContext.put(ActionContext.ACTION_NAME, ACTION_NAME);
         context = new ActionContext(extraContext);
         ActionContext.setContext(context);
+    }
+
+    public void tearDown() {
+        ActionContext.setContext(null);
     }
 
     public void testContextParams() {
@@ -65,29 +70,29 @@ public class ActionContextTest extends XWorkTestCase {
     }
 
     public void testApplication() {
-        Map<String, Object> app = new HashMap<String, Object>();
+        Map app = new HashMap();
         context.setApplication(app);
         assertEquals(app, context.getApplication());
     }
 
     public void testContextMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map map = new HashMap();
         context.setContextMap(map);
         assertEquals(map, context.getContextMap());
     }
 
     public void testParameters() {
-        Map<String, Object> param = new HashMap<String, Object>();
+        Map param = new HashMap();
         context.setParameters(param);
         assertEquals(param, context.getParameters());
     }
 
     public void testConversionErrors() {
-        Map<String, Object> errors = context.getConversionErrors();
+        Map errors = context.getConversionErrors();
         assertNotNull(errors);
         assertEquals(0, errors.size());
 
-        Map<String, Object> errors2 = new HashMap<String, Object>();
+        Map errors2 = new HashMap();
         context.setConversionErrors(errors);
         assertEquals(errors2, context.getConversionErrors());
     }

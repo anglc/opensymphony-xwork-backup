@@ -35,13 +35,8 @@ public class XmlConfigurationProviderPackagesTest extends ConfigurationTestBase 
         provider.loadPackages();
 
         // setup our expectations
-        PackageConfig expectedNamespacePackage = new PackageConfig.Builder("namespacepkg")
-            .namespace("/namespace/set")
-            .isAbstract(false)
-            .build();
-        PackageConfig expectedAbstractPackage = new PackageConfig.Builder("abstractpkg")
-            .isAbstract(true)
-            .build();
+        PackageConfig expectedNamespacePackage = new PackageConfig("namespacepkg", "/namespace/set", false, null);
+        PackageConfig expectedAbstractPackage = new PackageConfig("abstractpkg", null, true, null);
 
         // test expectations
         assertEquals(3, configuration.getPackageConfigs().size());
@@ -56,7 +51,7 @@ public class XmlConfigurationProviderPackagesTest extends ConfigurationTestBase 
         provider.loadPackages();
 
         // setup our expectations
-        PackageConfig expectedPackageConfig = new PackageConfig.Builder("default").build();
+        PackageConfig expectedPackageConfig = new PackageConfig("default");
 
         // test expectations
         assertEquals(1, configuration.getPackageConfigs().size());
@@ -93,7 +88,6 @@ public class XmlConfigurationProviderPackagesTest extends ConfigurationTestBase 
         assertTrue(multipleParents.contains(singlePackage));
 
         configurationManager.addConfigurationProvider(provider);
-        configurationManager.reload();
 
         RuntimeConfiguration runtimeConfiguration = configurationManager.getConfiguration().getRuntimeConfiguration();
         assertNotNull(runtimeConfiguration.getActionConfig("/multiple", "default"));
@@ -105,25 +99,5 @@ public class XmlConfigurationProviderPackagesTest extends ConfigurationTestBase 
         assertNotNull(runtimeConfiguration.getActionConfig("/single", "single"));
         assertNull(runtimeConfiguration.getActionConfig("/single", "multiple"));
 
-    }
-
-    public void testDefaultClassRef() throws ConfigurationException {
-    	final String filename = "com/opensymphony/xwork2/config/providers/xwork-test-defaultclassref-package.xml";
-        final String hasDefaultClassRefPkgName = "hasDefaultClassRef";
-        final String noDefaultClassRefPkgName = "noDefaultClassRef";
-        final String testDefaultClassRef = "com.opensymphony.xwork2.ActionSupport";
-
-    	ConfigurationProvider provider = buildConfigurationProvider(filename);
-        provider.init(configuration);
-
-        // setup our expectations
-        PackageConfig expectedDefaultClassRefPackage = new PackageConfig.Builder(hasDefaultClassRefPkgName).defaultClassRef(testDefaultClassRef).build();
-
-        PackageConfig expectedNoDefaultClassRefPackage = new PackageConfig.Builder(noDefaultClassRefPkgName).build();
-
-        // test expectations
-        assertEquals(2, configuration.getPackageConfigs().size());
-        assertEquals(expectedDefaultClassRefPackage, configuration.getPackageConfig(hasDefaultClassRefPkgName));
-        assertEquals(expectedNoDefaultClassRefPackage, configuration.getPackageConfig(noDefaultClassRefPkgName));
     }
 }

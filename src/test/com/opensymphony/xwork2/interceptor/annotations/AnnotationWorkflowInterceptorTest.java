@@ -4,20 +4,26 @@
  */
 package com.opensymphony.xwork2.interceptor.annotations;
 
+import java.util.Arrays;
+import java.util.Properties;
+
+import junit.framework.TestCase;
+
 import com.opensymphony.xwork2.*;
+import com.opensymphony.xwork2.mock.MockResult;
+import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.ValueStackFactory;
+import com.opensymphony.xwork2.util.location.LocatableProperties;
+import com.opensymphony.xwork2.inject.ContainerBuilder;
 import com.opensymphony.xwork2.config.Configuration;
 import com.opensymphony.xwork2.config.ConfigurationException;
+import com.opensymphony.xwork2.config.ConfigurationManager;
 import com.opensymphony.xwork2.config.ConfigurationProvider;
-import com.opensymphony.xwork2.config.entities.ActionConfig;
-import com.opensymphony.xwork2.config.entities.InterceptorMapping;
-import com.opensymphony.xwork2.config.entities.PackageConfig;
-import com.opensymphony.xwork2.config.entities.ResultConfig;
 import com.opensymphony.xwork2.config.providers.XmlConfigurationProvider;
-import com.opensymphony.xwork2.inject.ContainerBuilder;
-import com.opensymphony.xwork2.mock.MockResult;
-import com.opensymphony.xwork2.util.location.LocatableProperties;
-
-import java.util.Arrays;
+import com.opensymphony.xwork2.config.entities.ActionConfig;
+import com.opensymphony.xwork2.config.entities.PackageConfig;
+import com.opensymphony.xwork2.config.entities.InterceptorMapping;
+import com.opensymphony.xwork2.config.entities.ResultConfig;
 
 /**
  * @author Zsolt Szasz, zsolt at lorecraft dot com
@@ -26,11 +32,14 @@ import java.util.Arrays;
 public class AnnotationWorkflowInterceptorTest extends XWorkTestCase {
     private static final String ANNOTATED_ACTION = "annotatedAction";
     private static final String SHORTCIRCUITED_ACTION = "shortCircuitedAction";
-    private final AnnotationWorkflowInterceptor annotationWorkflow = new AnnotationWorkflowInterceptor();
+    private final AnnotationWorkflowInterceptor annotationInterceptor = new AnnotationWorkflowInterceptor();
 
-    @Override
     public void setUp() {
-        loadConfigurationProviders(new XmlConfigurationProvider("xwork-default.xml"), new MockConfigurationProvider());
+        loadConfigurationProviders(new MockConfigurationProvider());
+
+        ValueStack stack = ValueStackFactory.getFactory().createValueStack();
+        ActionContext.setContext(new ActionContext(stack.getContext()));
+        
     }
 
     public void testInterceptsBeforeAndAfter() throws Exception {
@@ -71,18 +80,18 @@ public class AnnotationWorkflowInterceptorTest extends XWorkTestCase {
         }
 
         public void loadPackages() throws ConfigurationException {
-            PackageConfig packageConfig = new PackageConfig.Builder("default")
-                    .addActionConfig(ANNOTATED_ACTION, new ActionConfig.Builder("defaultPackage", ANNOTATED_ACTION, AnnotatedAction.class.getName())
-                            .addInterceptors(Arrays.asList(new InterceptorMapping[]{ new InterceptorMapping("annotationWorkflow", annotationWorkflow) }))
-                            .addResultConfig(new ResultConfig.Builder("success", MockResult.class.getName()).build())
-                            .build())
-                    .addActionConfig(SHORTCIRCUITED_ACTION, new ActionConfig.Builder("defaultPackage", SHORTCIRCUITED_ACTION, ShortcircuitedAction.class.getName())
-                            .addInterceptors(Arrays.asList(new InterceptorMapping[]{ new InterceptorMapping("annotationWorkflow", annotationWorkflow) }))
-                            .addResultConfig(new ResultConfig.Builder("shortcircuit", MockResult.class.getName()).build())
-                            .build())
-                    .build();
+            PackageConfig packageConfig = new PackageConfig();
+            config.addPackageConfig("default", packageConfig);
+
+            ActionConfig actionConfig = new ActionConfig(null, AnnotatedAction.class, null, null,
+                    Arrays.asList(new InterceptorMapping[]{ new InterceptorMapping("annotationInterceptor", annotationInterceptor) }));
+            packageConfig.addActionConfig(ANNOTATED_ACTION, actionConfig);
+            actionConfig.addResultConfig(new ResultConfig("success", MockResult.class.getName()));
+            actionConfig = new ActionConfig(null, ShortcircuitedAction.class, null, null,
+                    Arrays.asList(new InterceptorMapping[]{ new InterceptorMapping("annotationInterceptor", annotationInterceptor) }));
+            packageConfig.addActionConfig(SHORTCIRCUITED_ACTION, actionConfig);
+            actionConfig.addResultConfig(new ResultConfig("shortcircuit", MockResult.class.getName()));
             config.addPackageConfig("defaultPackage", packageConfig);
-            config.addPackageConfig("default", new PackageConfig.Builder(packageConfig).name("default").build());
         }
     }
 }

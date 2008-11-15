@@ -9,9 +9,11 @@ import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.config.entities.ActionConfig;
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.Iterator;
 import java.util.Map;
 
 
@@ -21,8 +23,8 @@ import java.util.Map;
  * The aim of this Interceptor is to alias a named parameter to a different named parameter. By acting as the glue
  * between actions sharing similiar parameters (but with different names), it can help greatly with action chaining.
  *
- * <p/>  Action's alias expressions should be in the form of  <code>#{ "name1" : "alias1", "name2" : "alias2" }</code>.
- * This means that assuming an action (or something else in the stack) has a value for the expression named <i>name1</i> and the
+ * <p/>  Action's alias expressions should be in the form of  #{ "name1" : "alias1", "name2" : "alias2" }. This means
+ * that assuming an action (or something else in the stack) has a value for the expression named <i>name1</i> and the
  * action this interceptor is applied to has a setter named <i>alias1</i>, <i>alias1</i> will be set with the value from
  * <i>name1</i>.
  *
@@ -69,49 +71,42 @@ import java.util.Map;
  * @author Matthew Payne
  */
 public class AliasInterceptor extends AbstractInterceptor {
-
-    private static final Logger log = LoggerFactory.getLogger(AliasInterceptor.class);
-
+    private static final Log log = LogFactory.getLog(AliasInterceptor.class);
     private static final String DEFAULT_ALIAS_KEY = "aliases";
+
     protected String aliasesKey = DEFAULT_ALIAS_KEY;
 
-    /**
-     * Sets the name of the action parameter to look for the alias map.
-     * <p/>
-     * Default is <code>aliases</code>.
-     *
-     * @param aliasesKey  the name of the action parameter
-     */
     public void setAliasesKey(String aliasesKey) {
         this.aliasesKey = aliasesKey;
     }
 
-    @Override public String intercept(ActionInvocation invocation) throws Exception {
+    public String intercept(ActionInvocation invocation) throws Exception {
 
         ActionConfig config = invocation.getProxy().getConfig();
         ActionContext ac = invocation.getInvocationContext();
 
         // get the action's parameters
-        final Map<String, String> parameters = config.getParams();
+        final Map parameters = config.getParams();
 
         if (parameters.containsKey(aliasesKey)) {
 
-            String aliasExpression = parameters.get(aliasesKey);
+            String aliasExpression = (String) parameters.get(aliasesKey);
             ValueStack stack = ac.getValueStack();
             Object obj = stack.findValue(aliasExpression);
 
             if (obj != null && obj instanceof Map) {
                 // override
                 Map aliases = (Map) obj;
-                for (Object o : aliases.entrySet()) {
-                    Map.Entry entry = (Map.Entry) o;
+                Iterator itr = aliases.entrySet().iterator();
+                while (itr.hasNext()) {
+                    Map.Entry entry = (Map.Entry) itr.next();
                     String name = entry.getKey().toString();
                     String alias = (String) entry.getValue();
                     Object value = stack.findValue(name);
                     if (null == value) {
                         // workaround
-                        Map<String, String> contextParameters = (Map<String, String>) stack.getContext().get("parameters");
-
+                        Map contextParameters = ac.getParameters();
+                        
                         if (null != contextParameters) {
                             value = contextParameters.get(name);
                         }
@@ -127,5 +122,4 @@ public class AliasInterceptor extends AbstractInterceptor {
         
         return invocation.invoke();
     }
-    
 }

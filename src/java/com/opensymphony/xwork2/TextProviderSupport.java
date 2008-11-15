@@ -22,6 +22,7 @@ public class TextProviderSupport implements ResourceBundleTextProvider {
     private LocaleProvider localeProvider;
     private ResourceBundle bundle;
 
+
     /**
      * Default constructor
      */
@@ -72,25 +73,6 @@ public class TextProviderSupport implements ResourceBundleTextProvider {
         this.localeProvider = localeProvider;
     }
 
-
-    /**
-     * Checks if a key is available in the resource bundles associated with this action.
-     * The resource bundles are searched, starting with the one associated
-     * with this particular action, and testing all its superclasses' bundles.
-     * It will stop once a bundle is found that contains the given text. This gives
-     * a cascading style that allow global texts to be defined for an application base
-     * class.
-     */
-    public boolean hasKey(String key) {
-    	String message;
-    	if (clazz != null) {
-            message =  LocalizedTextUtil.findText(clazz, key, getLocale(), null, new Object[0] );
-        } else {
-            message = LocalizedTextUtil.findText(bundle, key, getLocale(), null, new Object[0]);
-        }
-    	return message != null;
-    }
-
     /**
      * Get a text from the resource bundles associated with this action.
      * The resource bundles are searched, starting with the one associated
@@ -103,7 +85,7 @@ public class TextProviderSupport implements ResourceBundleTextProvider {
      * @return value of named text
      */
     public String getText(String key) {
-        return getText(key, key, Collections.emptyList());
+        return getText(key, key, Collections.EMPTY_LIST);
     }
 
     /**
@@ -119,7 +101,7 @@ public class TextProviderSupport implements ResourceBundleTextProvider {
      * @return value of named text
      */
     public String getText(String key, String defaultValue) {
-        return getText(key, defaultValue, Collections.emptyList());
+        return getText(key, defaultValue, Collections.EMPTY_LIST);
     }
 
     /**
@@ -135,7 +117,7 @@ public class TextProviderSupport implements ResourceBundleTextProvider {
      * @return value of named text
      */
     public String getText(String key, String defaultValue, String arg) {
-        List<Object> args = new ArrayList<Object>();
+        List args = new ArrayList();
         args.add(arg);
         return getText(key, defaultValue, args);
     }
@@ -152,7 +134,7 @@ public class TextProviderSupport implements ResourceBundleTextProvider {
      * @param args      a List of args to be used in a MessageFormat message
      * @return value of named text
      */
-    public String getText(String key, List<Object> args) {
+    public String getText(String key, List args) {
         return getText(key, key, args);
     }
 
@@ -185,8 +167,8 @@ public class TextProviderSupport implements ResourceBundleTextProvider {
      * @param args         a List of args to be used in a MessageFormat message
      * @return value of named text
      */
-    public String getText(String key, String defaultValue, List<Object> args) {
-        Object[] argsArray = ((args != null && !args.equals(Collections.emptyList())) ? args.toArray() : null);
+    public String getText(String key, String defaultValue, List args) {
+        Object[] argsArray = ((args != null && !args.equals(Collections.EMPTY_LIST)) ? args.toArray() : null);
         if (clazz != null) {
             return LocalizedTextUtil.findText(clazz, key, getLocale(), defaultValue, argsArray);
         } else {
@@ -227,9 +209,9 @@ public class TextProviderSupport implements ResourceBundleTextProvider {
      * @param stack        the value stack to use for finding the text
      * @return the message as found in the resource bundle, or defaultValue if none is found
      */
-    public String getText(String key, String defaultValue, List<Object> args, ValueStack stack) {
+    public String getText(String key, String defaultValue, List args, ValueStack stack) {
         Object[] argsArray = ((args != null) ? args.toArray() : null);
-        Locale locale;
+        Locale locale = null;
         if (stack == null){
         	locale = getLocale();
         }else{
@@ -259,7 +241,7 @@ public class TextProviderSupport implements ResourceBundleTextProvider {
      * @return the message as found in the resource bundle, or defaultValue if none is found
      */
     public String getText(String key, String defaultValue, String[] args, ValueStack stack) {
-        Locale locale;
+        Locale locale = null;
         if (stack == null){
         	locale = getLocale();
         }else{

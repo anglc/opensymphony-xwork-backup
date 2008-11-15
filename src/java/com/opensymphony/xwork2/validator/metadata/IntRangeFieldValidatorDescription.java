@@ -43,7 +43,6 @@ public class IntRangeFieldValidatorDescription extends AbstractFieldValidatorDes
      *
      * @return the field validator XML definition.
      */
-    @Override
     public String asFieldXml() {
         StringWriter sw = new StringWriter();
         PrintWriter writer = null;
@@ -86,7 +85,6 @@ public class IntRangeFieldValidatorDescription extends AbstractFieldValidatorDes
      *
      * @return the validator XML definition.
      */
-    @Override
     public String asSimpleXml() {
         StringWriter sw = new StringWriter();
         PrintWriter writer = null;

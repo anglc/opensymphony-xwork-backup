@@ -7,8 +7,9 @@ package com.opensymphony.xwork2.interceptor;
 import com.mockobjects.dynamic.C;
 import com.mockobjects.dynamic.Mock;
 import com.opensymphony.xwork2.*;
-import com.opensymphony.xwork2.mock.MockActionInvocation;
 import com.opensymphony.xwork2.util.ValueStack;
+import com.opensymphony.xwork2.util.ValueStackFactory;
+import com.opensymphony.xwork2.mock.MockActionInvocation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,13 +81,12 @@ public class ConversionErrorInterceptorTest extends XWorkTestCase {
         assertEquals("Hello", stack.findValue("foo")); // assume that the original value is reset
     }
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
         interceptor = new ConversionErrorInterceptor();
         mockInvocation = new Mock(ActionInvocation.class);
         invocation = (ActionInvocation) mockInvocation.proxy();
-        stack = ActionContext.getContext().getValueStack();
+        stack = ValueStackFactory.getFactory().createValueStack();
         context = new ActionContext(stack.getContext());
         conversionErrors = new HashMap();
         context.setConversionErrors(conversionErrors);

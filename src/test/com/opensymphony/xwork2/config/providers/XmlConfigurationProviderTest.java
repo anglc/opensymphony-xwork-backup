@@ -4,12 +4,13 @@
  */
 package com.opensymphony.xwork2.config.providers;
 
+import java.io.File;
+import java.util.List;
+
 import com.opensymphony.xwork2.config.ConfigurationProvider;
 import com.opensymphony.xwork2.config.RuntimeConfiguration;
 import com.opensymphony.xwork2.config.entities.PackageConfig;
 import com.opensymphony.xwork2.util.FileManager;
-
-import java.io.File;
 
 
 public class XmlConfigurationProviderTest extends ConfigurationTestBase {
@@ -27,7 +28,7 @@ public class XmlConfigurationProviderTest extends ConfigurationTestBase {
         
         assertTrue(provider.needsReload());
     }
-    
+
     public void testInheritence() throws Exception {
         final String filename = "com/opensymphony/xwork2/config/providers/xwork-include-parent.xml";
         ConfigurationProvider provider = buildConfigurationProvider(filename);
@@ -38,7 +39,7 @@ public class XmlConfigurationProviderTest extends ConfigurationTestBase {
         // test expectations
         assertEquals(6, configuration.getPackageConfigs().size());
 
-
+        
         PackageConfig defaultPackage = configuration.getPackageConfig("default");
         assertNotNull(defaultPackage);
         assertEquals("default", defaultPackage.getName());
@@ -55,14 +56,14 @@ public class XmlConfigurationProviderTest extends ConfigurationTestBase {
         assertEquals(1, namespace2.getParents().size());
         assertEquals(namespace1, namespace2.getParents().get(0));
 
-
+        
         PackageConfig namespace4 = configuration.getPackageConfig("namespace4");
         assertNotNull(namespace4);
         assertEquals("namespace4", namespace4.getName());
         assertEquals(1, namespace4.getParents().size());
         assertEquals(namespace1, namespace4.getParents().get(0));
 
-
+        
         PackageConfig namespace5 = configuration.getPackageConfig("namespace5");
         assertNotNull(namespace5);
         assertEquals("namespace5", namespace5.getName());
@@ -70,22 +71,12 @@ public class XmlConfigurationProviderTest extends ConfigurationTestBase {
         assertEquals(namespace4, namespace5.getParents().get(0));
 
         configurationManager.addConfigurationProvider(provider);
-        configurationManager.reload();
 
         RuntimeConfiguration runtimeConfiguration = configurationManager.getConfiguration().getRuntimeConfiguration();
         assertNotNull(runtimeConfiguration.getActionConfig("/namespace1", "action1"));
         assertNotNull(runtimeConfiguration.getActionConfig("/namespace2", "action2"));
         assertNotNull(runtimeConfiguration.getActionConfig("/namespace4", "action4"));
         assertNotNull(runtimeConfiguration.getActionConfig("/namespace5", "action5"));
-    }
 
-    public void testGuessResultType() {
-        XmlConfigurationProvider prov = new XmlConfigurationProvider();
-
-        assertEquals(null, prov.guessResultType(null));
-        assertEquals("foo", prov.guessResultType("foo"));
-        assertEquals("foo", prov.guessResultType("foo-"));
-        assertEquals("fooBar", prov.guessResultType("foo-bar"));
-        assertEquals("fooBarBaz", prov.guessResultType("foo-bar-baz"));
     }
 }

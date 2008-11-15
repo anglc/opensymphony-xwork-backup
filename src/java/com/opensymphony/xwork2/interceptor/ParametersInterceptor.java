@@ -1,34 +1,28 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionInvocation;
+import com.opensymphony.xwork2.ValidationAware;
+import com.opensymphony.xwork2.inject.Inject;
+import com.opensymphony.xwork2.util.*;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.ValidationAware;
-import com.opensymphony.xwork2.conversion.impl.InstantiatingNullHandler;
-import com.opensymphony.xwork2.conversion.impl.XWorkConverter;
-import com.opensymphony.xwork2.inject.Inject;
-import com.opensymphony.xwork2.util.ClearableValueStack;
-import com.opensymphony.xwork2.util.LocalizedTextUtil;
-import com.opensymphony.xwork2.util.MemberAccessValueStack;
-import com.opensymphony.xwork2.util.TextParseUtil;
-import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.ValueStackFactory;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
-import com.opensymphony.xwork2.util.reflection.ReflectionContextState;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -55,12 +49,12 @@ import com.opensymphony.xwork2.util.reflection.ReflectionContextState;
  * #acceptableName(String)} method. In addition to this method, if the action being invoked implements the {@link
  * ParameterNameAware} interface, the action will be consulted to determine if the parameter should be set.
  * <p/>
- * <p/> In addition to these restrictions, a flag ({@link ReflectionContextState#DENY_METHOD_EXECUTION}) is set such that
+ * <p/> In addition to these restrictions, a flag ({@link XWorkMethodAccessor#DENY_METHOD_EXECUTION}) is set such that
  * no methods are allowed to be invoked. That means that any expression such as <i>person.doSomething()</i> or
  * <i>person.getName()</i> will be explicitely forbidden. This is needed to make sure that your application is not
  * exposed to attacks by malicious users.
  * <p/>
- * <p/> While this interceptor is being invoked, a flag ({@link ReflectionContextState#CREATE_NULL_OBJECTS}) is turned
+ * <p/> While this interceptor is being invoked, a flag ({@link InstantiatingNullHandler#CREATE_NULL_OBJECTS}) is turned
  * on to ensure that any null reference is automatically created - if possible. See the type conversion documentation
  * and the {@link InstantiatingNullHandler} javadocs for more information.
  * <p/>
@@ -113,10 +107,11 @@ import com.opensymphony.xwork2.util.reflection.ReflectionContextState;
  * </pre>
  *
  * @author Patrick Lightbody
+ * @author Rene Gielen
  */
 public class ParametersInterceptor extends MethodFilterInterceptor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ParametersInterceptor.class);
+    private static final Log LOG = LogFactory.getLog(ParametersInterceptor.class);
 
     boolean ordered = false;
     Set<Pattern> excludeParams = Collections.emptySet();
@@ -126,14 +121,7 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
     private String acceptedParamNames = "[\\p{Graph}&&[^,#:=]]*";
     private Pattern acceptedPattern = Pattern.compile(acceptedParamNames);
 
-    private ValueStackFactory valueStackFactory;
-
-    @Inject
-    public void setValueStackFactory(ValueStackFactory valueStackFactory) {
-        this.valueStackFactory = valueStackFactory;
-    }
-
-    @Inject("devMode")
+    @Inject(value = "devMode", required = false)
     public static void setDevMode(String mode) {
         devMode = "true".equals(mode);
     }
@@ -151,8 +139,10 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
     /**
      * Compares based on number of '.' characters (fewer is higher)
      */
-    static final Comparator<String> rbCollator = new Comparator<String>() {
-        public int compare(String s1, String s2) {
+    static final Comparator rbCollator = new Comparator() {
+        public int compare(Object arg0, Object arg1) {
+            String s1 = (String) arg0;
+            String s2 = (String) arg1;
             int l1 = 0, l2 = 0;
             for (int i = s1.length() - 1; i >= 0; i--) {
                 if (s1.charAt(i) == '.') l1++;
@@ -165,96 +155,57 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
 
     };
 
-    @Override
     public String doIntercept(ActionInvocation invocation) throws Exception {
         Object action = invocation.getAction();
         if (!(action instanceof NoParameters)) {
             ActionContext ac = invocation.getInvocationContext();
-            final Map<String, Object> parameters = retrieveParameters(ac);
+            final Map parameters = ac.getParameters();
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Setting params " + getParameterLogMap(parameters));
             }
 
             if (parameters != null) {
-                Map<String, Object> contextMap = ac.getContextMap();
+                Map contextMap = ac.getContextMap();
                 try {
-                    ReflectionContextState.setCreatingNullObjects(contextMap, true);
-                    ReflectionContextState.setDenyMethodExecution(contextMap, true);
-                    ReflectionContextState.setReportingConversionErrors(contextMap, true);
+                    OgnlContextState.setCreatingNullObjects(contextMap, true);
+                    OgnlContextState.setDenyMethodExecution(contextMap, true);
+                    OgnlContextState.setReportingConversionErrors(contextMap, true);
 
                     ValueStack stack = ac.getValueStack();
                     setParameters(action, stack, parameters);
                 } finally {
-                    ReflectionContextState.setCreatingNullObjects(contextMap, false);
-                    ReflectionContextState.setDenyMethodExecution(contextMap, false);
-                    ReflectionContextState.setReportingConversionErrors(contextMap, false);
+                    OgnlContextState.setCreatingNullObjects(contextMap, false);
+                    OgnlContextState.setDenyMethodExecution(contextMap, false);
+                    OgnlContextState.setReportingConversionErrors(contextMap, false);
                 }
             }
         }
         return invocation.invoke();
     }
 
-    /**
-     * Gets the parameter map to apply from wherever appropriate
-     *
-     * @param ac The action context
-     * @return The parameter map to apply
-     */
-    protected Map<String, Object> retrieveParameters(ActionContext ac) {
-        return ac.getParameters();
-    }
-
-
-    /**
-     * Adds the parameters into context's ParameterMap
-     *
-     * @param ac        The action context
-     * @param newParams The parameter map to apply
-     *                  <p/>
-     *                  In this class this is a no-op, since the parameters were fetched from the same location.
-     *                  In subclasses both retrieveParameters() and addParametersToContext() should be overridden.
-     */
-    protected void addParametersToContext(ActionContext ac, Map<String, Object> newParams) {
-    }
-
-    protected void setParameters(Object action, ValueStack stack, final Map<String, Object> parameters) {
+    protected void setParameters(Object action, ValueStack stack, final Map parameters) {
         ParameterNameAware parameterNameAware = (action instanceof ParameterNameAware)
                 ? (ParameterNameAware) action : null;
 
-        Map<String, Object> params;
-        Map<String, Object> acceptableParameters;
+        Map params = null;
         if (ordered) {
-            params = new TreeMap<String, Object>(getOrderedComparator());
-            acceptableParameters = new TreeMap<String, Object>(getOrderedComparator());
+            params = new TreeMap(getOrderedComparator());
             params.putAll(parameters);
         } else {
-            params = new TreeMap<String, Object>(parameters);
-            acceptableParameters = new TreeMap<String, Object>();
+            params = new TreeMap(parameters);
         }
 
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            String name = entry.getKey();
-
-            boolean acceptableName = acceptableName(name)
-                    && (parameterNameAware == null
-                    || parameterNameAware.acceptableParameterName(name));
-
-            if (acceptableName) {
-                acceptableParameters.put(name, entry.getValue());
-            }
-        }
-
-        ValueStack newStack = valueStackFactory.createValueStack(stack);
+        ValueStack newStack = ValueStackFactory.getFactory().createValueStack(stack);
         boolean clearableStack = newStack instanceof ClearableValueStack;
         if (clearableStack) {
             //if the stack's context can be cleared, do that to prevent OGNL
             //from having access to objects in the stack, see XW-641
             ((ClearableValueStack)newStack).clearContextValues();
             Map<String, Object> context = newStack.getContext();
-            ReflectionContextState.setCreatingNullObjects(context, true);
-            ReflectionContextState.setDenyMethodExecution(context, true);
-            ReflectionContextState.setReportingConversionErrors(context, true);
+            OgnlContextState.setCreatingNullObjects(context, true);
+            OgnlContextState.setDenyMethodExecution(context, true);
+            OgnlContextState.setReportingConversionErrors(context, true);
         }
 
         boolean memberAccessStack = newStack instanceof MemberAccessValueStack;
@@ -266,19 +217,29 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
             accessValueStack.setExcludeProperties(excludeParams);
         }
 
-        for (Map.Entry<String, Object> entry : acceptableParameters.entrySet()) {
-            String name = entry.getKey();
-            Object value = entry.getValue();
-            try {
-                newStack.setValue(name, value);
-            } catch (RuntimeException e) {
-                if (devMode) {
-                    String developerNotification = LocalizedTextUtil.findText(ParametersInterceptor.class, "devmode.notification", ActionContext.getContext().getLocale(), "Developer Notification:\n{0}", new Object[]{
-                             "Unexpected Exception caught setting '" + name + "' on '" + action.getClass() + ": " + e.getMessage()
-                    });
-                    LOG.error(developerNotification);
-                    if (action instanceof ValidationAware) {
-                        ((ValidationAware) action).addActionMessage(developerNotification);
+        for (Iterator iterator = params.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            String name = entry.getKey().toString();
+
+            boolean acceptableName = acceptableName(name)
+                    && (parameterNameAware == null
+                    || parameterNameAware.acceptableParameterName(name));
+
+            if (acceptableName) {
+                Object value = entry.getValue();
+                try {
+                    newStack.setValue(name, value);
+                } catch (RuntimeException e) {
+                    if (devMode) {
+                        String developerNotification = LocalizedTextUtil.findText(ParametersInterceptor.class, "devmode.notification", ActionContext.getContext().getLocale(), "Developer Notification:\n{0}", new Object[]{
+                                e.getMessage()
+                        });
+                        LOG.error(developerNotification);
+                        if (action instanceof ValidationAware) {
+                            ((ValidationAware) action).addActionMessage(developerNotification);
+                        }
+                    } else {
+                        LOG.error("ParametersInterceptor - [setParameters]: Unexpected Exception caught setting '" + name + "' on '" + action.getClass() + ": " + e.getMessage());
                     }
                 }
             }
@@ -286,8 +247,6 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
 
         if (clearableStack && (stack.getContext() != null) && (newStack.getContext() != null))
             stack.getContext().put(ActionContext.CONVERSION_ERRORS, newStack.getContext().get(ActionContext.CONVERSION_ERRORS));
-
-        addParametersToContext(ActionContext.getContext(), acceptableParameters);
     }
 
     /**
@@ -297,17 +256,18 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
      *
      * @return A comparator to sort the parameters
      */
-    protected Comparator<String> getOrderedComparator() {
+    protected Comparator getOrderedComparator() {
         return rbCollator;
     }
 
-    private String getParameterLogMap(Map<String, Object> parameters) {
+    private String getParameterLogMap(Map parameters) {
         if (parameters == null) {
             return "NONE";
         }
 
-        StringBuilder logEntry = new StringBuilder();
-        for (Map.Entry entry : parameters.entrySet()) {
+        StringBuffer logEntry = new StringBuffer();
+        for (Iterator paramIter = parameters.entrySet().iterator(); paramIter.hasNext();) {
+            Map.Entry entry = (Map.Entry) paramIter.next();
             logEntry.append(String.valueOf(entry.getKey()));
             logEntry.append(" => ");
             if (entry.getValue() instanceof Object[]) {
@@ -315,6 +275,7 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
                 logEntry.append("[ ");
                 for (int indexA = 0; indexA < (valueArray.length - 1); indexA++) {
                     Object valueAtIndex = valueArray[indexA];
+                    logEntry.append(valueAtIndex);
                     logEntry.append(String.valueOf(valueAtIndex));
                     logEntry.append(", ");
                 }
@@ -327,6 +288,7 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
 
         return logEntry.toString();
     }
+
 
     protected boolean acceptableName(String name) {
         if (isAccepted(name) && !isExcluded(name)) {
@@ -406,14 +368,13 @@ public class ParametersInterceptor extends MethodFilterInterceptor {
     /**
      * Return a collection from the comma delimited String.
      *
-     * @param commaDelim the comma delimited String.
-     * @return A collection from the comma delimited String. Returns <tt>null</tt> if the string is empty.
+     * @param commaDelim
+     * @return A collection from the comma delimited String.
      */
-    private Collection<String> asCollection(String commaDelim) {
+    private Collection asCollection(String commaDelim) {
         if (commaDelim == null || commaDelim.trim().length() == 0) {
             return null;
         }
         return TextParseUtil.commaDelimitedStringToSet(commaDelim);
     }
-
 }

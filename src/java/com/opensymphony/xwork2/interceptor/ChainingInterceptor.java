@@ -1,19 +1,19 @@
 /*
- * Copyright (c) 2002-2007 by OpenSymphony
+ * Copyright (c) 2002-2006 by OpenSymphony
  * All rights reserved.
  */
 package com.opensymphony.xwork2.interceptor;
 
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.Unchainable;
-import com.opensymphony.xwork2.inject.Inject;
 import com.opensymphony.xwork2.util.CompoundRoot;
+import com.opensymphony.xwork2.util.OgnlUtil;
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
-import com.opensymphony.xwork2.util.reflection.ReflectionProvider;
 
 import java.util.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -22,14 +22,12 @@ import java.util.*;
  * An interceptor that copies all the properties of every object in the value stack to the currently executing object,
  * except for any object that implements {@link Unchainable}. A collection of optional <i>includes</i> and
  * <i>excludes</i> may be provided to control how and which parameters are copied. Only includes or excludes may be
- * specified. Specifying both results in undefined behavior. See the javadocs for {@link ReflectionProvider#copy(Object, Object,
+ * specified. Specifying both results in undefined behavior. See the javadocs for {@link OgnlUtil#copy(Object, Object,
  * java.util.Map, java.util.Collection, java.util.Collection)} for more information.
  *
- * <p/>
- * <b>Note:</b> It is important to remember that this interceptor does nothing if there are no objects already on the stack.
- * <br/>This means two things:
- * <br/><b>One</b>, you can safely apply it to all your actions without any worry of adverse affects.
- * <br/><b/>Two</b>, it is up to you to ensure an object exists in the stack prior to invoking this action. The most typical way this is done
+ * <p/> It is important to remember that this interceptor does nothing if there are no objects already on the stack.
+ * This means two things: One, you can safely apply it to all your actions without any worry of adverse affects. Two, it
+ * is up to you to ensure an object exists in the stack prior to invoking this action. The most typical way this is done
  * is through the use of the <b>chain</b> result type, which combines with this interceptor to make up the action
  * chaining feature.
  *
@@ -78,88 +76,58 @@ import java.util.*;
  * <!-- END SNIPPET: example -->
  * </pre>
  *
- * @see com.opensymphony.xwork2.ActionChainResult
- * @author mrdon
+ * @author $Author$
  * @author tm_jee ( tm_jee(at)yahoo.co.uk )
+ * @version $Revision$
  */
 public class ChainingInterceptor extends AbstractInterceptor {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(ChainingInterceptor.class);
+	private static final Log _log = LogFactory.getLog(ChainingInterceptor.class);
 	
-    protected Collection<String> excludes;
-    protected Collection<String> includes;
-    
-    protected ReflectionProvider reflectionProvider;
-    
-    @Inject
-    public void setReflectionProvider(ReflectionProvider prov) {
-        this.reflectionProvider = prov;
-    }
+    Collection excludes;
+    Collection includes;
 
-    @Override
     public String intercept(ActionInvocation invocation) throws Exception {
         ValueStack stack = invocation.getStack();
         CompoundRoot root = stack.getRoot();
 
         if (root.size() > 1) {
-            List<CompoundRoot> list = new ArrayList<CompoundRoot>(root);
+            List list = new ArrayList(root);
             list.remove(0);
             Collections.reverse(list);
 
-            Map<String, Object> ctxMap = invocation.getInvocationContext().getContextMap();
-            Iterator<CompoundRoot> iterator = list.iterator();
+            Map ctxMap = invocation.getInvocationContext().getContextMap();
+            Iterator iterator = list.iterator();
             int index = 1; // starts with 1, 0 has been removed
             while (iterator.hasNext()) {
             	index = index + 1;
                 Object o = iterator.next();
                 if (o != null) {
                 	if (!(o instanceof Unchainable)) {
-                		reflectionProvider.copy(o, invocation.getAction(), ctxMap, excludes, includes);
+                		OgnlUtil.copy(o, invocation.getAction(), ctxMap, excludes, includes);
                 	}
                 }
                 else {
-                	LOG.warn("compound root element at index "+index+" is null");
+                	_log.warn("compound root element at index "+index+" is null");
                 }
             }
         }
-        
         return invocation.invoke();
     }
     
-    /**
-     * Gets list of parameter names to exclude
-     *
-     * @return the exclude list
-     */
-    public Collection<String> getExcludes() {
+    public Collection getExcludes() {
         return excludes;
     }
 
-    /**
-     * Sets the list of parameter names to exclude from copying (all others will be included).
-     *
-     * @param excludes  the excludes list
-     */
-    public void setExcludes(Collection<String> excludes) {
+    public void setExcludes(Collection excludes) {
         this.excludes = excludes;
     }
 
-    /**
-     * Gets list of parameter names to include
-     *
-     * @return the include list
-     */
-    public Collection<String> getIncludes() {
+    public Collection getIncludes() {
         return includes;
     }
 
-    /**
-     * Sets the list of parameter names to include when copying (all others will be excluded).
-     *
-     * @param includes  the includes list
-     */
-    public void setIncludes(Collection<String> includes) {
+    public void setIncludes(Collection includes) {
         this.includes = includes;
     }
-
 }
