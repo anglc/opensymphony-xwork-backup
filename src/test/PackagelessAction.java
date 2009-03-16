@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-import com.opensymphony.xwork2.ActionSupport;
+import com.opensymphony.xwork.ActionSupport;
 
 
 /**
@@ -18,7 +18,6 @@ public class PackagelessAction extends ActionSupport {
     }
 
 
-    @Override
     public String execute() {
         // from action's bundle
         System.out.println(getText("actionProperty"));

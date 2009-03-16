@@ -17,8 +17,8 @@
     <!-- NOTE: this property is purely here to make a clear distinction in IDEA where the common build is -->
     <property name="------common-properties-below------" value="Common properties below:"/>
 
-    <property name="compile.version" value="1.5"/>
-    <property name="test.compile.version" value="1.5"/>
+    <property name="compile.version" value="1.4"/>
+    <property name="test.compile.version" value="1.4"/>
 
     <dirname property="common.dir" file="${ant.file.common}"/>
     <property file="build.properties"/>
@@ -40,10 +40,11 @@
     <property name="build.test" value="${build}/test"/>
     <property name="build.java-test" value="${build}/java-test"/>
     <property name="build.java" value="${build}/java"/>
+    <property name="build.clover" value="${build}/clover"/>
     <property name="dist" location="dist"/>
 
     <property name="docs" location="docs"/>
-    <property name="docs.packages" value="com.opensymphony.xwork2.*"/>
+    <property name="docs.packages" value="com.opensymphony.*"/>
 
     <property name="jar.manifest" value="${common.dir}/EMPTY.MF"/>
     <property name="jar.excludes" value=""/>
@@ -70,6 +71,7 @@
     </path>
 
     <available property="junit.available" classname="junit.framework.TestCase"/>
+    <available property="clover.available" classname="org.apache.tools.ant.taskdefs.CloverCompilerAdapter"/>
 
     <target name="init" depends="init-anthill, init-standalone">
         <tstamp/>
@@ -87,6 +89,10 @@
 
     <target name="junit-check" depends="init" unless="junit.available">
         <fail message="Cannot run test cases. Please copy lib/build/junit.jar to ${ant.home}/lib"/>
+    </target>
+
+    <target name="clover-check" depends="init" unless="clover.available">
+        <fail message="Cannot run coverage tests. Please copy lib/build/clover.jar and lib/build/clover.license (if it exists) to ${ant.home}/lib"/>
     </target>
 
     <target name="clean">
@@ -123,8 +129,6 @@
 
     <target name="jar" depends="compile" description="build the project jar file">
         <mkdir dir="${build}"/>
-        <mkdir dir="${build.java}/maven/com/opensymphony/xwork" />
-        <copy file="pom.xml" todir="${build.java}/maven/com/opensymphony/xwork" />
 
         <jar basedir="${build.java}" excludes="${jar.excludes}" jarfile="${build}/${name}-${version}.jar">
             <manifest>
@@ -133,7 +137,7 @@
                 <attribute name="Implementation-Vendor" value="OpenSymphony"/>
             </manifest>
         </jar>
-        <jar basedir="${src.java}" jarfile="${build}/${name}-${version}-sources.jar">
+        <jar basedir="${src.java}" jarfile="${build}/${name}-src-${version}.jar">
             <manifest>
                 <attribute name="Implementation-Title" value="${fullname}"/>
                 <attribute name="Implementation-Version" value="${version}"/>
@@ -144,18 +148,7 @@
 
     <target name="src-jar" depends="init" description="build a jar of the project source code">
         <mkdir dir="${build}"/>
-        <jar basedir="${src.java}" jarfile="${build}/${name}-${version}-sources.jar">
-            <manifest>
-                <attribute name="Implementation-Title" value="${fullname}"/>
-                <attribute name="Implementation-Version" value="${version}"/>
-                <attribute name="Implementation-Vendor" value="OpenSymphony"/>
-            </manifest>
-        </jar>
-    </target>
-
-    <target name="javadoc-jar" depends="javadocs" description="build a jar of the project javadocs">
-        <mkdir dir="${build}"/>
-        <jar basedir="${dist.docs}/api" jarfile="${build}/${name}-${version}-javadoc.jar">
+        <jar basedir="${src.java}" jarfile="${build}/${name}-${version}-src.jar">
             <manifest>
                 <attribute name="Implementation-Title" value="${fullname}"/>
                 <attribute name="Implementation-Version" value="${version}"/>
@@ -168,38 +161,49 @@
         <compile srcdir="${src.test}" destdir="${build.test}" classpath="${build.java}"
                  source="${test.compile.version}" target="${test.compile.version}"/>
 
+        <taskdef resource="clovertasks"/>
         <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"/>
+
+        <mkdir dir="${build.clover}"/>
+        <clover-setup initString="${build.clover}/coverage.db">
+            <statementContext name="logIsDebugEnabled" regexp="[\s]*if[\s]*\([\s]*(log|_log|LOG|_LOG)\.isDebugEnabled.*"/>
+            <statementContext name="logDebug" regexp="[\s]*(log|_log|LOG|_LOG)\.debug[\s]*\(.*"/>
+            <files>
+                <exclude name="${src.test}/**/*.java"/>
+            </files>
+        </clover-setup>
+
         <compile srcdir="${src.java}" destdir="${build.java-test}"/>
     </target>
 
-    <target name="test" depends="junit-check, compile, test-compile" description="run tests"
+    <target name="test" depends="junit-check, clover-check, compile, test-compile" description="run tests"
             unless="skip.tests">
-        <run-junit/>
+        <run-junit />
     </target>
 
     <macrodef name="run-junit">
-        <attribute name="classpathref" default="junit.cp"/>
+        <attribute name="classpathref" default="junit.cp" />
         <sequential>
-            <mkdir dir="${dist.docs}/junit"/>
-            <junit haltonfailure="no" haltonerror="yes" fork="yes" forkmode="once" failureproperty="test.failure">
-                <jvmarg value="-Djava.awt.headless=true"/>
-                <jvmarg value="-Dorg.xml.sax.driver=org.apache.crimson.parser.XMLReaderImpl"/>
-                <classpath>
-                    <path refid="@{classpathref}"/>
-                </classpath>
+          <mkdir dir="${dist.docs}/junit"/>
+          <junit haltonfailure="no" haltonerror="yes" fork="yes" forkmode="once" failureproperty="test.failure">
+              <jvmarg value="-Djava.awt.headless=true"/>
+              <jvmarg value="-Dorg.xml.sax.driver=org.apache.crimson.parser.XMLReaderImpl"/>
+              <classpath>
+                  <path refid="@{classpathref}"/>
+              </classpath>
 
-                <formatter type="plain" useFile="false"/>
-                <formatter type="xml"/>
+              <formatter type="plain" useFile="false"/>
+              <formatter type="xml"/>
 
-                <batchtest todir="${dist.docs}/junit">
-                    <fileset dir="${src.test}">
-                        <patternset refid="src.test.pattern"/>
-                    </fileset>
-                </batchtest>
-            </junit>
+              <batchtest todir="${dist.docs}/junit">
+                  <fileset dir="${src.test}">
+                      <patternset refid="src.test.pattern"/>
+                  </fileset>
+              </batchtest>
+          </junit>          
         </sequential>
     </macrodef>
-
+  
     <target name="javadocs" description="generate javadocs" depends="init">
         <mkdir dir="${dist.docs}/api"/>
         <javadoc sourcepath="${src.java}"
@@ -213,25 +217,11 @@
                  doctitle="${fullname} API (${version})"
                  footer="&lt;a href=&quot;http://www.opensymphony.com/${name}/&quot; target=&quot;_top&quot;&gt;${fullname} Project Page&lt;/a&gt;"
                  use="true"
-                 failonerror="false"
                  verbose="false"
-                 private="true"
-                 source="1.5"
-                >
-            <link href="http://java.sun.com/j2se/1.5.0/docs/api" />
-            <link href="http://java.sun.com/javaee/5/docs/api/" />
-            <link href="http://struts.apache.org/2.x/struts2-core/apidocs"/>
-            <link href="http://jakarta.apache.org/commons/logging/apidocs"/>
-            <link href="http://logging.apache.org/log4j/docs/api"/>
+                 source="${compile.version}">
+            <link href="http://java.sun.com/j2se/${compile.version}/docs/api/"/>
+            <link href="http://java.sun.com/j2ee/sdk_1.3/techdocs/api"/>
         </javadoc>
-        <jar basedir="${dist.docs}/api" jarfile="${build}/${name}-${version}-javadoc.jar">
-            <manifest>
-                <attribute name="Implementation-Title" value="${fullname}"/>
-                <attribute name="Implementation-Version" value="${version}"/>
-                <attribute name="Implementation-Vendor" value="OpenSymphony"/>
-            </manifest>
-        </jar>
-
         <!-- <copy overwrite="yes" file="${docs}/main.css" tofile="${docs}/api/stylesheet.css"/> -->
     </target>
 
@@ -241,10 +231,31 @@
         </copy>
     </target>
 
-    <target name="reports" depends="junit.report, javadocs"
+    <target name="reports" depends="junit.report, clover.report, javadocs"
             description="generate javadocs and junit and coverage reports"/>
 
     <target name="docs" depends="reports, docs.impl"/>
+
+    <target name="clover.report" depends="test" description="generate coverage reports" unless="skip.tests">
+        <clover-report>
+            <current outfile="${dist.docs}/clover">
+                <format type="html" filter="logDebug,logIsDebugEnabled"/>
+            </current>
+        </clover-report>
+        <clover-log filter="logDebug,logIsDebugEnabled"/>
+    </target>
+
+    <target name="clover.historical" depends="clover.report" description="generate coverage historical reports"
+            unless="skip.tests">
+        <clover-historypoint historyDir="${build.clover}"/>
+
+        <clover-report>
+            <historical outfile="${dist.docs}/clover" historyDir="${build.clover}">
+                <format type="html" filter="logDebug,logIsDebugEnabled"/>
+            </historical>
+        </clover-report>
+        <clover-log filter="logDebug,logIsDebugEnabled"/>
+    </target>
 
     <target name="junit.report" depends="test" description="generate junit reports" unless="skip.tests">
         <junitreport todir="${dist.docs}/junit">
@@ -273,6 +284,13 @@
             <fileset dir="${src}"/>
         </copy>
 
+        <copy todir="${dist}/tiger">
+            <fileset dir="tiger">
+                <exclude name="build/"/>
+                <exclude name="*.i*"/>                
+            </fileset>
+        </copy>
+
         <mkdir dir="${dist}/lib"/>
         <copy todir="${dist}/lib">
             <fileset dir="${lib}">
@@ -284,7 +302,7 @@
             <fileset dir="${basedir}">
                 <include name="build.*"/>
                 <include name="osbuild.*"/>
-                <include name="ivy.*"/>
+                <include name="ivy*.*"/>
                 <include name="pom.*"/>
                 <include name="readme.txt"/>
                 <include name="license.txt"/>
@@ -296,11 +314,12 @@
 
         <zip zipfile="${build}/${name}-${version}.zip">
             <zipfileset prefix="${name}-${version}" dir="${dist}">
+                <exclude name="docs/clover/**/*"/>
                 <exclude name="docs/junit/**/*"/>
             </zipfileset>
         </zip>
-
-        <move file="${build}/${name}-${version}.zip" todir="${dist}"/>
+        
+        <move file="${build}/${name}-${version}.zip" todir="${dist}" />
     </target>
 
     <target name="website" depends="javadocs, docs.impl"/>
@@ -326,9 +345,27 @@
                       **/*.dtd,
                       **/*.xsl,
                       **/*.xslt,
-                      **/*.html"/>
-
+                      **/*.html" />
+        
+        <fixcrlf eol="lf" srcdir="${basedir}/tiger/src"
+                 includes="**/*.sh,
+                      **/*.properties,
+                      **/*.sql,
+                      **/*.script,
+                      **/*.java,
+                      **/*.css,
+                      **/*.js,
+                      **/*.jsp,
+                      **/*.ftl,
+                      **/*.txt,
+                      **/*.vm,
+                      **/*.xml,
+                      **/*.dtd,
+                      **/*.xsl,
+                      **/*.xslt,
+                      **/*.html" />
     </target>
+
 
 
     <target name="ivyrep" depends="jar, ivyrep.impl"/>
@@ -348,6 +385,7 @@
         <!-- delete the old timestamped builds and commit -->
         <fileset dir="${ivyrep.path}/opensymphony/${name}" id="filesref">
             <include name="${name}-${version}-*"/>
+            <include name="${name}-src-${version}-*"/>
             <include name="ivy-${version}-*"/>
         </fileset>
         <pathconvert property="files" refid="filesref" pathsep=" "/>
@@ -360,10 +398,8 @@
         <!-- copy over the new build and source -->
         <copy file="${build}/${name}-${version}.jar"
               tofile="${ivyrep.path}/opensymphony/${name}/${name}-${version}-${TIME}.jar"/>
-        <copy file="${build}/${name}-${version}-sources.jar"
-              tofile="${ivyrep.path}/opensymphony/${name}/${name}-${version}-${TIME}-sources.jar"/>
-        <copy file="${build}/${name}-${version}-javadoc.jar"
-              tofile="${ivyrep.path}/opensymphony/${name}/${name}-${version}-${TIME}-javadoc.jar"/>
+        <copy file="${build}/${name}-src-${version}.jar"
+              tofile="${ivyrep.path}/opensymphony/${name}/${name}-src-${version}-${TIME}.jar"/>
         <echo>svn add (jar)</echo>
         <exec executable="svn">
             <arg value="add"/>
@@ -371,11 +407,7 @@
         </exec>
         <exec executable="svn">
             <arg value="add"/>
-            <arg value="${ivyrep.path}/opensymphony/${name}/${name}-${version}-${TIME}-sources.jar"/>
-        </exec>
-        <exec executable="svn">
-            <arg value="add"/>
-            <arg value="${ivyrep.path}/opensymphony/${name}/${name}-${version}-${TIME}-javadoc.jar"/>
+            <arg value="${ivyrep.path}/opensymphony/${name}/${name}-src-${version}-${TIME}.jar"/>
         </exec>
 
         <antcall target="ivyrep.copy-ivy"/>
