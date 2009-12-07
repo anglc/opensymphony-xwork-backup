@@ -3,8 +3,11 @@
 *.iml
 build
 dist
+test*
+target
+maven.log
 .project
 .classpath
-ivyrep.properties
-.settings
-target
+bin
+build-*.xml
+ioc-src.zip
